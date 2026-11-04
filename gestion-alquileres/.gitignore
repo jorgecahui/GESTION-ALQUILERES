@@ -1,0 +1,8 @@
+target/
+data/
+respaldos/
+*.db
+*.log
+logs/
+.idea/
+*.iml

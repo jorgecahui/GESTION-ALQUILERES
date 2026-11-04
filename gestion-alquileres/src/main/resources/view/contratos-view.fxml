@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ejemplo.alquileres.controller.ContratoController" spacing="16" styleClass="pagina">
+    <HBox>
+        <VBox HBox.hgrow="ALWAYS">
+            <Label text="Contratos" styleClass="pagina-titulo"/>
+            <Label text="Vigencia, cronograma y garantías." styleClass="pagina-subtitulo"/>
+        </VBox>
+        <Button text="Exportar Excel" onAction="#onExportar"/>
+        <Button text="Nuevo contrato" onAction="#onNuevo" styleClass="boton-primario"/>
+    </HBox>
+    <HBox spacing="12">
+        <TextField fx:id="buscar" promptText="Buscar código, inmueble o arrendatario" HBox.hgrow="ALWAYS"/>
+        <ComboBox fx:id="filtroEstado" promptText="Estado" prefWidth="150"/>
+        <CheckBox fx:id="porVencer" text="Por vencer"/>
+    </HBox>
+    <HBox spacing="12">
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Vigentes"/><Label fx:id="vigentes" text="0" styleClass="kpi-valor"/></VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Por vencer"/><Label fx:id="kpiPorVencer" text="0" styleClass="kpi-valor"/></VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Vencidos"/><Label fx:id="vencidos" text="0" styleClass="kpi-valor"/></VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Renta mensual"/><Label fx:id="rentaMensual" text="S/ 0.00" styleClass="kpi-valor"/></VBox>
+    </HBox>
+    <HBox spacing="14" VBox.vgrow="ALWAYS">
+        <VBox styleClass="tarjeta" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
+                <columns>
+                    <TableColumn fx:id="colCodigo" text="Código" prefWidth="120"/>
+                    <TableColumn fx:id="colInmueble" text="Inmueble" prefWidth="190"/>
+                    <TableColumn fx:id="colArrendatario" text="Arrendatario" prefWidth="190"/>
+                    <TableColumn fx:id="colVigencia" text="Vigencia" prefWidth="180"/>
+                    <TableColumn fx:id="colRenta" text="Renta" prefWidth="110"/>
+                    <TableColumn fx:id="colEstado" text="Estado" prefWidth="110"/>
+                </columns>
+                <placeholder><Label text="Sin contratos registrados."/></placeholder>
+            </TableView>
+        </VBox>
+        <VBox fx:id="detalle" visible="false" managed="false" prefWidth="430" spacing="10" styleClass="tarjeta">
+            <Label fx:id="detalleTitulo" styleClass="drawer-titulo"/>
+            <Label fx:id="detalleInfo" wrapText="true"/>
+            <HBox spacing="8">
+                <Button text="Estado de cuenta" onAction="#onEstadoCuenta"/>
+                <Button text="Hoja de contrato" onAction="#onHojaContrato"/>
+            </HBox>
+            <HBox spacing="8">
+                <Button text="Avisar fin de contrato" onAction="#onAvisarFin"/>
+                <Button text="Cerrar" onAction="#onCerrarDetalle"/>
+            </HBox>
+            <Label text="CUOTAS" styleClass="seccion-form"/>
+            <TableView fx:id="tablaCuotas" prefHeight="170" styleClass="tabla">
+                <columns>
+                    <TableColumn fx:id="colCuotaConcepto" text="Concepto" prefWidth="150"/>
+                    <TableColumn fx:id="colCuotaVencimiento" text="Vence" prefWidth="90"/>
+                    <TableColumn fx:id="colCuotaMonto" text="Monto" prefWidth="90"/>
+                    <TableColumn fx:id="colCuotaPagado" text="Pagado" prefWidth="90"/>
+                    <TableColumn fx:id="colCuotaEstado" text="Estado" prefWidth="90"/>
+                </columns>
+            </TableView>
+            <Label text="RECORDATORIOS ENVIADOS" styleClass="seccion-form"/>
+            <TableView fx:id="tablaRecordatorios" prefHeight="150" styleClass="tabla">
+                <columns>
+                    <TableColumn fx:id="colRecFecha" text="Fecha" prefWidth="120"/>
+                    <TableColumn fx:id="colRecTipo" text="Tipo" prefWidth="100"/>
+                    <TableColumn fx:id="colRecCanal" text="Canal" prefWidth="90"/>
+                    <TableColumn fx:id="colRecMensaje" text="Mensaje" prefWidth="260"/>
+                </columns>
+                <placeholder><Label text="Sin recordatorios enviados."/></placeholder>
+            </TableView>
+        </VBox>
+    </HBox>
+</VBox>

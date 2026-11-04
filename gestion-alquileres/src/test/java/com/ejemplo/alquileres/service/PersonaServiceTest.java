@@ -1,0 +1,8 @@
+package com.ejemplo.alquileres.service;
+import com.ejemplo.alquileres.exception.NegocioException; import com.ejemplo.alquileres.model.*; import com.ejemplo.alquileres.repository.PersonaRepository; import org.junit.jupiter.api.*; import java.time.*; import java.util.*; import static org.junit.jupiter.api.Assertions.*; import static org.mockito.Mockito.*;
+class PersonaServiceTest {private final PersonaRepository repo=mock(PersonaRepository.class);private final PersonaService service=new PersonaService(repo,new ValidadorDocumento(),DatosFase6.permisosAdmin(),Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"),ZoneOffset.UTC));
+ private Persona persona(){return Persona.builder().tipoDocumento(TipoDocumento.DNI).numeroDocumento("12345678").nombres("Ana").activo(true).build();}
+ @Test void altaYEdicionSinCambiarDocumento(){when(repo.existsByTipoDocumentoAndNumeroDocumento(any(),any())).thenReturn(false);when(repo.save(any())).thenAnswer(i->i.getArgument(0));Persona creada=service.guardar(persona());assertEquals(LocalDate.of(2026,1,1),creada.getFechaRegistro());Persona editada=persona();editada.setId(3L);when(repo.existsByTipoDocumentoAndNumeroDocumentoAndIdNot(any(),any(),any())).thenReturn(false);when(repo.findById(3L)).thenReturn(Optional.of(creada));assertDoesNotThrow(()->service.guardar(editada));}
+ @Test void rechazaDocumentoDuplicado(){when(repo.existsByTipoDocumentoAndNumeroDocumento(any(),any())).thenReturn(true);assertThrows(NegocioException.class,()->service.guardar(persona()));}
+ @Test void desactiva(){Persona p=persona();p.setActivo(true);when(repo.findById(1L)).thenReturn(Optional.of(p));service.desactivar(1L);assertFalse(p.isActivo());}
+}
