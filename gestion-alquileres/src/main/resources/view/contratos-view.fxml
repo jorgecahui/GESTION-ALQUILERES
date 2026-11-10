@@ -43,6 +43,11 @@
                 <Button text="Hoja de contrato" onAction="#onHojaContrato"/>
             </HBox>
             <HBox spacing="8">
+                <Button text="Renovar" onAction="#onRenovar"/>
+                <Button text="Finalizar" onAction="#onFinalizar"/>
+                <Button text="Rescindir" onAction="#onRescindir"/>
+            </HBox>
+            <HBox spacing="8">
                 <Button text="Avisar fin de contrato" onAction="#onAvisarFin"/>
                 <Button text="Cerrar" onAction="#onCerrarDetalle"/>
             </HBox>

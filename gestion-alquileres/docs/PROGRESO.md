@@ -1,5 +1,17 @@
 # Progreso del proyecto
 
+## Corrección de prioridad alta — Contratos y pagos demo
+
+- [x] **Nuevo contrato** dejó de ser una maqueta: `ContratoFormController` carga inmuebles disponibles y personas activas, calcula fecha fin, total y cronograma en vivo, y registra el contrato con `ContratoService.crear`.
+- [x] **Renovar** abre el mismo formulario precargado (inmueble, arrendatario, fecha de inicio obligatoria, renta con incremento y garantía transferida) y llama a `ContratoService.renovar`.
+- [x] **Finalizar** y **Rescindir** tienen diálogo con fecha de término, motivo, liquidación de garantía y motivo del descuento; llaman a `ContratoService.terminar`.
+- [x] `ContratoService` valida fecha de término, calcula el estado de garantía (`DEVUELTA`, `RETENIDA_PARCIAL`, `SIN_GARANTIA`) y tolera garantías nulas.
+- [x] `HistoriaDashboardSeeder` crea `PagoDetalle` para los pagos demo nuevos y repara los pagos `R001-DEV-*` existentes sin detalle. No toca pagos reales.
+- [x] Pruebas: 89 en total, 0 fallos. Nuevas: `ContratoServiceTest` (5), `HistoriaDashboardSeederTest` (2) y `FxmlSmokeTest` (2).
+- [x] Verificación manual de arranque con perfil `dev`: la reparación de detalles se ejecutó sobre `data/alquileres.db` (25 pagos con su detalle) y la app cargó sin errores de FXML.
+
+Decisiones de esta corrección: el formulario reutiliza el mismo controlador para alta y renovación; en renovación se bloquean inmueble, arrendatario, fecha de inicio y garantía porque el servicio exige conservarlos y traslada la garantía. La reparación de `PagoDetalle` se limita a recibos con prefijo `R001-DEV-` para no alterar pagos reales. Se añadió una prueba de humo de FXML porque los errores de `fx:id`/`onAction` no los detectan las pruebas de servicio.
+
 ## Actualización Fase 7 — Entrega C (Respaldo, endurecimiento y entrega)
 
 - [x] `RespaldoService`: respaldo manual con `VACUUM INTO`, respaldo automático al cerrar y rotación a 10 archivos.
@@ -192,7 +204,7 @@ Codex marca aquí lo completado al terminar cada fase. Estado: `[ ]` pendiente �
 | 6 | Confirmar visualmente PDFs, Excel y diálogos de WhatsApp en ambos temas. | Media: las pruebas automatizadas validan contenido y bytes, pero no la apariencia final. |
 | 7 | Verificación visual humana de login, bloqueo, configuración, usuarios, auditoría y respaldo en claro/oscuro. | Media: la app inicia y las pruebas pasan, pero la inspección de la ventana nativa queda pendiente. |
 | 7 | Probar el app-image en un equipo sin JDK instalado. | Media: el ejecutable arrancó en este equipo; el runtime va incluido, pero falta la prueba en un equipo limpio. |
-| 7 | Completar la pantalla de alta de contratos si se requiere captura manual en producción. | Baja: la lista y los servicios de contratos funcionan; el formulario visual sigue siendo el placeholder de la Fase 2. |
+| 7 | Completar la pantalla de alta de contratos si se requiere captura manual en producción. | **Resuelto** en la corrección de prioridad alta: alta, renovación, finalización y rescisión ya tienen UI funcional. |
 
 ## Cómo probar manualmente (por fase)
 

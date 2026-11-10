@@ -1,3 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
-<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fitToWidth="true"><content><HBox spacing="20" styleClass="pagina"><VBox spacing="14" HBox.hgrow="ALWAYS"><Label text="Nuevo contrato" styleClass="pagina-titulo"/><Label text="Registra el inmueble, las partes y las condiciones del alquiler." styleClass="pagina-subtitulo"/><VBox spacing="10" styleClass="tarjeta"><Label text="Datos del contrato" styleClass="tarjeta-titulo"/><TextField promptText="Inmueble disponible"/><TextField promptText="Arrendatario"/><TextField promptText="Garante (opcional)"/><HBox spacing="10"><DatePicker promptText="Fecha de inicio"/><TextField promptText="Duración (meses)"/><TextField promptText="Día de pago"/></HBox><TextField promptText="Renta mensual (S/)"/><TextField promptText="Incremento anual (%)"/><TextField promptText="Garantía (S/)"/><CheckBox text="Garantía recibida"/><TextArea promptText="Observaciones" prefRowCount="3"/></VBox></VBox><VBox spacing="12" prefWidth="360" styleClass="tarjeta"><Label text="Resumen" styleClass="tarjeta-titulo"/><Label text="La vista previa del cronograma se genera al completar los datos." wrapText="true"/><TableView prefHeight="360" styleClass="tabla"><columns><TableColumn text="Periodo"/><TableColumn text="Vencimiento"/><TableColumn text="Monto"/></columns></TableView><Button text="Registrar contrato" styleClass="boton-primario" maxWidth="Infinity"/></VBox></HBox></content></ScrollPane>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ejemplo.alquileres.controller.ContratoFormController"
+            fitToWidth="true" styleClass="pagina-scroll">
+    <HBox spacing="20" styleClass="pagina">
+        <VBox spacing="14" HBox.hgrow="ALWAYS">
+            <VBox spacing="2">
+                <Label fx:id="titulo" text="Nuevo contrato" styleClass="pagina-titulo"/>
+                <Label fx:id="subtitulo" text="Registra el inmueble, las partes y las condiciones del alquiler."
+                       styleClass="pagina-subtitulo" wrapText="true"/>
+            </VBox>
+            <VBox spacing="10" styleClass="tarjeta">
+                <Label text="Inmueble y partes" styleClass="tarjeta-titulo"/>
+                <GridPane hgap="14" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="170" prefWidth="190"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <Label text="Inmueble" styleClass="campo-label" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="inmueble" promptText="Inmueble disponible · código · renta referencial"
+                              maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <Label text="Arrendatario" styleClass="campo-label" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="arrendatario" promptText="Persona activa · documento"
+                              maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label text="Garante (opcional)" styleClass="campo-label" GridPane.rowIndex="2"/>
+                    <ComboBox fx:id="garante" promptText="Opcional · debe ser distinto del arrendatario"
+                              maxWidth="Infinity" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                </GridPane>
+            </VBox>
+            <VBox spacing="10" styleClass="tarjeta">
+                <Label text="Condiciones del contrato" styleClass="tarjeta-titulo"/>
+                <GridPane hgap="14" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="170" prefWidth="190"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <Label text="Fecha de inicio" styleClass="campo-label" GridPane.rowIndex="0"/>
+                    <DatePicker fx:id="inicio" maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <Label text="Duración (meses)" styleClass="campo-label" GridPane.rowIndex="1"/>
+                    <TextField fx:id="meses" promptText="12" maxWidth="220" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label text="Día de pago (1–28)" styleClass="campo-label" GridPane.rowIndex="2"/>
+                    <TextField fx:id="diaPago" promptText="5" maxWidth="220" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label text="Renta mensual (S/)" styleClass="campo-label" GridPane.rowIndex="3"/>
+                    <TextField fx:id="renta" promptText="0.00" maxWidth="220" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    <Label text="Incremento anual (%)" styleClass="campo-label" GridPane.rowIndex="4"/>
+                    <TextField fx:id="incremento" promptText="0" maxWidth="220" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    <Label text="Garantía (S/)" styleClass="campo-label" GridPane.rowIndex="5"/>
+                    <HBox spacing="8" GridPane.rowIndex="5" GridPane.columnIndex="1">
+                        <TextField fx:id="garantia" promptText="0.00" maxWidth="220" HBox.hgrow="ALWAYS"/>
+                        <CheckBox fx:id="garantiaRecibida" text="Garantía recibida"/>
+                    </HBox>
+                    <Label text="Tipo de mora" styleClass="campo-label" GridPane.rowIndex="6"/>
+                    <ComboBox fx:id="tipoMora" maxWidth="220" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                    <Label text="Valor de la mora" styleClass="campo-label" GridPane.rowIndex="7"/>
+                    <TextField fx:id="valorMora" promptText="0.10" maxWidth="220" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                    <Label text="Días de gracia" styleClass="campo-label" GridPane.rowIndex="8"/>
+                    <TextField fx:id="diasGracia" promptText="3" maxWidth="220" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                </GridPane>
+                <Label text="Los parámetros de mora se copian al contrato y quedan congelados en su cronograma."
+                       styleClass="campo-ayuda" wrapText="true"/>
+            </VBox>
+            <VBox spacing="6">
+                <Label text="Observaciones" styleClass="campo-label"/>
+                <TextArea fx:id="observaciones" prefRowCount="3" wrapText="true"/>
+            </VBox>
+        </VBox>
+        <VBox spacing="10" prefWidth="390" styleClass="tarjeta">
+            <Label text="Resumen" styleClass="drawer-titulo"/>
+            <HBox><Label text="Renta mensual" HBox.hgrow="ALWAYS"/><Label fx:id="resumenRenta" text="—"/></HBox>
+            <HBox><Label text="Garantía" HBox.hgrow="ALWAYS"/><Label fx:id="resumenGarantia" text="—"/></HBox>
+            <HBox><Label text="Cuotas" HBox.hgrow="ALWAYS"/><Label fx:id="resumenCuotas" text="—"/></HBox>
+            <HBox><Label text="Total del contrato" HBox.hgrow="ALWAYS"/><Label fx:id="resumenTotal" text="—" styleClass="kpi-valor"/></HBox>
+            <HBox><Label text="Fecha fin" HBox.hgrow="ALWAYS"/><Label fx:id="resumenFin" text="—"/></HBox>
+            <Separator/>
+            <Label text="CRONOGRAMA PREVISTO" styleClass="seccion-form"/>
+            <TableView fx:id="tablaCronograma" prefHeight="330" styleClass="tabla" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colPeriodo" text="Periodo" prefWidth="130"/>
+                    <TableColumn fx:id="colVencimiento" text="Vence" prefWidth="95"/>
+                    <TableColumn fx:id="colMonto" text="Monto" prefWidth="105"/>
+                </columns>
+                <placeholder><Label text="Completa la fecha, la duración y la renta para ver el cronograma."/></placeholder>
+            </TableView>
+            <Label fx:id="mensaje" styleClass="campo-error" wrapText="true"/>
+            <Button fx:id="btnRegistrar" text="Registrar contrato" onAction="#onRegistrar"
+                    styleClass="boton-primario" maxWidth="Infinity"/>
+            <Button text="Cancelar" onAction="#onCancelar" maxWidth="Infinity"/>
+        </VBox>
+    </HBox>
+</ScrollPane>

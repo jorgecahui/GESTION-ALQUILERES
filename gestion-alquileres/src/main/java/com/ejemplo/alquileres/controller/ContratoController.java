@@ -17,6 +17,7 @@ import com.ejemplo.alquileres.ui.Tablas;
 import com.ejemplo.alquileres.ui.Tareas;
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -25,13 +26,18 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import org.springframework.stereotype.Component;
 
@@ -189,7 +195,90 @@ public class ContratoController implements Refrescable {
                 e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onNuevo() { principal.irA("nuevo-contrato"); }
+    @FXML private void onNuevo() { principal.irANuevoContrato(); }
+
+    @FXML private void onRenovar() {
+        if (seleccionado == null) { aviso.error("Selecciona un contrato."); return; }
+        principal.irARenovarContrato(seleccionado.getId());
+    }
+
+    @FXML private void onFinalizar() { terminar(false); }
+
+    @FXML private void onRescindir() { terminar(true); }
+
+    private void terminar(boolean rescindir) {
+        if (seleccionado == null) { aviso.error("Selecciona un contrato."); return; }
+        Contrato contrato = seleccionado;
+        DatePicker fecha = new DatePicker(LocalDate.now());
+        TextField motivo = new TextField();
+        motivo.setPromptText(rescindir ? "Motivo obligatorio" : "Motivo (opcional)");
+        TextField devuelta = new TextField(nvl(contrato.getGarantiaMonto()).toPlainString());
+        TextField descontada = new TextField("0.00");
+        TextField motivoGarantia = new TextField();
+        motivoGarantia.setPromptText("Obligatorio si hay descuento");
+        GridPane formulario = new GridPane();
+        formulario.setHgap(12);
+        formulario.setVgap(10);
+        formulario.setPrefWidth(390);
+        int fila = 0;
+        fila(formulario, fila++, "Fecha de término", fecha);
+        fila(formulario, fila++, "Motivo", motivo);
+        fila(formulario, fila++, "Garantía devuelta (S/)", devuelta);
+        fila(formulario, fila++, "Garantía descontada (S/)", descontada);
+        fila(formulario, fila, "Motivo del descuento", motivoGarantia);
+        Label ayuda = new Label("Las cuotas no pagadas con vencimiento posterior quedarán anuladas.");
+        ayuda.getStyleClass().add("campo-ayuda");
+        ayuda.setWrapText(true);
+        formulario.add(ayuda, 0, fila + 1, 2, 1);
+        Dialog<ButtonType> dialogo = new Dialog<>();
+        dialogo.setTitle(rescindir ? "Rescindir contrato" : "Finalizar contrato");
+        dialogo.setHeaderText(contrato.getCodigo() + " · " + contrato.getArrendatario().getNombreCompleto());
+        dialogo.getDialogPane().getStyleClass().add("dialogo");
+        dialogo.getDialogPane().getButtonTypes().addAll(
+                new ButtonType(rescindir ? "Rescindir" : "Finalizar", ButtonBar.ButtonData.OK_DONE),
+                ButtonType.CANCEL);
+        dialogo.getDialogPane().setContent(formulario);
+        if (tabla.getScene() != null && tabla.getScene().getWindow() != null) {
+            dialogo.initOwner(tabla.getScene().getWindow());
+        }
+        if (dialogo.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.CANCEL) return;
+        try {
+            if (fecha.getValue() == null) throw new IllegalArgumentException("Indica la fecha de término.");
+            BigDecimal devueltaFinal = decimal(devuelta.getText(), "La garantía devuelta");
+            BigDecimal descontadaFinal = decimal(descontada.getText(), "La garantía descontada");
+            tareas.ejecutar(() -> {
+                contratos.terminar(contrato.getId(), fecha.getValue(), motivo.getText(), rescindir,
+                        devueltaFinal, descontadaFinal, motivoGarantia.getText());
+                return null;
+            }, ok -> {
+                aviso.info(rescindir ? "Contrato rescindido." : "Contrato finalizado.");
+                mostrarDetalle(null);
+                refrescar();
+            }, e -> aviso.error(mensaje(e)));
+        } catch (RuntimeException e) {
+            aviso.error(e.getMessage());
+        }
+    }
+
+    private void fila(GridPane formulario, int fila, String etiqueta, javafx.scene.control.Control control) {
+        Label label = new Label(etiqueta);
+        label.getStyleClass().add("campo-label");
+        formulario.add(label, 0, fila);
+        formulario.add(control, 1, fila);
+        if (control instanceof TextField texto) texto.setPrefColumnCount(18);
+    }
+
+    private static BigDecimal decimal(String valor, String campo) {
+        try {
+            return valor == null || valor.isBlank() ? BigDecimal.ZERO : new BigDecimal(valor.trim().replace(',', '.'));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(campo + " debe ser un número válido.");
+        }
+    }
+
+    private static BigDecimal nvl(BigDecimal valor) {
+        return valor == null ? BigDecimal.ZERO : valor;
+    }
 
     @FXML private void onCerrarDetalle() {
         tabla.getSelectionModel().clearSelection();

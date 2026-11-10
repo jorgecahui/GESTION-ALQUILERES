@@ -104,7 +104,18 @@ public class MainController {
     public void irA(String clave) { botonesMenu().stream().filter(b -> clave.equals(b.getUserData())).findFirst().ifPresent(menu::selectToggle); }
     /** Usado desde cuentas por cobrar para conservar el contexto del contrato al abrir el formulario. */
     public void irANuevoPago(Long contratoId) { context.getBean(PagoFormController.class).preseleccionarContrato(contratoId); irA("nuevo-pago"); }
+    /** Abre el alta de contrato en blanco; descarta una renovación pendiente. */
+    public void irANuevoContrato() { context.getBean(ContratoFormController.class).prepararNuevo(); irA("nuevo-contrato"); }
+    /** Abre el alta de contrato precargada para renovar el contrato indicado. */
+    public void irARenovarContrato(Long contratoId) {
+        context.getBean(ContratoFormController.class).preseleccionarRenovacion(contratoId);
+        irA("nuevo-contrato");
+    }
     private void mostrar(String clave) {
+        if ("nuevo-contrato".equals(clave)) {
+            ContratoFormController formulario = context.getBean(ContratoFormController.class);
+            if (!formulario.tieneRenovacionPendiente()) formulario.prepararNuevo();
+        }
         Vista vista = vistas.computeIfAbsent(clave, this::cargar);
         contenido.getChildren().setAll(vista.nodo());
         if (vista.controlador() instanceof Refrescable refrescable) refrescable.refrescar();
