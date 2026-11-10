@@ -44,8 +44,10 @@ Filtra por periodo (últimos 30 días, mes, año o rango personalizado). Usa **A
 ### Contratos
 Lista con búsqueda, filtro por estado y “solo por vencer”. El detalle muestra cuotas, recordatorios y accesos a documentos. El estado visual (Vigente, Por vencer, Vencido, Finalizado, Rescindido) se calcula con la fecha actual.
 
+**Nuevo contrato** permite elegir un inmueble disponible, arrendatario y garante, y muestra el cronograma previsto antes de guardar. Desde el detalle se puede **Renovar** (precarga el mismo inmueble y arrendatario con la nueva fecha), **Finalizar** o **Rescindir** (con fecha de término y liquidación de garantía).
+
 ### Pagos
-Consulta recibos por fecha. Un pago emitido puede anularse (solo ADMIN) indicando el motivo; la anulación restaura los importes de las cuotas. El recibo PDF incluye el detalle, la mora y una marca de agua si está anulado.
+Consulta recibos por fecha. El botón **Nuevo pago** abre directamente el formulario de cobranza. Un pago emitido puede anularse (solo ADMIN) indicando el motivo; la anulación restaura los importes de las cuotas. El recibo PDF incluye el detalle, la mora y una marca de agua si está anulado.
 
 ### Cuentas por cobrar
 Muestra cuotas pendientes y vencidas con semáforo (Al día / Atraso leve / Moroso), mora estimada y último recordatorio. **Cobrar** abre el formulario de pago con el contrato precargado; **Recordar** prepara el mensaje de WhatsApp.
@@ -57,7 +59,7 @@ Registra incidencias por inmueble, prioridad, responsable del gasto y costos. Lo
 Compara ingresos cobrados (capital + mora) contra gastos de mantenimiento por inmueble en un periodo, con margen y días de ocupación.
 
 ### Inmuebles, Tipos, Personas y Propietarios
-Catálogos con búsqueda, edición y desactivación. Los registros con movimientos no se borran: se desactivan para conservar el historial.
+Catálogos con búsqueda, edición y desactivación. Los registros con movimientos no se borran: se desactivan para conservar el historial. **Ver ficha** de un inmueble abre sus datos, historial de contratos, mantenimientos e ingresos/gastos del año.
 
 ### Recordatorios por WhatsApp
 Desde Cuentas por cobrar, Contratos o Personas se abre una vista previa editable. Puedes **Copiar mensaje** o **Abrir WhatsApp**; el envío queda registrado en el historial del contrato.

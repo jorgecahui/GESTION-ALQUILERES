@@ -2,10 +2,12 @@ package com.ejemplo.alquileres.seeder;
 
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.repository.*;
+import com.ejemplo.alquileres.service.NombresMes;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -33,6 +35,7 @@ public class HistoriaDashboardSeeder {
     public void cargar() {
         if (contratos.count() > 0) {
             repararDetallesDemo();
+            repararCronogramasDemo();
             return;
         }
         List<Inmueble> disponibles = inmuebles.findAll().stream()
@@ -60,17 +63,21 @@ public class HistoriaDashboardSeeder {
                     .fechaRegistro(hoy.minusMonths(6))
                     .build();
             List<Cuota> cuotas = new ArrayList<>();
-            for (int m = 0; m < 8; m++) {
+            int meses = (int) ChronoUnit.MONTHS.between(contrato.getFechaInicio(),
+                    contrato.getFechaFin().plusDays(1));
+            for (int m = 0; m < meses; m++) {
                 LocalDate vencimiento = contrato.getFechaInicio().plusMonths(m).withDayOfMonth(5);
+                LocalDate periodo = vencimiento.withDayOfMonth(1);
                 Cuota cuota = Cuota.builder()
                         .numero(m + 1)
                         .tipo(TipoCuota.RENTA)
-                        .concepto("Alquiler " + vencimiento.getMonth())
-                        .periodo(vencimiento.withDayOfMonth(1))
+                        .concepto("Renta " + NombresMes.de(periodo) + " " + periodo.getYear())
+                        .periodo(periodo)
                         .fechaVencimiento(vencimiento)
                         .montoCuota(renta)
                         .montoPagado(m < 6 ? renta : BigDecimal.ZERO)
                         .estado(m < 6 ? EstadoCuota.PAGADA : EstadoCuota.PENDIENTE)
+                        .moraDesde(vencimiento)
                         .build();
                 contrato.agregarCuota(cuota);
                 cuotas.add(cuota);
@@ -121,6 +128,47 @@ public class HistoriaDashboardSeeder {
             if (cuota == null) continue;
             pago.agregarDetalle(detalle(pago, cuota, nvl(pago.getMontoCapital()), nvl(pago.getMontoMora())));
             pagos.save(pago);
+        }
+    }
+
+    /** Completa el cronograma de los contratos demo creados con la versión anterior del seeder. */
+    private void repararCronogramasDemo() {
+        for (Contrato contrato : contratos.findAll()) {
+            if (contrato.getCodigo() == null || !contrato.getCodigo().startsWith("CTR-DEV-")) continue;
+            int meses = (int) ChronoUnit.MONTHS.between(contrato.getFechaInicio(),
+                    contrato.getFechaFin().plusDays(1));
+            if (meses < 1) continue;
+            for (int m = 0; m < meses; m++) {
+                int numero = m + 1;
+                LocalDate periodo = contrato.getFechaInicio().plusMonths(m).withDayOfMonth(1);
+                String concepto = "Renta " + NombresMes.de(periodo) + " " + periodo.getYear();
+                Cuota cuota = contrato.getCuotas().stream()
+                        .filter(q -> q.getTipo() == TipoCuota.RENTA && q.getNumero() == numero)
+                        .findFirst().orElse(null);
+                if (cuota == null) {
+                    LocalDate vencimiento = periodo.withDayOfMonth(
+                            Math.min(contrato.getDiaPago(), periodo.lengthOfMonth()));
+                    if (m == 0 && vencimiento.isBefore(contrato.getFechaInicio())) {
+                        vencimiento = contrato.getFechaInicio();
+                    }
+                    cuota = Cuota.builder()
+                            .numero(m + 1)
+                            .tipo(TipoCuota.RENTA)
+                            .concepto(concepto)
+                            .periodo(periodo)
+                            .fechaVencimiento(vencimiento)
+                            .montoCuota(contrato.getRentaMensual())
+                            .montoPagado(BigDecimal.ZERO)
+                            .estado(EstadoCuota.PENDIENTE)
+                            .moraDesde(vencimiento)
+                            .build();
+                    contrato.agregarCuota(cuota);
+                } else {
+                    cuota.setConcepto(concepto);
+                    if (cuota.getMoraDesde() == null) cuota.setMoraDesde(cuota.getFechaVencimiento());
+                }
+            }
+            contratos.save(contrato);
         }
     }
 

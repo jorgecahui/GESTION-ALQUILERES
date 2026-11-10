@@ -46,7 +46,7 @@ public class ReporteContratosExcelService {
         LibroExcel.texto(hoja, 1, 0, "Módulo");
         LibroExcel.texto(hoja, 1, 1, "Contratos");
         LibroExcel.texto(hoja, 2, 0, "Filtro de estado");
-        LibroExcel.texto(hoja, 2, 1, filtroEstado == null ? "TODOS" : filtroEstado.name());
+        LibroExcel.texto(hoja, 2, 1, filtroEstado == null ? "TODOS" : filtroEstado.getEtiqueta());
         LibroExcel.texto(hoja, 3, 0, "Solo por vencer");
         LibroExcel.texto(hoja, 3, 1, soloPorVencer ? "Sí" : "No");
         LibroExcel.texto(hoja, 4, 0, "Generado");
@@ -79,8 +79,8 @@ public class ReporteContratosExcelService {
             LibroExcel.numero(hoja, fila, 7, contrato.getRentaMensual(), moneda);
             LibroExcel.numero(hoja, fila, 8, contrato.getIncrementoAnualPct());
             LibroExcel.numero(hoja, fila, 9, contrato.getGarantiaMonto(), moneda);
-            LibroExcel.texto(hoja, fila, 10, contrato.getEstado() == null ? "" : contrato.getEstado().name());
-            LibroExcel.texto(hoja, fila, 11, contratos.estadoVisual(contrato).name());
+            LibroExcel.texto(hoja, fila, 10, contrato.getEstado() == null ? "" : contrato.getEstado().getEtiqueta());
+            LibroExcel.texto(hoja, fila, 11, contratos.estadoVisual(contrato).getEtiqueta());
             fila++;
         }
         LibroExcel.cerrarHoja(hoja, 12);

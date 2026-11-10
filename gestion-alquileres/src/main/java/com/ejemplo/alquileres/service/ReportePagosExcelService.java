@@ -70,11 +70,11 @@ public class ReportePagosExcelService {
             LibroExcel.texto(hoja, fila, 2, pago.getArrendatarioNombre());
             LibroExcel.texto(hoja, fila, 3, pago.getArrendatarioDocumento());
             LibroExcel.texto(hoja, fila, 4, pago.getInmuebleCodigo() + " · " + pago.getInmuebleNombre());
-            LibroExcel.texto(hoja, fila, 5, pago.getMedioPago() == null ? "" : pago.getMedioPago().name().replace('_', ' '));
+            LibroExcel.texto(hoja, fila, 5, pago.getMedioPago() == null ? "" : pago.getMedioPago().getEtiqueta());
             LibroExcel.numero(hoja, fila, 6, pago.getMontoCapital(), moneda);
             LibroExcel.numero(hoja, fila, 7, pago.getMontoMora(), moneda);
             LibroExcel.numero(hoja, fila, 8, pago.getMontoTotal(), moneda);
-            LibroExcel.texto(hoja, fila, 9, pago.getEstado() == null ? "" : pago.getEstado().name());
+            LibroExcel.texto(hoja, fila, 9, pago.getEstado() == null ? "" : pago.getEstado().getEtiqueta());
             LibroExcel.texto(hoja, fila, 10, pago.getReferencia());
             fila++;
         }
@@ -95,7 +95,7 @@ public class ReportePagosExcelService {
                 LibroExcel.numero(hoja, fila, 5, detalle.getMontoCapital(), moneda);
                 LibroExcel.numero(hoja, fila, 6, detalle.getMontoMora(), moneda);
                 LibroExcel.numero(hoja, fila, 7, detalle.getMontoMoraCondonada(), moneda);
-                LibroExcel.texto(hoja, fila, 8, pago.getEstado() == null ? "" : pago.getEstado().name());
+                LibroExcel.texto(hoja, fila, 8, pago.getEstado() == null ? "" : pago.getEstado().getEtiqueta());
                 fila++;
             }
         }

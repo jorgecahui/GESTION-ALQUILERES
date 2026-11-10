@@ -1,3 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
-<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ejemplo.alquileres.controller.InmuebleController" spacing="18" styleClass="pagina"><VBox spacing="16" HBox.hgrow="ALWAYS"><HBox><VBox HBox.hgrow="ALWAYS"><Label text="Inmuebles" styleClass="pagina-titulo"/><Label text="Disponibilidad, propietario y renta referencial." styleClass="pagina-subtitulo"/></VBox><Button text="Nuevo inmueble" onAction="#onNuevo" styleClass="boton-primario"/></HBox><HBox spacing="10"><TextField fx:id="buscar" promptText="Buscar código, nombre o dirección" HBox.hgrow="ALWAYS"/><ComboBox fx:id="filtroEstado" promptText="Estado"/><Button text="Editar" onAction="#onEditar"/><Button text="Ver ficha" onAction="#onFicha"/><Button text="Exportar Excel" onAction="#onExportar"/></HBox><TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla"><columns><TableColumn fx:id="colCodigo" text="Código" prefWidth="110"/><TableColumn fx:id="colNombre" text="Inmueble" prefWidth="250"/><TableColumn fx:id="colTipo" text="Tipo" prefWidth="130"/><TableColumn fx:id="colPropietario" text="Propietario" prefWidth="170"/><TableColumn fx:id="colRenta" text="Renta" prefWidth="120"/><TableColumn fx:id="colEstado" text="Estado" prefWidth="120"/></columns></TableView></VBox><VBox fx:id="drawer" visible="false" managed="false" spacing="10" prefWidth="340" styleClass="drawer"><Label fx:id="titulo" styleClass="drawer-titulo"/><TextField fx:id="codigo" promptText="Código"/><TextField fx:id="nombre" promptText="Nombre o alias"/><ComboBox fx:id="tipo" promptText="Tipo de inmueble"/><ComboBox fx:id="propietario" promptText="Propietario"/><TextField fx:id="direccion" promptText="Dirección"/><TextField fx:id="area" promptText="Área m²"/><TextField fx:id="renta" promptText="Renta referencial (S/)"/><ComboBox fx:id="estado" promptText="Estado (ALQUILADO solo por contrato)"/><HBox spacing="8"><Button text="Cancelar" onAction="#onCerrar"/><Button text="Guardar" onAction="#onGuardar" styleClass="boton-primario"/></HBox></VBox><VBox fx:id="ficha" visible="false" managed="false" spacing="12" prefWidth="300" styleClass="drawer"><Label text="Ficha del inmueble" styleClass="drawer-titulo"/><Label fx:id="detalle" wrapText="true"/><Button text="Cerrar" onAction="#onCerrarFicha"/></VBox></HBox>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ejemplo.alquileres.controller.InmuebleController" spacing="18" styleClass="pagina">
+    <VBox spacing="16" HBox.hgrow="ALWAYS">
+        <HBox>
+            <VBox HBox.hgrow="ALWAYS">
+                <Label text="Inmuebles" styleClass="pagina-titulo"/>
+                <Label text="Disponibilidad, propietario y renta referencial." styleClass="pagina-subtitulo"/>
+            </VBox>
+            <Button text="Nuevo inmueble" onAction="#onNuevo" styleClass="boton-primario"/>
+        </HBox>
+        <HBox spacing="10">
+            <TextField fx:id="buscar" promptText="Buscar código, nombre o dirección" HBox.hgrow="ALWAYS"/>
+            <ComboBox fx:id="filtroEstado" promptText="Estado"/>
+            <Button text="Editar" onAction="#onEditar"/>
+            <Button text="Ver ficha" onAction="#onFicha"/>
+            <Button text="Exportar Excel" onAction="#onExportar"/>
+        </HBox>
+        <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
+            <columns>
+                <TableColumn fx:id="colCodigo" text="Código" prefWidth="110"/>
+                <TableColumn fx:id="colNombre" text="Inmueble" prefWidth="250"/>
+                <TableColumn fx:id="colTipo" text="Tipo" prefWidth="130"/>
+                <TableColumn fx:id="colPropietario" text="Propietario" prefWidth="170"/>
+                <TableColumn fx:id="colRenta" text="Renta" prefWidth="120"/>
+                <TableColumn fx:id="colEstado" text="Estado" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <VBox fx:id="drawer" visible="false" managed="false" spacing="10" prefWidth="340" styleClass="drawer">
+        <Label fx:id="titulo" styleClass="drawer-titulo"/>
+        <TextField fx:id="codigo" promptText="Código"/>
+        <TextField fx:id="nombre" promptText="Nombre o alias"/>
+        <ComboBox fx:id="tipo" promptText="Tipo de inmueble"/>
+        <ComboBox fx:id="propietario" promptText="Propietario"/>
+        <TextField fx:id="direccion" promptText="Dirección"/>
+        <TextField fx:id="area" promptText="Área m²"/>
+        <TextField fx:id="renta" promptText="Renta referencial (S/)"/>
+        <ComboBox fx:id="estado" promptText="Estado (ALQUILADO solo por contrato)"/>
+        <HBox spacing="8">
+            <Button text="Cancelar" onAction="#onCerrar"/>
+            <Button text="Guardar" onAction="#onGuardar" styleClass="boton-primario"/>
+        </HBox>
+    </VBox>
+
+    <VBox fx:id="ficha" visible="false" managed="false" spacing="10" prefWidth="470" styleClass="drawer">
+        <Label fx:id="fichaTitulo" text="Ficha del inmueble" styleClass="drawer-titulo"/>
+        <TabPane tabClosingPolicy="UNAVAILABLE" prefHeight="500" VBox.vgrow="ALWAYS">
+            <Tab text="Datos">
+                <ScrollPane fitToWidth="true" styleClass="pagina-scroll">
+                    <VBox styleClass="pagina">
+                        <Label fx:id="fichaDatos" wrapText="true"/>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+            <Tab text="Contratos">
+                <TableView fx:id="fichaContratos" styleClass="tabla">
+                    <columns>
+                        <TableColumn fx:id="colFichaContratoCodigo" text="Código" prefWidth="85"/>
+                        <TableColumn fx:id="colFichaContratoArrendatario" text="Arrendatario" prefWidth="125"/>
+                        <TableColumn fx:id="colFichaContratoVigencia" text="Vigencia" prefWidth="120"/>
+                        <TableColumn fx:id="colFichaContratoEstado" text="Estado" prefWidth="90"/>
+                        <TableColumn fx:id="colFichaContratoRenta" text="Renta" prefWidth="80"/>
+                    </columns>
+                    <placeholder><Label text="Sin contratos registrados."/></placeholder>
+                </TableView>
+            </Tab>
+            <Tab text="Mantenimiento">
+                <TableView fx:id="fichaMantenimientos" styleClass="tabla">
+                    <columns>
+                        <TableColumn fx:id="colFichaMantCodigo" text="Código" prefWidth="90"/>
+                        <TableColumn fx:id="colFichaMantTitulo" text="Título" prefWidth="150"/>
+                        <TableColumn fx:id="colFichaMantEstado" text="Estado" prefWidth="95"/>
+                        <TableColumn fx:id="colFichaMantPrioridad" text="Prioridad" prefWidth="85"/>
+                        <TableColumn fx:id="colFichaMantCosto" text="Costo" prefWidth="80"/>
+                    </columns>
+                    <placeholder><Label text="Sin incidencias registradas."/></placeholder>
+                </TableView>
+            </Tab>
+            <Tab text="Ingresos y gastos">
+                <ScrollPane fitToWidth="true" styleClass="pagina-scroll">
+                    <VBox styleClass="pagina">
+                        <Label fx:id="fichaFinanzas" wrapText="true"/>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+        </TabPane>
+        <Button text="Cerrar" onAction="#onCerrarFicha"/>
+    </VBox>
+</HBox>

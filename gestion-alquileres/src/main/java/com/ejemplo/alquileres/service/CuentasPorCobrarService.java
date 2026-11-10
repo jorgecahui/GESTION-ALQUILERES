@@ -15,7 +15,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Service @RequiredArgsConstructor
 public class CuentasPorCobrarService {
     private final CuotaRepository cuotas; private final CalculadoraMora mora; private final MorosidadService morosidad; private final Clock clock;
-    public enum Filtro { TODAS, VENCIDAS, VENCEN_EN_7_DIAS, MOROSOS }
+    public enum Filtro {
+        TODAS("Todas"),
+        VENCIDAS("Vencidas"),
+        VENCEN_EN_7_DIAS("Vencen en 7 días"),
+        MOROSOS("Morosos");
+
+        private final String etiqueta;
+
+        Filtro(String etiqueta) { this.etiqueta = etiqueta; }
+        public String getEtiqueta() { return etiqueta; }
+        @Override public String toString() { return etiqueta; }
+    }
     public record Cuenta(Long contratoId, Long cuotaId, String arrendatario, String inmueble, String concepto,
                          LocalDate vencimiento, long diasAtraso, boolean vencida, BigDecimal saldo,
                          BigDecimal moraEstimada, BigDecimal total, SemaforoMorosidad semaforo) { }

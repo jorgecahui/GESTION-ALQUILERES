@@ -83,7 +83,7 @@ public class ReporteInmueblesExcelService {
             LibroExcel.numero(hoja, fila, 9, inmueble.getEstacionamientos());
             LibroExcel.texto(hoja, fila, 10, inmueble.isAmoblado() ? "Sí" : "No");
             LibroExcel.numero(hoja, fila, 11, inmueble.getRentaReferencial(), moneda);
-            LibroExcel.texto(hoja, fila, 12, inmueble.getEstado() == null ? "" : inmueble.getEstado().name());
+            LibroExcel.texto(hoja, fila, 12, inmueble.getEstado() == null ? "" : inmueble.getEstado().getEtiqueta());
             fila++;
         }
         LibroExcel.cerrarHoja(hoja, 13);

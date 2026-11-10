@@ -145,7 +145,7 @@ public class EstadoCuentaPdfService {
             tabla.addCell(DocumentoPdf.celda(DocumentoPdf.soles(cuota.getMontoPagado()), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
             tabla.addCell(DocumentoPdf.celda(DocumentoPdf.soles(moraPendiente), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
             tabla.addCell(DocumentoPdf.celda(DocumentoPdf.soles(saldo), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
-            tabla.addCell(DocumentoPdf.celda(cuota.getEstado().name(), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
+            tabla.addCell(DocumentoPdf.celda(cuota.getEstado().getEtiqueta(), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
         }
         return tabla;
     }
@@ -169,7 +169,7 @@ public class EstadoCuentaPdfService {
             Color fondo = indice++ % 2 == 0 ? Color.WHITE : DocumentoPdf.SUAVE;
             tabla.addCell(DocumentoPdf.celda(pago.getRecibo(), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
             tabla.addCell(DocumentoPdf.celda(DocumentoPdf.fecha(pago.getFechaPago()), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
-            tabla.addCell(DocumentoPdf.celda(pago.getMedioPago().name().replace('_', ' '), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
+            tabla.addCell(DocumentoPdf.celda(pago.getMedioPago().getEtiqueta(), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
             tabla.addCell(DocumentoPdf.celda(DocumentoPdf.soles(pago.getMontoTotal()), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
             tabla.addCell(DocumentoPdf.celda(pago.getEstado() == EstadoPago.ANULADO ? "ANULADO" : "EMITIDO", DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
         }

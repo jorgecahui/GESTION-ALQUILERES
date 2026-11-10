@@ -170,7 +170,19 @@ public class ContratoService {
         return EstadoVisual.VIGENTE;
     }
 
-    public enum EstadoVisual { VIGENTE, POR_VENCER, VENCIDO, FINALIZADO, RESCINDIDO }
+    public enum EstadoVisual {
+        VIGENTE("Vigente"),
+        POR_VENCER("Por vencer"),
+        VENCIDO("Vencido"),
+        FINALIZADO("Finalizado"),
+        RESCINDIDO("Rescindido");
+
+        private final String etiqueta;
+
+        EstadoVisual(String etiqueta) { this.etiqueta = etiqueta; }
+        public String getEtiqueta() { return etiqueta; }
+        @Override public String toString() { return etiqueta; }
+    }
 
     private void validar(Solicitud s) {
         if (s.meses() < 1) {

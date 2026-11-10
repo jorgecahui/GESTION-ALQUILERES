@@ -2,6 +2,7 @@ package com.ejemplo.alquileres.controller;
 
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.service.PagoService;
+import com.ejemplo.alquileres.ui.Fechas;
 import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
 import com.ejemplo.alquileres.ui.Tablas;
@@ -39,7 +40,7 @@ public class PagoFormController implements Refrescable {
     @FXML public void initialize() {
         fecha.setValue(LocalDate.now()); medio.setItems(FXCollections.observableArrayList(MedioPago.values())); medio.setValue(MedioPago.EFECTIVO);
         contrato.setConverter(new StringConverter<>() { public String toString(Contrato c) { return c == null ? "" : c.getCodigo()+" · "+c.getArrendatario().getNombreCompleto()+" · "+c.getInmueble().getNombre(); } public Contrato fromString(String v) { return null; }});
-        colConcepto.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().concepto())); colVencimiento.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().vencimiento().toString()));
+        colConcepto.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().concepto())); colVencimiento.setCellValueFactory(c -> new SimpleStringProperty(Fechas.dia(c.getValue().vencimiento())));
         configurarMoneda(colCapital, PagoService.Imputacion::capital); configurarMoneda(colMora, PagoService.Imputacion::mora); configurarMoneda(colCondonada, PagoService.Imputacion::moraCondonada); tabla.setItems(lineas);
         contrato.valueProperty().addListener((o,a,b) -> cargarImputacionCompleta()); fecha.valueProperty().addListener((o,a,b) -> cargarImputacionCompleta());
     }

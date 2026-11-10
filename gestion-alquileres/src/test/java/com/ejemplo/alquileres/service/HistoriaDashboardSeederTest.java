@@ -40,6 +40,22 @@ class HistoriaDashboardSeederTest {
         assertEquals(new BigDecimal("1200.00"), pago.getDetalles().get(0).getMontoCapital());
     }
 
+    @Test void completaElCronogramaDemoYUsaConceptosEnEspanol() {
+        Contrato contrato = DatosFase6.contrato();
+        contrato.setCodigo("CTR-DEV-TEST");
+        when(contratos.count()).thenReturn(1L);
+        when(contratos.findAll()).thenReturn(List.of(contrato));
+        when(pagos.findAll()).thenReturn(List.of());
+        when(contratos.save(any(Contrato.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+
+        seeder().cargar();
+
+        assertEquals(12, contrato.getCuotas().size());
+        assertEquals("Renta enero 2026", contrato.getCuotas().get(0).getConcepto());
+        assertEquals("Renta diciembre 2026", contrato.getCuotas().get(11).getConcepto());
+        assertTrue(contrato.getCuotas().stream().allMatch(c -> c.getConcepto().startsWith("Renta ")));
+    }
+
     @Test void noTocaPagosRealesSinDetalle() {
         Pago pago = Pago.builder().id(9L).recibo("R001-00000001")
                 .contrato(DatosFase6.contrato()).fechaPago(LocalDate.of(2026, 1, 5))

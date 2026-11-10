@@ -6,6 +6,7 @@ import com.ejemplo.alquileres.service.PagoService;
 import com.ejemplo.alquileres.service.ReciboPdfService;
 import com.ejemplo.alquileres.service.ReportePagosExcelService;
 import com.ejemplo.alquileres.ui.Exportador;
+import com.ejemplo.alquileres.ui.Fechas;
 import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
 import com.ejemplo.alquileres.ui.Tablas;
@@ -37,6 +38,7 @@ public class PagosController implements Refrescable {
     private final Tareas tareas;
     private final Notificador aviso;
     private final Exportador exportador;
+    private final MainController principal;
     private final ObservableList<Pago> datos = FXCollections.observableArrayList();
     private List<Pago> visibles = List.of();
 
@@ -47,17 +49,17 @@ public class PagosController implements Refrescable {
     @FXML private Label totalCobrado, numeroRecibos, moraCobrada, anulados;
 
     public PagosController(PagoService p, ReciboPdfService r, ReportePagosExcelService e, Tareas t,
-                           Notificador a, Exportador x) {
-        pagos = p; recibos = r; excel = e; tareas = t; aviso = a; exportador = x;
+                           Notificador a, Exportador x, MainController principal) {
+        pagos = p; recibos = r; excel = e; tareas = t; aviso = a; exportador = x; this.principal = principal;
     }
 
     @FXML public void initialize() {
         colRecibo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getRecibo()));
-        colFecha.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFechaPago().toString()));
+        colFecha.setCellValueFactory(c -> new SimpleStringProperty(Fechas.dia(c.getValue().getFechaPago())));
         colArrendatario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getArrendatarioNombre()));
         colInmueble.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getInmuebleNombre()));
-        colMedio.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getMedioPago().name()));
-        colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().name()));
+        colMedio.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getMedioPago().getEtiqueta()));
+        colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
         colTotal.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getMontoTotal()));
         colTotal.setCellFactory(c -> new TableCell<>() {
             protected void updateItem(BigDecimal v, boolean vacio) {
@@ -73,6 +75,8 @@ public class PagosController implements Refrescable {
     }
 
     @FXML private void onFiltrar() { refrescar(); }
+
+    @FXML private void onNuevo() { principal.irA("nuevo-pago"); }
 
     private void mostrar(List<Pago> lista) {
         visibles = lista;

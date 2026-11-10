@@ -100,17 +100,17 @@ public class ContratoController implements Refrescable {
                 setText(vacio ? null : Tablas.moneda(valor));
             }
         });
-        colEstado.setCellValueFactory(c -> new SimpleStringProperty(contratos.estadoVisual(c.getValue()).name()));
+        colEstado.setCellValueFactory(c -> new SimpleStringProperty(contratos.estadoVisual(c.getValue()).getEtiqueta()));
         colCuotaConcepto.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getConcepto()));
         colCuotaVencimiento.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFechaVencimiento().format(FECHA)));
-        colCuotaEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().name()));
+        colCuotaEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
         colCuotaMonto.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getMontoCuota()));
         colCuotaPagado.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getMontoPagado()));
         colCuotaMonto.setCellFactory(c -> moneda());
         colCuotaPagado.setCellFactory(c -> moneda());
         colRecFecha.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFechaEnvio() == null ? "—" : c.getValue().getFechaEnvio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))));
-        colRecTipo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTipo() == null ? "—" : c.getValue().getTipo().name()));
-        colRecCanal.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCanal() == null ? "—" : c.getValue().getCanal().name()));
+        colRecTipo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTipo() == null ? "—" : c.getValue().getTipo().getEtiqueta()));
+        colRecCanal.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCanal() == null ? "—" : c.getValue().getCanal().getEtiqueta()));
         colRecMensaje.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getMensaje()));
         tabla.setItems(datos); tablaCuotas.setItems(cuotas); tablaRecordatorios.setItems(enviados);
         buscar.textProperty().addListener((o, a, b) -> aplicarFiltros());
@@ -160,7 +160,7 @@ public class ContratoController implements Refrescable {
                 + "\nRenta: " + Tablas.moneda(contrato.getRentaMensual())
                 + " · Día de pago: " + contrato.getDiaPago()
                 + "\nGarantía: " + Tablas.moneda(contrato.getGarantiaMonto())
-                + " · Estado: " + contratos.estadoVisual(contrato).name());
+                + " · Estado: " + contratos.estadoVisual(contrato).getEtiqueta());
         cuotas.setAll(contrato.getCuotas().stream()
                 .sorted(Comparator.comparing(Cuota::getFechaVencimiento).thenComparing(Cuota::getNumero)).toList());
         enviados.clear();

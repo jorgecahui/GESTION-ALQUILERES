@@ -181,7 +181,7 @@ public class ContratoPdfService {
             tabla.addCell(DocumentoPdf.celda(cuota.getPeriodo() == null ? "—" : cuota.getPeriodo().format(java.time.format.DateTimeFormatter.ofPattern("MM/yyyy")), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
             tabla.addCell(DocumentoPdf.celda(DocumentoPdf.fecha(cuota.getFechaVencimiento()), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
             tabla.addCell(DocumentoPdf.celda(DocumentoPdf.soles(cuota.getMontoCuota()), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
-            tabla.addCell(DocumentoPdf.celda(cuota.getEstado().name(), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
+            tabla.addCell(DocumentoPdf.celda(cuota.getEstado().getEtiqueta(), DocumentoPdf.fuente(7.5f, Font.NORMAL, Color.DARK_GRAY), fondo));
         }
         return tabla;
     }

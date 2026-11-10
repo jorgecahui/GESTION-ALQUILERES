@@ -7,6 +7,7 @@ import com.ejemplo.alquileres.service.RecordatorioService;
 import com.ejemplo.alquileres.service.ReporteCuentasPorCobrarExcelService;
 import com.ejemplo.alquileres.ui.DialogoRecordatorio;
 import com.ejemplo.alquileres.ui.Exportador;
+import com.ejemplo.alquileres.ui.Fechas;
 import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
 import com.ejemplo.alquileres.ui.Semaforo;
@@ -67,7 +68,7 @@ public class CuentasPorCobrarController implements Refrescable {
         colArrendatario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().arrendatario()));
         colInmueble.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().inmueble()));
         colConcepto.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().concepto()));
-        colVencimiento.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().vencimiento().toString()));
+        colVencimiento.setCellValueFactory(c -> new SimpleStringProperty(Fechas.dia(c.getValue().vencimiento())));
         colDias.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().diasAtraso())));
         colSemaforo.setCellValueFactory(c -> new SimpleStringProperty(Semaforo.texto(c.getValue().semaforo())));
         colSemaforo.setCellFactory(c -> new TableCell<>() {
@@ -109,7 +110,8 @@ public class CuentasPorCobrarController implements Refrescable {
         totalVencido.setText(Tablas.moneda(vencido));
         porVencer.setText(Tablas.moneda(proximo));
         contratosMorosos.setText(String.valueOf(lista.stream()
-                .filter(c -> c.semaforo().name().equals("MOROSO")).map(Cuenta::contratoId).distinct().count()));
+                .filter(c -> c.semaforo() == com.ejemplo.alquileres.model.SemaforoMorosidad.MOROSO)
+                .map(Cuenta::contratoId).distinct().count()));
     }
 
     @FXML private void onCobrar() {

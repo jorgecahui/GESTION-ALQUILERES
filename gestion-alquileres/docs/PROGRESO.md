@@ -12,6 +12,19 @@
 
 Decisiones de esta corrección: el formulario reutiliza el mismo controlador para alta y renovación; en renovación se bloquean inmueble, arrendatario, fecha de inicio y garantía porque el servicio exige conservarlos y traslada la garantía. La reparación de `PagoDetalle` se limita a recibos con prefijo `R001-DEV-` para no alterar pagos reales. Se añadió una prueba de humo de FXML porque los errores de `fx:id`/`onAction` no los detectan las pruebas de servicio.
 
+## Corrección de prioridad media y baja — Presentación y datos demo
+
+- [x] **Ficha del inmueble** conectada a `FichaInmuebleController`: pestañas Datos, Contratos, Mantenimiento e Ingresos/gastos. Los contratos se cargan con `listarPorInmueble` (fetch de arrendatario, inmueble y cuotas) para evitar `LazyInitializationException`.
+- [x] **Cronograma demo completo**: los contratos `CTR-DEV-2/3/4` ahora tienen 13 cuotas (mayo 2026–mayo 2027) en lugar de 8. La reparación se aplica a bases existentes y solo toca contratos `CTR-DEV-*`.
+- [x] **Conceptos de cuotas en español**: “Renta mayo 2026”, “Renta diciembre 2026”, etc. Se normalizaron los datos demo existentes.
+- [x] **Fechas visibles** en `dd/MM/yyyy` en Pagos, Cuentas por cobrar, Mantenimiento, Nuevo pago y ficha del inmueble mediante `ui/Fechas`.
+- [x] **Etiquetas legibles** para estados, prioridades, categorías, medios de pago y semáforo: “Por vencer”, “Pagada”, “En proceso”, “Depósito”, “Al día”, etc. Aplicado a tablas, combos, PDFs y Excel.
+- [x] **Personas y propietarios inactivos** conservan su estado al editarse; el controlador ya no envía `activo(true)` fijo.
+- [x] **Nuevo pago** disponible directamente desde la pantalla Pagos.
+- [x] Pruebas: **93 en total, 0 fallos**. Nuevas coberturas de reparación de cronograma, etiquetas/formatos en FXML y preservación de inactivos.
+
+Decisiones: la reparación de cronogramas y conceptos también se limita al prefijo `CTR-DEV-` para no modificar contratos reales; las etiquetas se implementaron con `getEtiqueta()` y `toString()` en los enums, sin cambiar la persistencia (`EnumType.STRING` sigue guardando el nombre técnico).
+
 ## Actualización Fase 7 — Entrega C (Respaldo, endurecimiento y entrega)
 
 - [x] `RespaldoService`: respaldo manual con `VACUUM INTO`, respaldo automático al cerrar y rotación a 10 archivos.

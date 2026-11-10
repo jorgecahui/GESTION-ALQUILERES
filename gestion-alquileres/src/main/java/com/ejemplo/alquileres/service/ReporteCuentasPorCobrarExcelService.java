@@ -44,7 +44,7 @@ public class ReporteCuentasPorCobrarExcelService {
         LibroExcel.texto(hoja, 1, 0, "Módulo");
         LibroExcel.texto(hoja, 1, 1, "Cuentas por cobrar");
         LibroExcel.texto(hoja, 2, 0, "Filtro");
-        LibroExcel.texto(hoja, 2, 1, filtro == null ? "TODAS" : filtro.name());
+        LibroExcel.texto(hoja, 2, 1, filtro == null ? "Todas" : filtro.getEtiqueta());
         LibroExcel.texto(hoja, 3, 0, "Búsqueda");
         LibroExcel.texto(hoja, 3, 1, texto == null || texto.isBlank() ? "Sin filtro de texto" : texto);
         LibroExcel.texto(hoja, 4, 0, "Generado");
@@ -78,7 +78,7 @@ public class ReporteCuentasPorCobrarExcelService {
             LibroExcel.numero(hoja, fila, 6, cuenta.moraEstimada(), moneda);
             LibroExcel.numero(hoja, fila, 7, cuenta.total(), moneda);
             LibroExcel.texto(hoja, fila, 8, cuenta.vencida() ? "Sí" : "No");
-            LibroExcel.texto(hoja, fila, 9, cuenta.semaforo() == null ? "" : cuenta.semaforo().name());
+            LibroExcel.texto(hoja, fila, 9, cuenta.semaforo() == null ? "" : cuenta.semaforo().getEtiqueta());
             fila++;
         }
         LibroExcel.cerrarHoja(hoja, 10);
@@ -98,7 +98,7 @@ public class ReporteCuentasPorCobrarExcelService {
             LibroExcel.numero(hoja, fila, 5, cuenta.saldo(), moneda);
             LibroExcel.numero(hoja, fila, 6, cuenta.moraEstimada(), moneda);
             LibroExcel.numero(hoja, fila, 7, cuenta.total(), moneda);
-            LibroExcel.texto(hoja, fila, 8, cuenta.semaforo() == null ? "" : cuenta.semaforo().name());
+            LibroExcel.texto(hoja, fila, 8, cuenta.semaforo() == null ? "" : cuenta.semaforo().getEtiqueta());
             fila++;
         }
         LibroExcel.cerrarHoja(hoja, 9);

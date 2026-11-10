@@ -73,10 +73,10 @@ public class ReporteMantenimientoExcelService {
             LibroExcel.texto(hoja, fila, 0, m.getCodigo());
             LibroExcel.texto(hoja, fila, 1, m.getInmueble() == null ? "" : m.getInmueble().getNombre());
             LibroExcel.texto(hoja, fila, 2, m.getTitulo());
-            LibroExcel.texto(hoja, fila, 3, m.getCategoria() == null ? "" : m.getCategoria().name());
-            LibroExcel.texto(hoja, fila, 4, m.getPrioridad() == null ? "" : m.getPrioridad().name());
-            LibroExcel.texto(hoja, fila, 5, m.getEstado() == null ? "" : m.getEstado().name());
-            LibroExcel.texto(hoja, fila, 6, m.getResponsablePago() == null ? "" : m.getResponsablePago().name());
+            LibroExcel.texto(hoja, fila, 3, m.getCategoria() == null ? "" : m.getCategoria().getEtiqueta());
+            LibroExcel.texto(hoja, fila, 4, m.getPrioridad() == null ? "" : m.getPrioridad().getEtiqueta());
+            LibroExcel.texto(hoja, fila, 5, m.getEstado() == null ? "" : m.getEstado().getEtiqueta());
+            LibroExcel.texto(hoja, fila, 6, m.getResponsablePago() == null ? "" : m.getResponsablePago().getEtiqueta());
             LibroExcel.fecha(hoja, fila, 7, m.getFechaReporte(), fecha);
             LibroExcel.fecha(hoja, fila, 8, m.getFechaResolucion(), fecha);
             LibroExcel.numero(hoja, fila, 9, m.getCostoEstimado(), moneda);
