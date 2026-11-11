@@ -39,7 +39,9 @@ public class LoginController {
             return;
         }
         habilitar(false);
-        tareas.ejecutar(() -> autenticacion.login(usuario.getText(), password.getText()),
+        String usuarioTexto = usuario.getText();
+        String passwordTexto = password.getText();
+        tareas.ejecutar(() -> autenticacion.login(usuarioTexto, passwordTexto),
                 iniciado -> aplicacion.mostrarPrincipal(),
                 error -> { habilitar(true); password.clear(); mostrar(mensaje(error)); });
     }

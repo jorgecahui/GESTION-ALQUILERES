@@ -1,5 +1,80 @@
 # Progreso del proyecto
 
+## Mejora de la sección Contratos (noviembre 2026)
+
+- [x] El detalle del contrato se rediseñó como una ficha estructurada: código, arrendatario, chip de estado, inmueble, vigencia, renta, día de pago y garantía en una grilla de lectura rápida.
+- [x] Acciones agrupadas y consistentes: documentos (Estado de cuenta / Hoja de contrato) y gestión (Renovar, Avisar fin, Finalizar, Rescindir).
+- [x] Cuotas y recordatorios se movieron a pestañas para evitar el apilado vertical y dejar más espacio a la información principal.
+- [x] La lista principal muestra el estado como chip de color y la vigencia en formato corto para evitar truncamientos.
+- [x] El cuerpo del detalle ahora tiene scroll propio (cabecera fija), de modo que la rueda del mouse permite recorrer la información y las pestañas cuando la ventana es baja; las tablas conservan su propio scroll.
+- [x] La tabla de cuotas quedó con las columnas esenciales (concepto, vence, monto, estado) y la de recordatorios combina tipo/canal con tooltip en los textos largos.
+- [x] Se conservaron los filtros, KPIs, búsqueda, exportación, PDFs, renovación, finalización y rescisión existentes.
+- [x] Verificado visualmente en modo claro y con la suite completa en verde.
+
+## Rediseño del panel “Nuevo propietario” (noviembre 2026)
+
+- [x] Panel lateral derecho de 560 px con overlay, cabecera fija, cuerpo con scroll y pie fijo.
+- [x] Etiquetas arriba, asteriscos en Tipo de documento/Documento/Nombre y validación en línea.
+- [x] Tipo y Documento en dos columnas; Teléfono/Email y Banco/Cuenta en filas de dos columnas.
+- [x] Estilos compartidos `panel-formulario`; sin títulos de sección.
+- [x] Cierre con ✕, Cancelar o clic en el overlay; se conservan búsqueda, edición y eliminación/desactivación.
+- [x] Guardado intacto: mismo `Propietario` enviado a `PropietarioService.guardar`, preservando el estado activo al editar.
+- [x] Verificado visualmente en modo claro y prueba de humo de FXML añadida.
+
+## Rediseño del panel “Nueva persona” (noviembre 2026)
+
+- [x] Panel lateral derecho de 560 px con overlay, cabecera fija, cuerpo con scroll y pie fijo.
+- [x] Etiquetas arriba, asteriscos en Tipo de documento/Documento/Nombres y validación en línea.
+- [x] Tipo y Documento en dos columnas; Nombres/Apellidos y Teléfono/Email en filas de dos columnas.
+- [x] Estilos compartidos `panel-formulario`; sin títulos de sección para mantener la ventana limpia.
+- [x] Cierre con ✕, Cancelar o clic en el overlay; se conservan búsqueda, edición, desactivación y WhatsApp.
+- [x] Guardado intacto: mismo `Persona` enviado a `PersonaService.guardar`, preservando el estado activo al editar.
+- [x] Verificado visualmente en modo claro y prueba de humo de FXML añadida.
+
+## Rediseño del panel “Nuevo tipo de inmueble” (noviembre 2026)
+
+- [x] Panel lateral derecho de 560 px con overlay, cabecera fija con título y ✕, cuerpo con scroll y pie fijo.
+- [x] Campos con etiquetas arriba y asteriscos en Código/Nombre, validación en línea y estilos compartidos `panel-formulario`.
+- [x] Código y Nombre en dos columnas; Descripción opcional a ancho completo.
+- [x] Cierre con ✕, Cancelar o clic en el overlay; se conserva el listado y las acciones de editar/eliminar.
+- [x] Guardado intacto: mismo `TipoInmueble` enviado a `TipoInmuebleService.guardar`; solo se añadió validación previa.
+- [x] Verificado visualmente en modo claro (los estilos usan los mismos tokens del modo oscuro).
+
+## Rediseño del panel “Nuevo inmueble” (noviembre 2026)
+
+- [x] Panel lateral derecho de 560 px con overlay, cabecera fija, cuerpo con scroll y pie fijo con “Cancelar” y “Guardar inmueble”.
+- [x] Etiquetas visibles arriba, obligatorios con asterisco y validación en línea para Código y Nombre.
+- [x] Formulario compacto en dos bloques con separadores, sin títulos de sección: identificación, clasificación, dirección, área/renta y estado.
+- [x] Renta referencial con prefijo “S/” dentro del campo; se reutilizaron los estilos del formulario de Mantenimiento (`panel-formulario`).
+- [x] La ficha del inmueble también usa el overlay y los paneles son mutuamente excluyentes (abrir uno cierra el otro).
+- [x] Guardado intacto: se sigue enviando el mismo `Inmueble` a `InmuebleService.guardar`; solo se añadió validación previa de Código/Nombre.
+- [x] Verificado visualmente en modo claro y oscuro.
+
+## Rediseño del panel “Nuevo mantenimiento” (noviembre 2026)
+
+- [x] Panel lateral derecho de 560 px, altura completa, sombra hacia la izquierda y overlay sobre el contenido; se cierra con la ✕, el botón Cancelar o clic en el overlay.
+- [x] Cabecera fija con título/subtítulo y pie fijo con “Cancelar” y “Guardar mantenimiento”; cuerpo con scroll propio.
+- [x] Formulario con etiquetas visibles, asteriscos rojos y divisores; se quitaron los títulos de sección (“¿Qué pasó?”, “Clasificación”, “Fechas y costo”) para aligerar la vista.
+- [x] Prioridad convertida en grupo de cuatro botones excluyentes (Baja, Media, Alta, Urgente) con Media seleccionada por defecto; sigue enviando `PrioridadMantenimiento` al mismo campo del backend.
+- [x] Costo estimado con prefijo “S/” dentro del campo; fechas con formato `dd/mm/aaaa` y calendario nativo.
+- [x] Validación en línea para Inmueble, Título y Categoría; el guardado continúa usando `MantenimientoService.registrar` con la misma `Solicitud`.
+- [x] Estilos con tokens de color del proyecto, verificados visualmente en modo claro y oscuro.
+- [x] Prueba de humo de FXML añadida para `mantenimiento-view.fxml`.
+
+## Revisión funcional y visual (noviembre 2026)
+
+- [x] **Desplegables de entidades**: `Tipo de inmueble`, `Propietario` (Inmuebles) e `Inmueble` (Mantenimiento) muestran nombre/código en lugar de `clase@hash` mediante `StringConverter`.
+- [x] **Edición de inmueble alquilado**: se preserva el estado `ALQUILADO` al editar datos descriptivos; el combo queda bloqueado y el servicio ya no rechaza la edición completa.
+- [x] **Formularios limpios**: “Nuevo inmueble” limpia tipo/propietario y “Nuevo mantenimiento” limpia el inmueble seleccionado previamente.
+- [x] **Semáforo en Nuevo pago**: se muestra el chip de morosidad del contrato y se actualiza tras registrar el pago.
+- [x] **Hilos de UI**: los valores de controles JavaFX se capturan antes de enviar trabajo a `Tareas` (configuración, auditoría, filtros, login, mantenimiento, pagos y exportaciones).
+- [x] **Validaciones de servicio**: mensajes claros para nombre/código obligatorios, área/renta inválidas, fechas nulas de contrato y pago.
+- [x] **Ajustes visuales**: botones primarios (`.boton-primario`), botones outlined, títulos de tarjeta y filas del ranking usan las clases CSS correctas; se corrigieron KPIs de Mantenimiento y el ancho de la columna Inmueble.
+- [x] **Rentabilidad**: el selector de periodo muestra las fechas solo para “Personalizado” y recarga al cambiar de periodo.
+- [x] Pruebas: **99 en total, 0 fallos** (2 nuevas para edición de inmuebles alquilados y 4 de humo para Mantenimiento, Tipos de inmueble, Personas y Propietarios).
+
+Deuda detectada en esta revisión (no corregida por ser alcance de fase): paginación real en catálogos (el `Paginador` es solo un contenedor), filtro por tipo en Inmuebles, captura de todos los datos del inmueble en el drawer (distrito, dormitorios, baños, amoblado, servicios) y reactivación explícita de personas/propietarios/tipos desactivados.
+
 ## Corrección de prioridad alta — Contratos y pagos demo
 
 - [x] **Nuevo contrato** dejó de ser una maqueta: `ContratoFormController` carga inmuebles disponibles y personas activas, calcula fecha fin, total y cronograma en vivo, y registra el contrato con `ContratoService.crear`.

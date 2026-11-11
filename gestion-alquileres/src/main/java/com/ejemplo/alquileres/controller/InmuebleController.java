@@ -11,7 +11,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +41,10 @@ public class InmuebleController implements Refrescable {
     @FXML private TableColumn<Inmueble, String> colCodigo, colNombre, colTipo, colPropietario, colEstado;
     @FXML private TableColumn<Inmueble, BigDecimal> colRenta;
     @FXML private VBox drawer, ficha;
+    @FXML private Region overlay;
+    @FXML private HBox campoRenta;
     @FXML private Label titulo, fichaTitulo, fichaDatos, fichaFinanzas;
+    @FXML private Label errorCodigo, errorNombre;
     @FXML private TableView<Contrato> fichaContratos;
     @FXML private TableColumn<Contrato, String> colFichaContratoCodigo, colFichaContratoArrendatario,
             colFichaContratoVigencia, colFichaContratoEstado;
@@ -64,11 +70,29 @@ public class InmuebleController implements Refrescable {
 
     @FXML public void initialize() {
         filtroEstado.setItems(FXCollections.observableArrayList(EstadoInmueble.values()));
-        estado.setItems(FXCollections.observableArrayList(
-                EstadoInmueble.DISPONIBLE, EstadoInmueble.MANTENIMIENTO, EstadoInmueble.INACTIVO));
+        estadosEditables();
+        tipo.setConverter(new StringConverter<>() {
+            public String toString(TipoInmueble valor) {
+                return valor == null ? "" : valor.getNombre() + " · " + valor.getCodigo();
+            }
+            public TipoInmueble fromString(String texto) { return null; }
+        });
+        propietario.setConverter(new StringConverter<>() {
+            public String toString(Propietario valor) {
+                return valor == null ? "" : valor.getNombre() + " · "
+                        + valor.getTipoDocumento() + " " + valor.getNumeroDocumento();
+            }
+            public Propietario fromString(String texto) { return null; }
+        });
+        codigo.textProperty().addListener((o, a, b) -> ocultarError(errorCodigo));
+        nombre.textProperty().addListener((o, a, b) -> ocultarError(errorNombre));
+        renta.focusedProperty().addListener((o, a, b) -> {
+            if (b) campoRenta.getStyleClass().add("focused");
+            else campoRenta.getStyleClass().remove("focused");
+        });
         colCodigo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCodigo()));
         colNombre.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getNombre() + "\n" + n(c.getValue().getDireccion())));
+                c.getValue().getNombre() + " · " + n(c.getValue().getDireccion())));
         colTipo.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().getTipo() == null ? "Sin tipo" : c.getValue().getTipo().getNombre()));
         colPropietario.setCellValueFactory(c -> new SimpleStringProperty(
@@ -103,7 +127,9 @@ public class InmuebleController implements Refrescable {
     }
 
     @Override public void refrescar() {
-        tareas.ejecutar(() -> service.listar(buscar.getText(), filtroEstado.getValue(), null, 0, 100),
+        String texto = buscar.getText();
+        EstadoInmueble filtro = filtroEstado.getValue();
+        tareas.ejecutar(() -> service.listar(texto, filtro, null, 0, 100),
                 this::mostrar, e -> aviso.error(msg(e)));
     }
 
@@ -123,13 +149,19 @@ public class InmuebleController implements Refrescable {
 
     @FXML private void onNuevo() {
         id = null;
+        limpiarErrores();
+        codigo.clear();
         nombre.clear();
         direccion.clear();
         renta.clear();
         area.clear();
+        tipo.setValue(null);
+        propietario.setValue(null);
+        estadosEditables();
         estado.setValue(EstadoInmueble.DISPONIBLE);
         titulo.setText("Nuevo inmueble");
-        tareas.ejecutar(service::proximoCodigo, x -> { codigo.setText(x); abrir(); }, e -> aviso.error(msg(e)));
+        abrir();
+        tareas.ejecutar(service::proximoCodigo, x -> codigo.setText(x), e -> aviso.error(msg(e)));
         cargarOpciones();
     }
 
@@ -137,13 +169,21 @@ public class InmuebleController implements Refrescable {
 
     private void editar(Inmueble i) {
         if (i == null) return;
+        limpiarErrores();
         id = i.getId();
         codigo.setText(i.getCodigo());
         nombre.setText(i.getNombre());
         direccion.setText(n(i.getDireccion()));
         renta.setText(i.getRentaReferencial() == null ? "" : i.getRentaReferencial().toPlainString());
         area.setText(i.getAreaM2() == null ? "" : i.getAreaM2().toPlainString());
-        estado.setValue(i.getEstado() == EstadoInmueble.ALQUILADO ? EstadoInmueble.DISPONIBLE : i.getEstado());
+        if (i.getEstado() == EstadoInmueble.ALQUILADO) {
+            estado.setItems(FXCollections.observableArrayList(EstadoInmueble.values()));
+            estado.setValue(EstadoInmueble.ALQUILADO);
+            estado.setDisable(true);
+        } else {
+            estadosEditables();
+            estado.setValue(i.getEstado());
+        }
         titulo.setText("Editar inmueble");
         cargarOpciones();
         tareas.ejecutar(() -> new Object[]{i.getTipo(), i.getPropietario()}, x -> {
@@ -151,6 +191,12 @@ public class InmuebleController implements Refrescable {
             propietario.setValue((Propietario) x[1]);
             abrir();
         }, e -> aviso.error(msg(e)));
+    }
+
+    private void estadosEditables() {
+        estado.setItems(FXCollections.observableArrayList(
+                EstadoInmueble.DISPONIBLE, EstadoInmueble.MANTENIMIENTO, EstadoInmueble.INACTIVO));
+        estado.setDisable(false);
     }
 
     private void cargarOpciones() {
@@ -161,6 +207,8 @@ public class InmuebleController implements Refrescable {
     }
 
     @FXML private void onGuardar() {
+        limpiarErrores();
+        if (!validarFormulario()) return;
         try {
             Inmueble i = Inmueble.builder().id(id).codigo(codigo.getText()).nombre(nombre.getText())
                     .direccion(direccion.getText()).tipo(tipo.getValue()).propietario(propietario.getValue())
@@ -176,10 +224,44 @@ public class InmuebleController implements Refrescable {
         }
     }
 
+    private boolean validarFormulario() {
+        boolean valido = true;
+        if (codigo.getText() == null || codigo.getText().isBlank()) {
+            mostrarError(errorCodigo, "El código es obligatorio");
+            valido = false;
+        }
+        if (nombre.getText() == null || nombre.getText().isBlank()) {
+            mostrarError(errorNombre, "Ingresa un nombre o alias");
+            valido = false;
+        }
+        return valido;
+    }
+
+    private void mostrarError(Label error, String texto) {
+        if (error == null) return;
+        error.setText(texto);
+        error.setVisible(true);
+        error.setManaged(true);
+    }
+
+    private void ocultarError(Label error) {
+        if (error == null) return;
+        error.setText("");
+        error.setVisible(false);
+        error.setManaged(false);
+    }
+
+    private void limpiarErrores() {
+        ocultarError(errorCodigo);
+        ocultarError(errorNombre);
+    }
+
     @FXML private void onFicha() { verFicha(tabla.getSelectionModel().getSelectedItem()); }
 
     private void verFicha(Inmueble i) {
         if (i == null) return;
+        drawer.setVisible(false);
+        drawer.setManaged(false);
         fichaTitulo.setText(i.getCodigo() + " · " + i.getNombre());
         fichaDatos.setText("Cargando ficha…");
         fichaContratos.setItems(FXCollections.observableArrayList());
@@ -187,6 +269,8 @@ public class InmuebleController implements Refrescable {
         fichaFinanzas.setText("");
         ficha.setVisible(true);
         ficha.setManaged(true);
+        overlay.setVisible(true);
+        overlay.setManaged(true);
         tareas.ejecutar(() -> fichaController.cargar(i), this::mostrarFicha, e -> aviso.error(msg(e)));
     }
 
@@ -218,19 +302,25 @@ public class InmuebleController implements Refrescable {
 
     @FXML private void onCerrar() { cerrar(); }
 
-    @FXML private void onCerrarFicha() {
-        ficha.setVisible(false);
-        ficha.setManaged(false);
-    }
+    @FXML private void onCerrarFicha() { cerrar(); }
 
     private void abrir() {
+        ficha.setVisible(false);
+        ficha.setManaged(false);
         drawer.setVisible(true);
         drawer.setManaged(true);
+        overlay.setVisible(true);
+        overlay.setManaged(true);
     }
 
     private void cerrar() {
         drawer.setVisible(false);
         drawer.setManaged(false);
+        ficha.setVisible(false);
+        ficha.setManaged(false);
+        overlay.setVisible(false);
+        overlay.setManaged(false);
+        limpiarErrores();
     }
 
     private <T> TableCell<T, BigDecimal> moneda() {

@@ -80,7 +80,7 @@ La carpeta de datos se puede cambiar con `-Dapp.data-dir=...`. Contiene `alquile
 .\mvnw.cmd -q test
 ```
 
-La suite cubre catálogos, contratos, cobranza, mora, PDFs, Excel, recordatorios, configuración, autenticación, permisos, usuarios, auditoría y respaldos. Estado actual: **93 pruebas, 0 fallos**. Incluye pruebas de alta/renovación/finalización de contratos, reparación de cronogramas y detalles de pagos demo, preservación de personas inactivas y carga de humo de los FXML de contratos, inmuebles y pagos.
+La suite cubre catálogos, contratos, cobranza, mora, PDFs, Excel, recordatorios, configuración, autenticación, permisos, usuarios, auditoría y respaldos. Estado actual: **99 pruebas, 0 fallos**. Incluye pruebas de alta/renovación/finalización de contratos, reparación de cronogramas y detalles de pagos demo, preservación de personas inactivas y carga de humo de los FXML de contratos, inmuebles, pagos, mantenimiento, tipos de inmueble, personas y propietarios.
 
 ## Empaquetado
 

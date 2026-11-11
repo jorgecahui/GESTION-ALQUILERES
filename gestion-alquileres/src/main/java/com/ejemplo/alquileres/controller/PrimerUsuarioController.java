@@ -34,8 +34,12 @@ public class PrimerUsuarioController {
 
     @FXML private void onCrear() {
         habilitar(false);
-        tareas.ejecutar(() -> autenticacion.crearPrimerAdmin(username.getText(), nombre.getText(),
-                        password.getText(), confirmacion.getText()),
+        String usuarioTexto = username.getText();
+        String nombreTexto = nombre.getText();
+        String passwordTexto = password.getText();
+        String confirmacionTexto = confirmacion.getText();
+        tareas.ejecutar(() -> autenticacion.crearPrimerAdmin(usuarioTexto, nombreTexto,
+                        passwordTexto, confirmacionTexto),
                 admin -> {
                     mensaje.setText("Administrador creado. Ingresa con tus credenciales.");
                     aplicacion.mostrarLogin();

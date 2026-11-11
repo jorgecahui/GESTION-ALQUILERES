@@ -119,6 +119,9 @@ public class ContratoService {
     @Transactional
     public Contrato renovar(Long anteriorId, Solicitud propuesta) {
         permisos.exigirGestion();
+        if (propuesta == null || propuesta.inicio() == null) {
+            throw new NegocioException("Indica la fecha de inicio de la renovación");
+        }
         Contrato anterior = contratos.detalle(anteriorId)
                 .orElseThrow(() -> new NegocioException("Contrato inexistente"));
         if (anterior.getEstado() != EstadoContrato.VIGENTE) {
@@ -185,6 +188,15 @@ public class ContratoService {
     }
 
     private void validar(Solicitud s) {
+        if (s.inmuebleId() == null) {
+            throw new NegocioException("Selecciona un inmueble");
+        }
+        if (s.arrendatarioId() == null) {
+            throw new NegocioException("Selecciona un arrendatario");
+        }
+        if (s.inicio() == null) {
+            throw new NegocioException("Indica la fecha de inicio");
+        }
         if (s.meses() < 1) {
             throw new NegocioException("La duración debe ser de meses completos");
         }

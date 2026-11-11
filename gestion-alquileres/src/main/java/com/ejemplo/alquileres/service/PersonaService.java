@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor; import org.springframework.data.domain.*;
  private final PersonaRepository repository; private final ValidadorDocumento documentos; private final Permisos permisos; private final Clock clock;
  public Page<Persona> listar(String texto, TipoDocumento tipo, Boolean activo, int pagina, int tamano) { return repository.buscar(texto==null?"":texto.trim(), tipo, activo, PageRequest.of(Math.max(0,pagina),tamano, Sort.by("nombres").ascending())); }
  @Transactional public Persona guardar(Persona entrada) {
-  permisos.exigirGestion(); boolean nueva=entrada.getId()==null; String documento=documentos.normalizar(entrada.getTipoDocumento(), entrada.getNumeroDocumento());
+  permisos.exigirGestion(); boolean nueva=entrada.getId()==null; if(entrada.getNombres()==null||entrada.getNombres().isBlank())throw new NegocioException("El nombre es obligatorio"); String documento=documentos.normalizar(entrada.getTipoDocumento(), entrada.getNumeroDocumento());
   boolean existe=nueva ? repository.existsByTipoDocumentoAndNumeroDocumento(entrada.getTipoDocumento(), documento) : repository.existsByTipoDocumentoAndNumeroDocumentoAndIdNot(entrada.getTipoDocumento(),documento,entrada.getId());
   if(existe) throw new NegocioException("Ya existe una persona con ese documento");
   Persona p=nueva?new Persona():repository.findById(entrada.getId()).orElseThrow(()->new NegocioException("La persona ya no existe")); copiar(entrada,p); p.setNumeroDocumento(documento); p.setTelefono(normalizarTelefono(p.getTelefono())); p.setTelefonoSecundario(normalizarTelefono(p.getTelefonoSecundario())); if(nueva) p.setFechaRegistro(LocalDate.now(clock)); return repository.save(p);

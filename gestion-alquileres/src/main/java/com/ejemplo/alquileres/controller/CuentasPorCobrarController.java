@@ -75,7 +75,8 @@ public class CuentasPorCobrarController implements Refrescable {
             protected void updateItem(String valor, boolean vacio) {
                 super.updateItem(valor, vacio);
                 setText(null);
-                setGraphic(vacio ? null : Semaforo.crear(datos.get(getIndex()).semaforo()));
+                Cuenta cuenta = getTableRow() == null ? null : getTableRow().getItem();
+                setGraphic(vacio || cuenta == null ? null : Semaforo.crear(cuenta.semaforo()));
             }
         });
         colUltimoRecordatorio.setCellValueFactory(c -> new SimpleStringProperty(
@@ -90,7 +91,9 @@ public class CuentasPorCobrarController implements Refrescable {
 
     @Override public void refrescar() {
         if (filtro == null) return;
-        tareas.ejecutar(() -> new Object[]{cuentas.listar(filtro.getValue(), buscar.getText()), recordatorios.ultimosPorCuota()},
+        CuentasPorCobrarService.Filtro filtroActual = filtro.getValue();
+        String texto = buscar.getText();
+        tareas.ejecutar(() -> new Object[]{cuentas.listar(filtroActual, texto), recordatorios.ultimosPorCuota()},
                 this::mostrar, e -> aviso.error(mensaje(e)));
     }
 
@@ -151,7 +154,10 @@ public class CuentasPorCobrarController implements Refrescable {
         File destino = exportador.elegirDestino(ventana(), "reporte-cuentas-por-cobrar-" + java.time.LocalDate.now() + ".xlsx",
                 "Excel", "xlsx");
         if (destino == null) return;
-        tareas.ejecutar(() -> excel.generar(datos, filtro.getValue(), buscar.getText()),
+        CuentasPorCobrarService.Filtro filtroActual = filtro.getValue();
+        String texto = buscar.getText();
+        List<Cuenta> exportar = List.copyOf(datos);
+        tareas.ejecutar(() -> excel.generar(exportar, filtroActual, texto),
                 bytes -> { exportador.escribir(destino, bytes); aviso.info("Excel generado."); },
                 e -> aviso.error(mensaje(e)));
     }

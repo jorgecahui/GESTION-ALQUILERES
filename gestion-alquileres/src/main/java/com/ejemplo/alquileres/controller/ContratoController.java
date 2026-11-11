@@ -45,6 +45,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ContratoController implements Refrescable {
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter FECHA_CORTA = DateTimeFormatter.ofPattern("dd/MM/yy");
 
     private final ContratoService contratos;
     private final RecordatorioService recordatorios;
@@ -67,15 +68,17 @@ public class ContratoController implements Refrescable {
     @FXML private CheckBox porVencer;
     @FXML private Label vigentes, kpiPorVencer, vencidos, rentaMensual;
     @FXML private TableView<Contrato> tabla;
-    @FXML private TableColumn<Contrato, String> colCodigo, colInmueble, colArrendatario, colVigencia, colEstado;
+    @FXML private TableColumn<Contrato, String> colCodigo, colInmueble, colArrendatario, colVigencia;
     @FXML private TableColumn<Contrato, BigDecimal> colRenta;
+    @FXML private TableColumn<Contrato, EstadoVisual> colEstado;
     @FXML private VBox detalle;
-    @FXML private Label detalleTitulo, detalleInfo;
+    @FXML private Label detalleTitulo, detalleSubtitulo, detalleEstado, detalleInmueble, detalleVigencia,
+            detalleRenta, detalleDiaPago, detalleGarantia;
     @FXML private TableView<Cuota> tablaCuotas;
     @FXML private TableColumn<Cuota, String> colCuotaConcepto, colCuotaVencimiento, colCuotaEstado;
-    @FXML private TableColumn<Cuota, BigDecimal> colCuotaMonto, colCuotaPagado;
+    @FXML private TableColumn<Cuota, BigDecimal> colCuotaMonto;
     @FXML private TableView<Recordatorio> tablaRecordatorios;
-    @FXML private TableColumn<Recordatorio, String> colRecFecha, colRecTipo, colRecCanal, colRecMensaje;
+    @FXML private TableColumn<Recordatorio, String> colRecFecha, colRecTipo, colRecMensaje;
 
     public ContratoController(ContratoService contratos, RecordatorioService recordatorios,
                               EstadoCuentaPdfService estadoCuenta, ContratoPdfService hojaContrato,
@@ -92,7 +95,7 @@ public class ContratoController implements Refrescable {
         colInmueble.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getInmueble().getNombre()));
         colArrendatario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getArrendatario().getNombreCompleto()));
         colVigencia.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getFechaInicio().format(FECHA) + " al " + c.getValue().getFechaFin().format(FECHA)));
+                c.getValue().getFechaInicio().format(FECHA_CORTA) + " al " + c.getValue().getFechaFin().format(FECHA_CORTA)));
         colRenta.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getRentaMensual()));
         colRenta.setCellFactory(c -> new TableCell<>() {
             protected void updateItem(BigDecimal valor, boolean vacio) {
@@ -100,19 +103,41 @@ public class ContratoController implements Refrescable {
                 setText(vacio ? null : Tablas.moneda(valor));
             }
         });
-        colEstado.setCellValueFactory(c -> new SimpleStringProperty(contratos.estadoVisual(c.getValue()).getEtiqueta()));
+        colEstado.setCellValueFactory(c -> new SimpleObjectProperty<>(contratos.estadoVisual(c.getValue())));
+        colEstado.setCellFactory(c -> new TableCell<>() {
+            protected void updateItem(EstadoVisual estado, boolean vacio) {
+                super.updateItem(estado, vacio);
+                setText(null);
+                setGraphic(vacio || estado == null ? null : chipEstado(estado));
+            }
+        });
         colCuotaConcepto.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getConcepto()));
         colCuotaVencimiento.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFechaVencimiento().format(FECHA)));
         colCuotaEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
         colCuotaMonto.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getMontoCuota()));
-        colCuotaPagado.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getMontoPagado()));
         colCuotaMonto.setCellFactory(c -> moneda());
-        colCuotaPagado.setCellFactory(c -> moneda());
-        colRecFecha.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFechaEnvio() == null ? "—" : c.getValue().getFechaEnvio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))));
-        colRecTipo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTipo() == null ? "—" : c.getValue().getTipo().getEtiqueta()));
-        colRecCanal.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCanal() == null ? "—" : c.getValue().getCanal().getEtiqueta()));
+        colRecFecha.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFechaEnvio() == null ? "—" : c.getValue().getFechaEnvio().format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"))));
+        colRecTipo.setCellValueFactory(c -> new SimpleStringProperty(
+                (c.getValue().getTipo() == null ? "—" : c.getValue().getTipo().getEtiqueta())
+                        + (c.getValue().getCanal() == null ? "" : " · " + c.getValue().getCanal().getEtiqueta())));
+        colRecTipo.setCellFactory(c -> new TableCell<>() {
+            protected void updateItem(String valor, boolean vacio) {
+                super.updateItem(valor, vacio);
+                setText(vacio || valor == null ? null : valor);
+                setTooltip(vacio || valor == null ? null : new javafx.scene.control.Tooltip(valor));
+            }
+        });
         colRecMensaje.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getMensaje()));
+        colRecMensaje.setCellFactory(c -> new TableCell<>() {
+            protected void updateItem(String valor, boolean vacio) {
+                super.updateItem(valor, vacio);
+                setText(vacio || valor == null ? null : valor);
+                setTooltip(vacio || valor == null ? null : new javafx.scene.control.Tooltip(valor));
+            }
+        });
         tabla.setItems(datos); tablaCuotas.setItems(cuotas); tablaRecordatorios.setItems(enviados);
+        tablaCuotas.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tablaRecordatorios.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         buscar.textProperty().addListener((o, a, b) -> aplicarFiltros());
         filtroEstado.valueProperty().addListener((o, a, b) -> aplicarFiltros());
         porVencer.selectedProperty().addListener((o, a, b) -> aplicarFiltros());
@@ -154,13 +179,16 @@ public class ContratoController implements Refrescable {
         }
         detalle.setVisible(true);
         detalle.setManaged(true);
-        detalleTitulo.setText(contrato.getCodigo() + " · " + contrato.getArrendatario().getNombreCompleto());
-        detalleInfo.setText("Inmueble: " + contrato.getInmueble().getNombre()
-                + "\nVigencia: " + contrato.getFechaInicio().format(FECHA) + " al " + contrato.getFechaFin().format(FECHA)
-                + "\nRenta: " + Tablas.moneda(contrato.getRentaMensual())
-                + " · Día de pago: " + contrato.getDiaPago()
-                + "\nGarantía: " + Tablas.moneda(contrato.getGarantiaMonto())
-                + " · Estado: " + contratos.estadoVisual(contrato).getEtiqueta());
+        detalleTitulo.setText(contrato.getCodigo());
+        detalleSubtitulo.setText(contrato.getArrendatario().getNombreCompleto());
+        detalleInmueble.setText(contrato.getInmueble().getNombre());
+        detalleVigencia.setText(contrato.getFechaInicio().format(FECHA) + " al " + contrato.getFechaFin().format(FECHA));
+        detalleRenta.setText(Tablas.moneda(contrato.getRentaMensual()));
+        detalleDiaPago.setText(String.valueOf(contrato.getDiaPago()));
+        detalleGarantia.setText(contrato.getGarantiaMonto() == null ? "—" : Tablas.moneda(contrato.getGarantiaMonto()));
+        EstadoVisual estadoVisual = contratos.estadoVisual(contrato);
+        detalleEstado.setText(estadoVisual.getEtiqueta());
+        detalleEstado.getStyleClass().setAll("chip", estiloEstado(estadoVisual));
         cuotas.setAll(contrato.getCuotas().stream()
                 .sorted(Comparator.comparing(Cuota::getFechaVencimiento).thenComparing(Cuota::getNumero)).toList());
         enviados.clear();
@@ -190,7 +218,9 @@ public class ContratoController implements Refrescable {
         File destino = exportador.elegirDestino(ventana(), "reporte-contratos-" + java.time.LocalDate.now() + ".xlsx",
                 "Excel", "xlsx");
         if (destino == null) return;
-        tareas.ejecutar(() -> excel.generar(visibles, filtroEstado.getValue(), porVencer.isSelected()),
+        EstadoVisual estado = filtroEstado.getValue();
+        boolean soloPorVencer = porVencer.isSelected();
+        tareas.ejecutar(() -> excel.generar(visibles, estado, soloPorVencer),
                 bytes -> { exportador.escribir(destino, bytes); aviso.info("Excel generado."); },
                 e -> aviso.error(mensaje(e)));
     }
@@ -290,6 +320,21 @@ public class ContratoController implements Refrescable {
         if (destino == null) return;
         tareas.ejecutar(generador, bytes -> { exportador.escribir(destino, bytes); aviso.info("PDF generado."); },
                 e -> aviso.error(mensaje(e)));
+    }
+
+    private Label chipEstado(EstadoVisual estado) {
+        Label chip = new Label(estado.getEtiqueta());
+        chip.getStyleClass().addAll("chip", estiloEstado(estado));
+        return chip;
+    }
+
+    private static String estiloEstado(EstadoVisual estado) {
+        return switch (estado) {
+            case VIGENTE -> "exito";
+            case POR_VENCER -> "advertencia";
+            case VENCIDO -> "peligro";
+            case FINALIZADO, RESCINDIDO -> "neutro";
+        };
     }
 
     private TableCell<Cuota, BigDecimal> moneda() {

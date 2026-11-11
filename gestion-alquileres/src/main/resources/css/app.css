@@ -164,12 +164,39 @@
     -fx-text-fill: -color-fg-muted;
 }
 
-.boton-principal {
+.boton-principal,
+.boton-primario {
     -fx-padding: 9 18 9 16;
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-emphasis;
     -fx-background-radius: 9;
     -fx-border-radius: 9;
     -fx-font-weight: bold;
     -fx-graphic-text-gap: 8;
+}
+
+.boton-principal:hover,
+.boton-primario:hover {
+    -fx-background-color: derive(-color-accent-emphasis, -8%);
+}
+
+.button-outlined {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-padding: 8 14 8 14;
+    -fx-graphic-text-gap: 7;
+}
+
+.button-outlined:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.tarjeta-titulo {
+    -fx-font-size: 13.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
 }
 
 .tarjeta {
@@ -180,6 +207,58 @@
     -fx-padding: 20 22 18 22;
     -fx-spacing: 16;
     -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 18, 0, 0, 4);
+}
+
+.detalle-contrato {
+    -fx-spacing: 14;
+}
+
+.detalle-subtitulo {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.detalle-campo {
+    -fx-spacing: 2;
+}
+
+.detalle-etiqueta {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-subtle;
+}
+
+.detalle-valor {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.detalle-tabs {
+    -fx-background-color: transparent;
+}
+
+.detalle-scroll,
+.detalle-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.detalle-tabs .tab-header-area {
+    -fx-padding: 0 0 6 0;
+}
+
+.detalle-tabs .tab-content-area {
+    -fx-background-color: transparent;
+}
+
+.detalle-tabs .table-cell {
+    -fx-font-size: 11.5px;
+}
+
+.detalle-tabs .column-header .label {
+    -fx-font-size: 11px;
 }
 
 .barra-herramientas {
@@ -495,6 +574,140 @@
     -fx-wrap-text: true;
 }
 
+/* ==================== PANEL NUEVO MANTENIMIENTO ==================== */
+
+.overlay {
+    -fx-background-color: rgba(15, 23, 42, 0.38);
+}
+
+.app.dark .overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.55);
+}
+
+.panel-formulario {
+    -fx-border-color: transparent transparent transparent -color-border-muted;
+    -fx-border-width: 0 0 0 1;
+}
+
+.ficha-inmueble {
+    -fx-padding: 22 24 20 24;
+    -fx-border-color: transparent transparent transparent -color-border-muted;
+    -fx-border-width: 0 0 0 1;
+}
+
+.panel-formulario .drawer-header {
+    -fx-padding: 24 26 18 28;
+}
+
+.panel-formulario .drawer-body {
+    -fx-padding: 22 28 28 28;
+    -fx-spacing: 20;
+}
+
+.panel-formulario .drawer-footer {
+    -fx-padding: 16 28 18 28;
+}
+
+.drawer-cerrar {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-max-width: 34;
+    -fx-max-height: 34;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.drawer-cerrar .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+    -fx-icon-size: 15px;
+}
+
+.drawer-cerrar:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.divisor-form {
+    -fx-background-color: -color-border-muted;
+}
+
+.campo-requerido {
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+}
+
+.panel-formulario .campo .text-field,
+.panel-formulario .campo .combo-box,
+.panel-formulario .campo .date-picker {
+    -fx-pref-height: 40;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.panel-formulario .campo .text-area {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.panel-formulario .campo .text-field:focused,
+.panel-formulario .campo .text-area:focused,
+.panel-formulario .campo .combo-box:focused,
+.panel-formulario .campo .date-picker:focused {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(42, 120, 214, 0.25), 10, 0.35, 0, 0);
+}
+
+.campo-moneda {
+    -fx-pref-height: 40;
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 0 12 0 12;
+}
+
+.campo-moneda .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-pref-height: 38;
+}
+
+.campo-moneda.focused {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(42, 120, 214, 0.25), 10, 0.35, 0, 0);
+}
+
+.prioridad-opcion {
+    -fx-pref-height: 40;
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.prioridad-opcion:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.prioridad-opcion:selected {
+    -fx-background-color: -color-warning-subtle;
+    -fx-border-color: -color-warning-muted;
+    -fx-text-fill: -color-warning-fg;
+    -fx-font-weight: bold;
+}
+
 /* ====================== DIALOGOS Y NOTIFICACIONES ===================== */
 
 .dialogo {
@@ -746,6 +959,11 @@
 .ranking {
     -fx-spacing: 14;
     -fx-padding: 6 0 0 0;
+}
+
+.ranking-fila {
+    -fx-spacing: 4;
+    -fx-padding: 2 0 6 0;
 }
 
 .ranking-posicion {

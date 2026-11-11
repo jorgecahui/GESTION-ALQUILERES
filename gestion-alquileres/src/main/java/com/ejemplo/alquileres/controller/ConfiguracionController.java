@@ -222,7 +222,9 @@ public class ConfiguracionController implements Refrescable {
     private void cargarAuditoria() {
         LocalDateTime desde = audDesde.getValue() == null ? null : audDesde.getValue().atStartOfDay();
         LocalDateTime hasta = audHasta.getValue() == null ? null : audHasta.getValue().atTime(23, 59, 59);
-        tareas.ejecutar(() -> auditoria.listar(desde, hasta, audUsuario.getText(), audAccion.getValue()),
+        String usuario = audUsuario.getText();
+        AccionAuditoria accion = audAccion.getValue();
+        tareas.ejecutar(() -> auditoria.listar(desde, hasta, usuario, accion),
                 lista -> listaAuditoria.setAll(lista), e -> aviso.error(mensaje(e)));
     }
 
@@ -264,8 +266,14 @@ public class ConfiguracionController implements Refrescable {
         Dialog<ButtonType> dialogo = dialogo("Nuevo usuario");
         dialogo.getDialogPane().setContent(formulario);
         if (dialogo.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.CANCEL) return;
-        tareas.ejecutar(() -> usuariosServicio.crear(usuario.getText(), nombre.getText(), password.getText(),
-                        confirmacion.getText(), rol.getValue(), activo.isSelected()),
+        String usuarioTexto = usuario.getText();
+        String nombreTexto = nombre.getText();
+        String passwordTexto = password.getText();
+        String confirmacionTexto = confirmacion.getText();
+        RolUsuario rolSeleccionado = rol.getValue();
+        boolean activoSeleccionado = activo.isSelected();
+        tareas.ejecutar(() -> usuariosServicio.crear(usuarioTexto, nombreTexto, passwordTexto,
+                        confirmacionTexto, rolSeleccionado, activoSeleccionado),
                 creado -> { aviso.info("Usuario creado."); cargarUsuarios(); },
                 e -> aviso.error(mensaje(e)));
     }
@@ -288,7 +296,10 @@ public class ConfiguracionController implements Refrescable {
         Dialog<ButtonType> dialogo = dialogo("Editar usuario");
         dialogo.getDialogPane().setContent(formulario);
         if (dialogo.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.CANCEL) return;
-        tareas.ejecutar(() -> usuariosServicio.actualizar(seleccionado.getId(), nombre.getText(), rol.getValue(), activo.isSelected()),
+        String nombreTexto = nombre.getText();
+        RolUsuario rolSeleccionado = rol.getValue();
+        boolean activoSeleccionado = activo.isSelected();
+        tareas.ejecutar(() -> usuariosServicio.actualizar(seleccionado.getId(), nombreTexto, rolSeleccionado, activoSeleccionado),
                 actualizado -> { aviso.info("Usuario actualizado."); cargarUsuarios(); },
                 e -> aviso.error(mensaje(e)));
     }
@@ -313,7 +324,9 @@ public class ConfiguracionController implements Refrescable {
         Dialog<ButtonType> dialogo = dialogo("Restablecer contraseña de " + seleccionado.getUsername());
         dialogo.getDialogPane().setContent(formulario);
         if (dialogo.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.CANCEL) return;
-        tareas.ejecutar(() -> { usuariosServicio.restablecerPassword(seleccionado.getId(), password.getText(), confirmacion.getText()); return null; },
+        String passwordTexto = password.getText();
+        String confirmacionTexto = confirmacion.getText();
+        tareas.ejecutar(() -> { usuariosServicio.restablecerPassword(seleccionado.getId(), passwordTexto, confirmacionTexto); return null; },
                 ignorado -> aviso.info("Contraseña restablecida."),
                 e -> aviso.error(mensaje(e)));
     }
@@ -372,14 +385,20 @@ public class ConfiguracionController implements Refrescable {
     }
 
     @FXML private void onGuardar() {
-        tareas.ejecutar(() -> configuracion.guardar(leerFormulario()), guardada -> {
-            version = guardada.getVersion();
-            estado.setText("Guardado correctamente.");
-            aviso.info("Configuración guardada.");
-        }, e -> {
+        try {
+            Configuracion datos = leerFormulario();
+            tareas.ejecutar(() -> configuracion.guardar(datos), guardada -> {
+                version = guardada.getVersion();
+                estado.setText("Guardado correctamente.");
+                aviso.info("Configuración guardada.");
+            }, e -> {
+                estado.setText("No se pudo guardar.");
+                aviso.error(mensaje(e));
+            });
+        } catch (RuntimeException e) {
             estado.setText("No se pudo guardar.");
-            aviso.error(mensaje(e));
-        });
+            aviso.error(e.getMessage() == null ? "Revisa los valores ingresados." : e.getMessage());
+        }
     }
 
     private Configuracion leerFormulario() {

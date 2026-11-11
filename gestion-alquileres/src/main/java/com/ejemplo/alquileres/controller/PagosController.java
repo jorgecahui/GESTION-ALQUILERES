@@ -71,7 +71,9 @@ public class PagosController implements Refrescable {
     }
 
     @Override public void refrescar() {
-        tareas.ejecutar(() -> pagos.listar(desde.getValue(), hasta.getValue()), this::mostrar, e -> aviso.error(mensaje(e)));
+        LocalDate inicio = desde.getValue();
+        LocalDate fin = hasta.getValue();
+        tareas.ejecutar(() -> pagos.listar(inicio, fin), this::mostrar, e -> aviso.error(mensaje(e)));
     }
 
     @FXML private void onFiltrar() { refrescar(); }
@@ -128,7 +130,9 @@ public class PagosController implements Refrescable {
         File destino = exportador.elegirDestino(tabla.getScene().getWindow(),
                 "reporte-pagos-" + LocalDate.now() + ".xlsx", "Excel", "xlsx");
         if (destino == null) return;
-        tareas.ejecutar(() -> excel.generar(visibles, desde.getValue(), hasta.getValue()),
+        LocalDate inicio = desde.getValue();
+        LocalDate fin = hasta.getValue();
+        tareas.ejecutar(() -> excel.generar(visibles, inicio, fin),
                 bytes -> { exportador.escribir(destino, bytes); aviso.info("Excel generado."); },
                 e -> aviso.error(mensaje(e)));
     }

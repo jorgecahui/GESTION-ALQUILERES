@@ -64,6 +64,7 @@ public class PagoService {
     public List<Imputacion> proponerImputacion(Long contratoId, BigDecimal recibido, LocalDate fechaPago,
                                                 boolean permitirAdelantos, boolean condonarMora, String motivoCondonacion) {
         if (recibido == null || recibido.signum() <= 0) throw new NegocioException("El monto recibido debe ser mayor que cero");
+        if (fechaPago == null) throw new NegocioException("Indica la fecha de pago");
         if (condonarMora) permisos.exigirAdmin();
         if (condonarMora && (motivoCondonacion == null || motivoCondonacion.isBlank())) {
             throw new NegocioException("Indica el motivo de la condonación");

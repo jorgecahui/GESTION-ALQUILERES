@@ -44,9 +44,9 @@ public class BloqueoController {
             mensaje.setText("Ingresa tu contraseña.");
             return;
         }
-        tareas.ejecutar(() -> autenticacion.verificarPassword(password.getText()),
-                correcta -> {
-                    if (correcta) {
+        String passwordTexto = password.getText();
+        tareas.ejecutar(() -> autenticacion.verificarPassword(passwordTexto),
+                correcta -> {                    if (correcta) {
                         ventana.close();
                         aplicacion.desbloquear();
                     } else {
