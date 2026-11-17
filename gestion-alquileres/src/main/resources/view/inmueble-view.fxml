@@ -173,7 +173,17 @@
                             <Label text="Piso" styleClass="campo-label"/>
                             <TextField fx:id="piso" promptText="Ej. 3, PB, Sótano" maxWidth="Infinity"/>
                         </VBox>
+                        <VBox styleClass="campo" GridPane.rowIndex="2" GridPane.columnIndex="0">
+                            <Label text="Nivel" styleClass="campo-label"/>
+                            <TextField fx:id="nivel" promptText="0 = planta baja" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox styleClass="campo" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                            <Label text="Orden" styleClass="campo-label"/>
+                            <TextField fx:id="orden" promptText="Desde 1" maxWidth="Infinity"/>
+                        </VBox>
                     </GridPane>
+                    <Label text="Nivel 0 = planta baja; los negativos son subsuelo. El orden va de izquierda a derecha."
+                           styleClass="campo-ayuda" wrapText="true"/>
                 </VBox>
 
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>

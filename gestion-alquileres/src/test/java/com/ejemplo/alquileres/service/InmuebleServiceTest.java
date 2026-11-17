@@ -9,7 +9,7 @@ class InmuebleServiceTest {private final InmuebleRepository repo=mock(InmuebleRe
   when(repo.save(any())).thenAnswer(inv->{Inmueble x=inv.getArgument(0);if(x.getId()==null)x.setId(1L);return x;});
   Inmueble nuevo=Inmueble.builder().codigo("INM-0001").nombre("Depto original")
     .direccion("Av. Principal 123").referencia("Frente al parque")
-    .distrito("Miraflores").provincia("Lima").departamento("Lima").piso("3")
+    .distrito("Miraflores").provincia("Lima").departamento("Lima").piso("3").nivel(2).orden(4)
     .areaM2(new BigDecimal("85.50")).dormitorios(3).banos(2).estacionamientos(1).amoblado(true)
     .rentaReferencial(new BigDecimal("2500.00")).estado(EstadoInmueble.DISPONIBLE)
     .serviciosIncluidos("Agua, luz, internet").descripcion("Vista al parque").build();
@@ -31,6 +31,8 @@ class InmuebleServiceTest {private final InmuebleRepository repo=mock(InmuebleRe
   assertEquals("Lima",actualizado.getProvincia());
   assertEquals("Lima",actualizado.getDepartamento());
   assertEquals("3",actualizado.getPiso());
+  assertEquals(2,actualizado.getNivel());
+  assertEquals(4,actualizado.getOrden());
   assertEquals(new BigDecimal("85.50"),actualizado.getAreaM2());
   assertEquals(3,actualizado.getDormitorios());
   assertEquals(2,actualizado.getBanos());
@@ -41,5 +43,31 @@ class InmuebleServiceTest {private final InmuebleRepository repo=mock(InmuebleRe
   assertEquals("Agua, luz, internet",actualizado.getServiciosIncluidos());
   assertEquals("Vista al parque",actualizado.getDescripcion());
   assertEquals(fechaRegistro,actualizado.getFechaRegistro());
+ }
+ @Test void rechazaPosicionDuplicadaEnNivelYOrden(){
+  when(repo.existsByNivelAndOrdenAndEstadoNot(1,2,EstadoInmueble.INACTIVO)).thenReturn(true);
+  Inmueble nuevo=Inmueble.builder().codigo("INM-0002").nombre("Otro inmueble")
+    .nivel(1).orden(2).estado(EstadoInmueble.DISPONIBLE).build();
+  NegocioException error=assertThrows(NegocioException.class,()->service.guardar(nuevo));
+  assertTrue(error.getMessage().contains("nivel 1"));
+  assertTrue(error.getMessage().contains("orden 2"));
+  verify(repo,never()).save(any());
+ }
+ @Test void nivelYOrdenPuedenQuedarNulos(){
+  when(repo.save(any())).thenAnswer(inv->inv.getArgument(0));
+  Inmueble nuevo=Inmueble.builder().codigo("INM-0003").nombre("Sin posición")
+    .estado(EstadoInmueble.DISPONIBLE).build();
+  Inmueble guardado=service.guardar(nuevo);
+  assertNull(guardado.getNivel());
+  assertNull(guardado.getOrden());
+  verify(repo,never()).existsByNivelAndOrdenAndEstadoNot(any(),any(),any());
+ }
+ @Test void validaRangoDeNivelYOrden(){
+  Inmueble nivelInvalido=Inmueble.builder().codigo("INM-0004").nombre("Nivel inválido")
+    .nivel(101).orden(1).estado(EstadoInmueble.DISPONIBLE).build();
+  assertThrows(NegocioException.class,()->service.guardar(nivelInvalido));
+  Inmueble ordenInvalido=Inmueble.builder().codigo("INM-0005").nombre("Orden inválido")
+    .nivel(1).orden(0).estado(EstadoInmueble.DISPONIBLE).build();
+  assertThrows(NegocioException.class,()->service.guardar(ordenInvalido));
  }
 }

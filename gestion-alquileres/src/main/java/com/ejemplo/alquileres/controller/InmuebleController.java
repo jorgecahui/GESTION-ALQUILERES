@@ -34,7 +34,7 @@ public class InmuebleController implements Refrescable {
     private Long id;
 
     @FXML private TextField buscar, codigo, nombre, direccion, referencia, distrito, provincia,
-            departamento, piso, dormitorios, banos, estacionamientos, renta, area;
+            departamento, piso, nivel, orden, dormitorios, banos, estacionamientos, renta, area;
     @FXML private TextArea serviciosIncluidos, descripcion;
     @FXML private CheckBox amoblado;
     @FXML private ComboBox<EstadoInmueble> filtroEstado, estado;
@@ -77,6 +77,8 @@ public class InmuebleController implements Refrescable {
         limitar(provincia, 100);
         limitar(departamento, 100);
         limitar(piso, 30);
+        limitarNivel(nivel);
+        Formularios.soloDigitos(orden, 3);
         limitar(serviciosIncluidos, 1000);
         limitar(descripcion, 1000);
         Formularios.soloDigitos(dormitorios, 3);
@@ -171,6 +173,8 @@ public class InmuebleController implements Refrescable {
         provincia.clear();
         departamento.clear();
         piso.clear();
+        nivel.clear();
+        orden.clear();
         dormitorios.clear();
         banos.clear();
         estacionamientos.clear();
@@ -203,6 +207,8 @@ public class InmuebleController implements Refrescable {
         provincia.setText(texto(i.getProvincia()));
         departamento.setText(texto(i.getDepartamento()));
         piso.setText(texto(i.getPiso()));
+        nivel.setText(cantidad(i.getNivel()));
+        orden.setText(cantidad(i.getOrden()));
         dormitorios.setText(cantidad(i.getDormitorios()));
         banos.setText(cantidad(i.getBanos()));
         estacionamientos.setText(cantidad(i.getEstacionamientos()));
@@ -249,6 +255,7 @@ public class InmuebleController implements Refrescable {
                     .direccion(direccion.getText()).referencia(referencia.getText())
                     .distrito(distrito.getText()).provincia(provincia.getText())
                     .departamento(departamento.getText()).piso(piso.getText())
+                    .nivel(enteroNulo(nivel.getText())).orden(enteroNulo(orden.getText()))
                     .dormitorios(entero(dormitorios.getText())).banos(entero(banos.getText()))
                     .estacionamientos(entero(estacionamientos.getText())).amoblado(amoblado.isSelected())
                     .serviciosIncluidos(serviciosIncluidos.getText()).descripcion(descripcion.getText())
@@ -329,6 +336,8 @@ public class InmuebleController implements Refrescable {
                         + "\nProvincia: " + n(i.getProvincia())
                         + "\nDepartamento: " + n(i.getDepartamento())
                         + "\nPiso: " + n(i.getPiso())
+                        + "\nNivel: " + numero(i.getNivel())
+                        + "\nOrden: " + numero(i.getOrden())
                         + "\nÁrea: " + (i.getAreaM2() == null ? "—" : i.getAreaM2().toPlainString() + " m²")
                         + "\nDormitorios: " + numero(i.getDormitorios())
                         + "\nBaños: " + numero(i.getBanos())
@@ -385,12 +394,21 @@ public class InmuebleController implements Refrescable {
                 c.getControlNewText().length() <= maximo ? c : null));
     }
 
+    private void limitarNivel(TextField campo) {
+        campo.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().matches("-?\\d{0,3}") ? c : null));
+    }
+
     private BigDecimal decimal(String v) {
         return v == null || v.isBlank() ? null : new BigDecimal(v.trim().replace(',', '.'));
     }
 
     private int entero(String v) {
         return v == null || v.isBlank() ? 0 : Integer.parseInt(v.trim());
+    }
+
+    private Integer enteroNulo(String v) {
+        return v == null || v.isBlank() || "-".equals(v.trim()) ? null : Integer.parseInt(v.trim());
     }
 
     private String texto(String v) { return v == null ? "" : v; }

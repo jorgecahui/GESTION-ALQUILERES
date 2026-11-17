@@ -20,6 +20,8 @@ public class Inmueble {
  @Column(length=100) private String provincia;
  @Column(length=100) private String departamento;
  @Column(length=30) private String piso;
+ @Min(value=-5, message="El nivel mínimo es -5") @Max(value=100, message="El nivel máximo es 100") private Integer nivel;
+ @Min(value=1, message="El orden debe ser mayor o igual a 1") private Integer orden;
  @DecimalMin(value="0.01", message="El área debe ser mayor que cero") @Column(name="area_m2", precision=8, scale=2) private BigDecimal areaM2;
  @Min(value=0, message="Los dormitorios no pueden ser negativos") private Integer dormitorios;
  @Min(value=0, message="Los baños no pueden ser negativos") private Integer banos;
