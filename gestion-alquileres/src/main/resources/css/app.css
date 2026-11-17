@@ -1687,3 +1687,94 @@
 .nav-seccion {
     -fx-padding: 7 0 1 12;
 }
+
+/* ============================== MAQUETA 3D ============================ */
+
+.maqueta-contenedor {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 16;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 16;
+    -fx-min-height: 380;
+}
+
+.maqueta-hover {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 9;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 9;
+    -fx-padding: 8 12 8 12;
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.18), 14, 0, 0, 4);
+}
+
+.maqueta-ayuda {
+    -fx-text-fill: -color-fg-subtle;
+    -fx-font-size: 11px;
+}
+
+.maqueta-leyenda {
+    -fx-spacing: 18;
+    -fx-padding: 0 4 0 4;
+}
+
+.maqueta-leyenda-titulo {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.maqueta-leyenda-etiqueta {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+}
+
+.maqueta-punto {
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-max-width: 10;
+    -fx-max-height: 10;
+    -fx-background-radius: 999;
+}
+
+.maqueta-punto-disponible { -fx-background-color: #2f9e6e; }
+.maqueta-punto-alquilado { -fx-background-color: #3d7fc4; }
+.maqueta-punto-mantenimiento { -fx-background-color: #e08a2e; }
+.maqueta-punto-inactivo { -fx-background-color: #8a94a6; }
+.maqueta-punto-atraso { -fx-background-color: #ffc107; }
+.maqueta-punto-moroso { -fx-background-color: #e53935; }
+
+.maqueta-piso-etiqueta {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 7;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 7;
+    -fx-padding: 3 9 3 9;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 10, 0, 0, 2);
+}
+
+.maqueta-aviso {
+    -fx-max-width: 520;
+}
+
+.maqueta-aviso-icono {
+    -fx-icon-size: 34;
+    -fx-icon-color: -color-warning-fg;
+}
+
+.maqueta-aviso-titulo {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.maqueta-aviso-detalle {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-text-alignment: center;
+}

@@ -62,7 +62,7 @@ public class MainController {
     @FXML private ToggleGroup menu;
     @FXML private Region indicador;
     @FXML private Button btnTema, btnContraer, btnSalir;
-    @FXML private ToggleButton navDashboard, navNuevoContrato, navContratos, navNuevoPago, navPagos,
+    @FXML private ToggleButton navDashboard, navMaqueta, navNuevoContrato, navContratos, navNuevoPago, navPagos,
             navCuentasCobrar, navMantenimiento, navRentabilidad, navInmuebles, navTiposInmueble,
             navPersonas, navPropietarios, navConfiguracion;
     private boolean oscuro, contraido;
@@ -74,6 +74,7 @@ public class MainController {
     }
     @FXML public void initialize() {
         vistas.clear();
+        indicador.maxHeightProperty().bind(indicador.prefHeightProperty());
         if (sesion.usuario() != null) {
             usuarioActual.setText(sesion.usuario().getNombre());
             rolActual.setText(sesion.rol() == null ? "" : sesion.rol().getEtiqueta());
@@ -85,7 +86,7 @@ public class MainController {
         navConfiguracion.setVisible(admin);
         navConfiguracion.setManaged(admin);
         Map<ToggleButton, String> claves = Map.ofEntries(
-            Map.entry(navDashboard,"dashboard"), Map.entry(navNuevoContrato,"nuevo-contrato"), Map.entry(navContratos,"contratos"),
+            Map.entry(navDashboard,"dashboard"), Map.entry(navMaqueta,"maqueta-3d"), Map.entry(navNuevoContrato,"nuevo-contrato"), Map.entry(navContratos,"contratos"),
             Map.entry(navNuevoPago,"nuevo-pago"), Map.entry(navPagos,"pagos"), Map.entry(navCuentasCobrar,"cuentas-cobrar"),
             Map.entry(navMantenimiento,"mantenimiento"), Map.entry(navRentabilidad,"rentabilidad"), Map.entry(navInmuebles,"inmuebles"),
             Map.entry(navTiposInmueble,"tipos-inmueble"), Map.entry(navPersonas,"personas"), Map.entry(navPropietarios,"propietarios"),
@@ -164,6 +165,6 @@ public class MainController {
         else { sidebar.setPrefWidth(ancho); sidebar.setMinWidth(ancho); }
         Platform.runLater(() -> moverIndicador(menu.getSelectedToggle()));
     }
-    private List<ToggleButton> botonesMenu() { return List.of(navDashboard,navNuevoContrato,navContratos,navNuevoPago,navPagos,navCuentasCobrar,navMantenimiento,navRentabilidad,navInmuebles,navTiposInmueble,navPersonas,navPropietarios,navConfiguracion); }
+    private List<ToggleButton> botonesMenu() { return List.of(navDashboard,navMaqueta,navNuevoContrato,navContratos,navNuevoPago,navPagos,navCuentasCobrar,navMantenimiento,navRentabilidad,navInmuebles,navTiposInmueble,navPersonas,navPropietarios,navConfiguracion); }
     private List<ButtonBase> todosLosBotones() { List<ButtonBase> todos = new ArrayList<>(botonesMenu()); todos.add(btnTema); todos.add(btnContraer); return todos; }
 }

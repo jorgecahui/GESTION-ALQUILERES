@@ -33,7 +33,10 @@ public class InmuebleController implements Refrescable {
     private List<Inmueble> visibles = List.of();
     private Long id;
 
-    @FXML private TextField buscar, codigo, nombre, direccion, renta, area;
+    @FXML private TextField buscar, codigo, nombre, direccion, referencia, distrito, provincia,
+            departamento, piso, dormitorios, banos, estacionamientos, renta, area;
+    @FXML private TextArea serviciosIncluidos, descripcion;
+    @FXML private CheckBox amoblado;
     @FXML private ComboBox<EstadoInmueble> filtroEstado, estado;
     @FXML private ComboBox<TipoInmueble> tipo;
     @FXML private ComboBox<Propietario> propietario;
@@ -69,6 +72,16 @@ public class InmuebleController implements Refrescable {
     }
 
     @FXML public void initialize() {
+        limitar(referencia, 250);
+        limitar(distrito, 100);
+        limitar(provincia, 100);
+        limitar(departamento, 100);
+        limitar(piso, 30);
+        limitar(serviciosIncluidos, 1000);
+        limitar(descripcion, 1000);
+        Formularios.soloDigitos(dormitorios, 3);
+        Formularios.soloDigitos(banos, 3);
+        Formularios.soloDigitos(estacionamientos, 3);
         filtroEstado.setItems(FXCollections.observableArrayList(EstadoInmueble.values()));
         estadosEditables();
         tipo.setConverter(new StringConverter<>() {
@@ -153,6 +166,17 @@ public class InmuebleController implements Refrescable {
         codigo.clear();
         nombre.clear();
         direccion.clear();
+        referencia.clear();
+        distrito.clear();
+        provincia.clear();
+        departamento.clear();
+        piso.clear();
+        dormitorios.clear();
+        banos.clear();
+        estacionamientos.clear();
+        amoblado.setSelected(false);
+        serviciosIncluidos.clear();
+        descripcion.clear();
         renta.clear();
         area.clear();
         tipo.setValue(null);
@@ -173,7 +197,18 @@ public class InmuebleController implements Refrescable {
         id = i.getId();
         codigo.setText(i.getCodigo());
         nombre.setText(i.getNombre());
-        direccion.setText(n(i.getDireccion()));
+        direccion.setText(texto(i.getDireccion()));
+        referencia.setText(texto(i.getReferencia()));
+        distrito.setText(texto(i.getDistrito()));
+        provincia.setText(texto(i.getProvincia()));
+        departamento.setText(texto(i.getDepartamento()));
+        piso.setText(texto(i.getPiso()));
+        dormitorios.setText(cantidad(i.getDormitorios()));
+        banos.setText(cantidad(i.getBanos()));
+        estacionamientos.setText(cantidad(i.getEstacionamientos()));
+        amoblado.setSelected(i.isAmoblado());
+        serviciosIncluidos.setText(texto(i.getServiciosIncluidos()));
+        descripcion.setText(texto(i.getDescripcion()));
         renta.setText(i.getRentaReferencial() == null ? "" : i.getRentaReferencial().toPlainString());
         area.setText(i.getAreaM2() == null ? "" : i.getAreaM2().toPlainString());
         if (i.getEstado() == EstadoInmueble.ALQUILADO) {
@@ -211,7 +246,13 @@ public class InmuebleController implements Refrescable {
         if (!validarFormulario()) return;
         try {
             Inmueble i = Inmueble.builder().id(id).codigo(codigo.getText()).nombre(nombre.getText())
-                    .direccion(direccion.getText()).tipo(tipo.getValue()).propietario(propietario.getValue())
+                    .direccion(direccion.getText()).referencia(referencia.getText())
+                    .distrito(distrito.getText()).provincia(provincia.getText())
+                    .departamento(departamento.getText()).piso(piso.getText())
+                    .dormitorios(entero(dormitorios.getText())).banos(entero(banos.getText()))
+                    .estacionamientos(entero(estacionamientos.getText())).amoblado(amoblado.isSelected())
+                    .serviciosIncluidos(serviciosIncluidos.getText()).descripcion(descripcion.getText())
+                    .tipo(tipo.getValue()).propietario(propietario.getValue())
                     .areaM2(decimal(area.getText())).rentaReferencial(decimal(renta.getText()))
                     .estado(estado.getValue()).build();
             tareas.ejecutar(() -> service.guardar(i), x -> {
@@ -283,14 +324,21 @@ public class InmuebleController implements Refrescable {
                         + "\nTipo: " + (i.getTipo() == null ? "—" : i.getTipo().getNombre())
                         + "\nPropietario: " + (i.getPropietario() == null ? "—" : i.getPropietario().getNombre())
                         + "\nDirección: " + n(i.getDireccion())
+                        + "\nReferencia: " + n(i.getReferencia())
                         + "\nDistrito: " + n(i.getDistrito())
+                        + "\nProvincia: " + n(i.getProvincia())
+                        + "\nDepartamento: " + n(i.getDepartamento())
+                        + "\nPiso: " + n(i.getPiso())
                         + "\nÁrea: " + (i.getAreaM2() == null ? "—" : i.getAreaM2().toPlainString() + " m²")
-                        + "\nDormitorios: " + i.getDormitorios()
-                        + "\nBaños: " + i.getBanos()
-                        + "\nEstacionamientos: " + i.getEstacionamientos()
+                        + "\nDormitorios: " + numero(i.getDormitorios())
+                        + "\nBaños: " + numero(i.getBanos())
+                        + "\nEstacionamientos: " + numero(i.getEstacionamientos())
                         + "\nAmoblado: " + (i.isAmoblado() ? "Sí" : "No")
+                        + "\nServicios incluidos: " + n(i.getServiciosIncluidos())
+                        + "\nDescripción: " + n(i.getDescripcion())
                         + "\nRenta referencial: " + Tablas.moneda(i.getRentaReferencial())
-                        + "\nEstado: " + i.getEstado().getEtiqueta());
+                        + "\nEstado: " + i.getEstado().getEtiqueta()
+                        + "\nFecha de registro: " + n(Fechas.dia(i.getFechaRegistro())));
         fichaContratos.setItems(FXCollections.observableArrayList(f.contratos()));
         fichaMantenimientos.setItems(FXCollections.observableArrayList(f.mantenimientos()));
         RentabilidadService.Resumen finanzas = f.finanzas();
@@ -332,9 +380,24 @@ public class InmuebleController implements Refrescable {
         };
     }
 
+    private void limitar(TextInputControl campo, int maximo) {
+        campo.setTextFormatter(new TextFormatter<>(c ->
+                c.getControlNewText().length() <= maximo ? c : null));
+    }
+
     private BigDecimal decimal(String v) {
         return v == null || v.isBlank() ? null : new BigDecimal(v.trim().replace(',', '.'));
     }
+
+    private int entero(String v) {
+        return v == null || v.isBlank() ? 0 : Integer.parseInt(v.trim());
+    }
+
+    private String texto(String v) { return v == null ? "" : v; }
+
+    private String cantidad(Integer v) { return v == null ? "" : String.valueOf(v); }
+
+    private String numero(Integer v) { return v == null ? "—" : String.valueOf(v); }
 
     private String n(String v) { return v == null || v.isBlank() ? "—" : v; }
     private String msg(Throwable e) {

@@ -146,6 +146,82 @@
 
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
 
+                <VBox spacing="10">
+                    <Label text="UBICACIÓN" styleClass="seccion-form"/>
+                    <VBox styleClass="campo">
+                        <Label text="Referencia" styleClass="campo-label"/>
+                        <TextField fx:id="referencia" promptText="Ej. Frente al parque, torre B" maxWidth="Infinity"/>
+                    </VBox>
+                    <GridPane hgap="14" vgap="14">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="50"/>
+                            <ColumnConstraints percentWidth="50"/>
+                        </columnConstraints>
+                        <VBox styleClass="campo" GridPane.columnIndex="0">
+                            <Label text="Distrito" styleClass="campo-label"/>
+                            <TextField fx:id="distrito" promptText="Ej. Miraflores" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox styleClass="campo" GridPane.columnIndex="1">
+                            <Label text="Provincia" styleClass="campo-label"/>
+                            <TextField fx:id="provincia" promptText="Ej. Lima" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox styleClass="campo" GridPane.rowIndex="1" GridPane.columnIndex="0">
+                            <Label text="Departamento" styleClass="campo-label"/>
+                            <TextField fx:id="departamento" promptText="Ej. Lima" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox styleClass="campo" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                            <Label text="Piso" styleClass="campo-label"/>
+                            <TextField fx:id="piso" promptText="Ej. 3, PB, Sótano" maxWidth="Infinity"/>
+                        </VBox>
+                    </GridPane>
+                </VBox>
+
+                <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
+
+                <VBox spacing="10">
+                    <Label text="CARACTERÍSTICAS" styleClass="seccion-form"/>
+                    <GridPane hgap="14" vgap="14">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="50"/>
+                            <ColumnConstraints percentWidth="50"/>
+                        </columnConstraints>
+                        <VBox styleClass="campo" GridPane.columnIndex="0">
+                            <Label text="Dormitorios" styleClass="campo-label"/>
+                            <TextField fx:id="dormitorios" promptText="0" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox styleClass="campo" GridPane.columnIndex="1">
+                            <Label text="Baños" styleClass="campo-label"/>
+                            <TextField fx:id="banos" promptText="0" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox styleClass="campo" GridPane.rowIndex="1" GridPane.columnIndex="0">
+                            <Label text="Estacionamientos" styleClass="campo-label"/>
+                            <TextField fx:id="estacionamientos" promptText="0" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox styleClass="campo" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                            <Label text="Amoblado" styleClass="campo-label"/>
+                            <CheckBox fx:id="amoblado" text="Incluye muebles"/>
+                        </VBox>
+                    </GridPane>
+                </VBox>
+
+                <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
+
+                <VBox spacing="10">
+                    <Label text="DETALLES" styleClass="seccion-form"/>
+                    <VBox styleClass="campo">
+                        <Label text="Servicios incluidos" styleClass="campo-label"/>
+                        <TextArea fx:id="serviciosIncluidos" promptText="Ej. Agua, luz, internet, mantenimiento"
+                                  prefRowCount="2" wrapText="true"/>
+                    </VBox>
+                    <VBox styleClass="campo">
+                        <Label text="Descripción" styleClass="campo-label"/>
+                        <TextArea fx:id="descripcion" promptText="Observaciones generales del inmueble"
+                                  prefRowCount="3" wrapText="true"/>
+                    </VBox>
+                </VBox>
+
+                <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
+
                 <VBox spacing="14">
                     <GridPane hgap="14" vgap="14">
                         <columnConstraints>

@@ -6,6 +6,23 @@ import lombok.RequiredArgsConstructor; import org.springframework.data.domain.*;
  public Page<Inmueble> listar(String texto,EstadoInmueble estado,Long tipoId,int pagina,int tamano){return repository.buscar(texto==null?"":texto.trim(),estado,tipoId,PageRequest.of(Math.max(0,pagina),tamano,Sort.by("codigo")));}
  @Transactional public String proximoCodigo(){return secuencias.formatear("INM-",secuencias.siguiente("INMUEBLE"),4);}
  @Transactional public Inmueble guardar(Inmueble a){permisos.exigirGestion();if(a.getNombre()==null||a.getNombre().isBlank())throw new NegocioException("El nombre del inmueble es obligatorio");if(a.getAreaM2()!=null&&a.getAreaM2().signum()<=0)throw new NegocioException("El área debe ser mayor que cero");if(a.getRentaReferencial()!=null&&a.getRentaReferencial().signum()<0)throw new NegocioException("La renta referencial no puede ser negativa");boolean nueva=a.getId()==null; if(nueva&&a.getEstado()==EstadoInmueble.ALQUILADO)throw new NegocioException("El estado ALQUILADO solo puede establecerse desde un contrato"); Inmueble i=nueva?new Inmueble():repository.findById(a.getId()).orElseThrow(()->new NegocioException("El inmueble no existe"));if(!nueva&&i.getEstado()!=a.getEstado()&&(i.getEstado()==EstadoInmueble.ALQUILADO||a.getEstado()==EstadoInmueble.ALQUILADO))throw new NegocioException("No se puede cambiar el estado de un inmueble alquilado manualmente");String codigo=(a.getCodigo()==null||a.getCodigo().isBlank())?proximoCodigo():a.getCodigo().trim().toUpperCase();if(nueva?repository.existsByCodigoIgnoreCase(codigo):repository.existsByCodigoIgnoreCaseAndIdNot(codigo,a.getId()))throw new NegocioException("Ya existe un inmueble con ese código");copiar(a,i);i.setCodigo(codigo);i.setTipo(a.getTipo()==null?null:tipos.findById(a.getTipo().getId()).orElseThrow(()->new NegocioException("El tipo no existe")));i.setPropietario(a.getPropietario()==null?null:propietarios.findById(a.getPropietario().getId()).orElseThrow(()->new NegocioException("El propietario no existe")));if(nueva)i.setFechaRegistro(LocalDate.now(clock));return repository.save(i);}
- private void copiar(Inmueble a,Inmueble i){i.setNombre(a.getNombre().trim());i.setDireccion(vacio(a.getDireccion()));i.setReferencia(vacio(a.getReferencia()));i.setDistrito(vacio(a.getDistrito()));i.setProvincia(vacio(a.getProvincia()));i.setDepartamento(vacio(a.getDepartamento()));i.setPiso(vacio(a.getPiso()));i.setAreaM2(escalar(a.getAreaM2()));i.setDormitorios(cero(a.getDormitorios()));i.setBanos(cero(a.getBanos()));i.setEstacionamientos(cero(a.getEstacionamientos()));i.setAmoblado(a.isAmoblado());i.setRentaReferencial(escalar(a.getRentaReferencial()));i.setEstado(a.getEstado()==null?EstadoInmueble.DISPONIBLE:a.getEstado());i.setServiciosIncluidos(vacio(a.getServiciosIncluidos()));i.setDescripcion(vacio(a.getDescripcion()));}
- private static int cero(Integer v){return v==null?0:v;} private static BigDecimal escalar(BigDecimal v){return v==null?null:v.setScale(2,RoundingMode.HALF_UP);} private static String vacio(String v){return v==null||v.isBlank()?null:v.trim();}
+ private void copiar(Inmueble a,Inmueble i){
+  i.setNombre(a.getNombre().trim());
+  if(a.getDireccion()!=null)i.setDireccion(vacio(a.getDireccion()));
+  if(a.getReferencia()!=null)i.setReferencia(vacio(a.getReferencia()));
+  if(a.getDistrito()!=null)i.setDistrito(vacio(a.getDistrito()));
+  if(a.getProvincia()!=null)i.setProvincia(vacio(a.getProvincia()));
+  if(a.getDepartamento()!=null)i.setDepartamento(vacio(a.getDepartamento()));
+  if(a.getPiso()!=null)i.setPiso(vacio(a.getPiso()));
+  if(a.getAreaM2()!=null)i.setAreaM2(escalar(a.getAreaM2()));
+  if(a.getDormitorios()!=null)i.setDormitorios(a.getDormitorios());
+  if(a.getBanos()!=null)i.setBanos(a.getBanos());
+  if(a.getEstacionamientos()!=null)i.setEstacionamientos(a.getEstacionamientos());
+  i.setAmoblado(a.isAmoblado());
+  if(a.getRentaReferencial()!=null)i.setRentaReferencial(escalar(a.getRentaReferencial()));
+  if(a.getEstado()!=null)i.setEstado(a.getEstado());
+  if(a.getServiciosIncluidos()!=null)i.setServiciosIncluidos(vacio(a.getServiciosIncluidos()));
+  if(a.getDescripcion()!=null)i.setDescripcion(vacio(a.getDescripcion()));
+ }
+ private static BigDecimal escalar(BigDecimal v){return v==null?null:v.setScale(2,RoundingMode.HALF_UP);} private static String vacio(String v){return v==null||v.isBlank()?null:v.trim();}
 }

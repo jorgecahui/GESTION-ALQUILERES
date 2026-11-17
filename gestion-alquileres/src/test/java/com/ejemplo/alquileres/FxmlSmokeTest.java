@@ -8,6 +8,7 @@ import com.ejemplo.alquileres.controller.ContratoFormController;
 import com.ejemplo.alquileres.controller.FichaInmuebleController;
 import com.ejemplo.alquileres.controller.InmuebleController;
 import com.ejemplo.alquileres.controller.MainController;
+import com.ejemplo.alquileres.controller.MaquetaController;
 import com.ejemplo.alquileres.controller.MantenimientoController;
 import com.ejemplo.alquileres.controller.PagosController;
 import com.ejemplo.alquileres.controller.PersonaController;
@@ -101,6 +102,14 @@ class FxmlSmokeTest {
                 mock(ReporteMantenimientoExcelService.class), mock(RentabilidadService.class),
                 Clock.systemUTC(), mock(Tareas.class), mock(Notificador.class), mock(Exportador.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/mantenimiento-view.fxml"));
+        loader.setControllerFactory(clase -> controlador);
+        Parent raiz = loader.load();
+        assertNotNull(raiz);
+    }
+
+    @Test void cargaMaqueta3d() throws Exception {
+        MaquetaController controlador = new MaquetaController();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/maqueta-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
         assertNotNull(raiz);

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ejemplo.alquileres.controller.MaquetaController"
+      styleClass="pagina" spacing="16" maxWidth="Infinity" maxHeight="Infinity">
+    <HBox styleClass="pagina-cabecera">
+        <VBox HBox.hgrow="ALWAYS" spacing="2">
+            <Label text="Maqueta 3D" styleClass="pagina-titulo"/>
+            <Label text="Vista general del edificio: estado de cada unidad y alertas de mora."
+                   styleClass="pagina-subtitulo"/>
+        </VBox>
+        <Button fx:id="btnRestablecer" text="Restablecer vista" onAction="#onRestablecerVista"
+                styleClass="button-outlined">
+            <graphic><FontIcon iconLiteral="fth-rotate-ccw"/></graphic>
+        </Button>
+    </HBox>
+
+    <StackPane fx:id="contenedor3d" styleClass="maqueta-contenedor" VBox.vgrow="ALWAYS">
+        <Pane fx:id="capaEtiquetas" mouseTransparent="true" pickOnBounds="false"/>
+        <Label fx:id="etiquetaHover" styleClass="maqueta-hover" visible="false"
+               mouseTransparent="true" wrapText="true" maxWidth="420"
+               StackPane.alignment="TOP_LEFT">
+            <StackPane.margin><Insets top="18.0" left="18.0" right="18.0"/></StackPane.margin>
+        </Label>
+        <Label fx:id="ayuda" text="Arrastra para rotar · Usa la rueda para acercar"
+               styleClass="maqueta-ayuda" mouseTransparent="true"
+               StackPane.alignment="BOTTOM_LEFT">
+            <StackPane.margin><Insets bottom="16.0" left="18.0"/></StackPane.margin>
+        </Label>
+    </StackPane>
+
+    <HBox fx:id="leyenda" styleClass="maqueta-leyenda" alignment="CENTER_LEFT">
+        <Label text="Estados" styleClass="maqueta-leyenda-titulo"/>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Region styleClass="maqueta-punto,maqueta-punto-disponible"/>
+            <Label text="Disponible" styleClass="maqueta-leyenda-etiqueta"/>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Region styleClass="maqueta-punto,maqueta-punto-alquilado"/>
+            <Label text="Alquilado" styleClass="maqueta-leyenda-etiqueta"/>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Region styleClass="maqueta-punto,maqueta-punto-mantenimiento"/>
+            <Label text="Mantenimiento" styleClass="maqueta-leyenda-etiqueta"/>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Region styleClass="maqueta-punto,maqueta-punto-inactivo"/>
+            <Label text="Inactivo" styleClass="maqueta-leyenda-etiqueta"/>
+        </HBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Mora" styleClass="maqueta-leyenda-titulo"/>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Region styleClass="maqueta-punto,maqueta-punto-atraso"/>
+            <Label text="Atraso leve" styleClass="maqueta-leyenda-etiqueta"/>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Region styleClass="maqueta-punto,maqueta-punto-moroso"/>
+            <Label text="Moroso" styleClass="maqueta-leyenda-etiqueta"/>
+        </HBox>
+    </HBox>
+</VBox>
