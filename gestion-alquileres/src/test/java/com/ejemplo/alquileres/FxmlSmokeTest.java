@@ -22,6 +22,7 @@ import com.ejemplo.alquileres.service.CronogramaGenerador;
 import com.ejemplo.alquileres.service.EstadoCuentaPdfService;
 import com.ejemplo.alquileres.service.InmuebleService;
 import com.ejemplo.alquileres.service.MantenimientoService;
+import com.ejemplo.alquileres.service.MaquetaService;
 import com.ejemplo.alquileres.service.PagoService;
 import com.ejemplo.alquileres.service.PersonaService;
 import com.ejemplo.alquileres.service.PropietarioService;
@@ -108,7 +109,8 @@ class FxmlSmokeTest {
     }
 
     @Test void cargaMaqueta3d() throws Exception {
-        MaquetaController controlador = new MaquetaController();
+        MaquetaController controlador = new MaquetaController(
+                mock(MaquetaService.class), mock(Tareas.class), mock(Notificador.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/maqueta-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();

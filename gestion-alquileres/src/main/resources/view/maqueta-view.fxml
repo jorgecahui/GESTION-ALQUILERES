@@ -61,4 +61,5 @@
             <Label text="Moroso" styleClass="maqueta-leyenda-etiqueta"/>
         </HBox>
     </HBox>
+    <Label fx:id="avisoUbicacion" styleClass="maqueta-ayuda" visible="false" managed="false" wrapText="true"/>
 </VBox>

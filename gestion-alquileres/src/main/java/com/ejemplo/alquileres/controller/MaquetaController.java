@@ -4,14 +4,14 @@ import static com.ejemplo.alquileres.model.EstadoInmueble.ALQUILADO;
 import static com.ejemplo.alquileres.model.EstadoInmueble.DISPONIBLE;
 import static com.ejemplo.alquileres.model.EstadoInmueble.INACTIVO;
 import static com.ejemplo.alquileres.model.EstadoInmueble.MANTENIMIENTO;
-import static com.ejemplo.alquileres.model.SemaforoMorosidad.AL_DIA;
-import static com.ejemplo.alquileres.model.SemaforoMorosidad.ATRASO_LEVE;
-import static com.ejemplo.alquileres.model.SemaforoMorosidad.MOROSO;
 
 import com.ejemplo.alquileres.model.EstadoInmueble;
 import com.ejemplo.alquileres.model.SemaforoMorosidad;
+import com.ejemplo.alquileres.service.MaquetaService;
 import com.ejemplo.alquileres.ui.BloqueMaqueta;
+import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
+import com.ejemplo.alquileres.ui.Tareas;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,10 +55,8 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.stereotype.Component;
 
 /**
- * Maqueta 3D del edificio de alquileres.
- *
- * <p>En este paso los bloques se construyen con {@link #datosDeEjemplo()}; en el paso 3
- * esa fuente se reemplazará por la consulta real de inmuebles y su morosidad.</p>
+ * Maqueta 3D del edificio de alquileres. Los bloques se cargan desde
+ * {@link MaquetaService} fuera del hilo de JavaFX y se convierten en nodos en el hilo FX.
  */
 @Component
 public class MaquetaController implements Refrescable {
@@ -105,8 +103,12 @@ public class MaquetaController implements Refrescable {
 
     @FXML private StackPane contenedor3d;
     @FXML private Pane capaEtiquetas;
-    @FXML private Label etiquetaHover, ayuda;
+    @FXML private Label etiquetaHover, ayuda, avisoUbicacion;
     @FXML private Button btnRestablecer;
+
+    private final MaquetaService service;
+    private final Tareas tareas;
+    private final Notificador notificador;
 
     private final Map<EstadoInmueble, PhongMaterial> materiales = new EnumMap<>(EstadoInmueble.class);
     private final Map<Color, PhongMaterial> materialesMora = new HashMap<>();
@@ -128,8 +130,16 @@ public class MaquetaController implements Refrescable {
 
     private double xPresionado, yPresionado;
     private boolean arrastrando;
+    private boolean escenaIntentada;
     private BloqueMaqueta bloqueHover;
     private Node nodoHover;
+    private VBox mensajeEscena;
+
+    public MaquetaController(MaquetaService service, Tareas tareas, Notificador notificador) {
+        this.service = service;
+        this.tareas = tareas;
+        this.notificador = notificador;
+    }
 
     @FXML
     public void initialize() {
@@ -147,11 +157,16 @@ public class MaquetaController implements Refrescable {
 
     @Override
     public void refrescar() {
-        // Paso 3: aquí se volverá a construir la maqueta con los inmuebles reales.
+        tareas.ejecutar(service::cargar, this::aplicarResultado, this::mostrarError);
     }
 
     private void iniciarMaqueta() {
-        if (contenedor3d == null) return;
+        if (escenaIntentada) return;
+        escenaIntentada = true;
+        if (contenedor3d == null) {
+            escenaIntentada = false;
+            return;
+        }
         if (!Platform.isSupported(ConditionalFeature.SCENE3D)) {
             mostrarAvisoSin3d();
             return;
@@ -166,12 +181,39 @@ public class MaquetaController implements Refrescable {
         prepararMateriales();
         agregarIluminacion(raiz3d);
         configurarCamara(raiz3d);
-        construirEscena(datosDeEjemplo());
         configurarInteraccion();
 
         contenedor3d.widthProperty().addListener((observable, anterior, actual) -> actualizarEncuadreYEtiquetas());
         contenedor3d.heightProperty().addListener((observable, anterior, actual) -> actualizarEncuadreYEtiquetas());
         Platform.runLater(this::actualizarEncuadreYEtiquetas);
+    }
+
+    private void aplicarResultado(MaquetaService.ResultadoMaqueta resultado) {
+        if (resultado == null) return;
+        if (mundo == null) {
+            iniciarMaqueta();
+            if (mundo == null) return;
+        }
+
+        actualizarAvisoUbicacion(resultado.sinUbicacion());
+        if (resultado.bloques().isEmpty()) {
+            limpiarEscena();
+            mostrarMensajeEscena("Sin inmuebles ubicados",
+                    "No hay unidades con nivel y orden para dibujar. "
+                            + "Asigna una ubicación desde el formulario de inmuebles.");
+            return;
+        }
+
+        ocultarMensajeEscena();
+        construirEscena(resultado.bloques());
+    }
+
+    private void mostrarError(Throwable error) {
+        String mensaje = "No se pudieron cargar los datos de la maqueta. Intenta nuevamente.";
+        notificador.error(mensaje);
+        if (contenedor3d != null && mundo != null) {
+            mostrarMensajeEscena("No se pudo actualizar la maqueta", mensaje);
+        }
     }
 
     private void configurarCamara(Group raiz3d) {
@@ -421,7 +463,7 @@ public class MaquetaController implements Refrescable {
         capaEtiquetas.getChildren().clear();
         etiquetasPiso.clear();
         for (Integer nivel : geometria.niveles()) {
-            Label etiqueta = new Label("Piso " + nivel);
+            Label etiqueta = new Label(etiquetaNivel(nivel));
             etiqueta.getStyleClass().add("maqueta-piso-etiqueta");
             etiqueta.setMouseTransparent(true);
             etiqueta.setVisible(false);
@@ -702,6 +744,68 @@ public class MaquetaController implements Refrescable {
         actualizarHover(null);
     }
 
+    private void limpiarEscena() {
+        if (mundo != null) mundo.getChildren().clear();
+        if (capaEtiquetas != null) capaEtiquetas.getChildren().clear();
+        mapaBloques.clear();
+        nodosPorBloque.clear();
+        textosHover.clear();
+        etiquetasPiso.clear();
+        geometria = null;
+        puntosEncuadre = List.of();
+        bloqueHover = null;
+        nodoHover = null;
+        if (etiquetaHover != null) etiquetaHover.setVisible(false);
+    }
+
+    private void actualizarAvisoUbicacion(int sinUbicacion) {
+        if (avisoUbicacion == null) return;
+        boolean visible = sinUbicacion > 0;
+        if (visible) {
+            avisoUbicacion.setText(sinUbicacion == 1
+                    ? "1 inmueble sin ubicación no se muestra"
+                    : sinUbicacion + " inmuebles sin ubicación no se muestran");
+        }
+        avisoUbicacion.setVisible(visible);
+        avisoUbicacion.setManaged(visible);
+    }
+
+    private void mostrarMensajeEscena(String tituloTexto, String detalleTexto) {
+        if (contenedor3d == null) return;
+        ocultarMensajeEscena();
+
+        FontIcon icono = new FontIcon(Feather.ALERT_TRIANGLE);
+        icono.getStyleClass().add("maqueta-aviso-icono");
+
+        Label titulo = new Label(tituloTexto);
+        titulo.getStyleClass().add("maqueta-aviso-titulo");
+
+        Label detalle = new Label(detalleTexto);
+        detalle.getStyleClass().add("maqueta-aviso-detalle");
+        detalle.setWrapText(true);
+        detalle.setMaxWidth(460);
+
+        VBox aviso = new VBox(8, icono, titulo, detalle);
+        aviso.setAlignment(Pos.CENTER);
+        aviso.setMaxWidth(520);
+        aviso.setMouseTransparent(true);
+        aviso.getStyleClass().add("maqueta-aviso");
+        mensajeEscena = aviso;
+        contenedor3d.getChildren().add(aviso);
+    }
+
+    private void ocultarMensajeEscena() {
+        if (mensajeEscena == null) return;
+        contenedor3d.getChildren().remove(mensajeEscena);
+        mensajeEscena = null;
+    }
+
+    private String etiquetaNivel(int nivel) {
+        if (nivel == 0) return "Planta baja";
+        if (nivel < 0) return "Sótano " + Math.abs(nivel);
+        return "Piso " + nivel;
+    }
+
     private void mostrarAvisoSin3d() {
         if (ayuda != null) {
             ayuda.setVisible(false);
@@ -728,10 +832,17 @@ public class MaquetaController implements Refrescable {
     }
 
     private String descripcionHover(BloqueMaqueta bloque) {
-        StringBuilder texto = new StringBuilder(bloque.etiqueta())
-                .append(" · Piso ").append(bloque.nivel())
+        StringBuilder texto = new StringBuilder();
+        if (bloque.codigo() != null && !bloque.codigo().isBlank()) {
+            texto.append(bloque.codigo()).append(" · ");
+        }
+        texto.append(bloque.nombre() == null ? "Sin nombre" : bloque.nombre())
+                .append(" · ").append(bloque.tipo() == null ? "Sin tipo" : bloque.tipo())
+                .append(" · ").append(etiquetaNivel(bloque.nivel()))
                 .append(" · ").append(bloque.estado().getEtiqueta());
+        if (bloque.arrendatario() != null) texto.append(" · ").append(bloque.arrendatario());
         if (bloque.semaforo() != null) texto.append(" · ").append(bloque.semaforo().getEtiqueta());
+        if (bloque.inconsistencia()) texto.append(" · Sin contrato vigente");
         return texto.toString();
     }
 
@@ -753,43 +864,4 @@ public class MaquetaController implements Refrescable {
                               double aspecto, double ancho, double alto) {
     }
 
-    /**
-     * Datos de ejemplo del paso 1. En el paso 3 se reemplaza únicamente este método
-     * por la consulta al servicio de inmuebles.
-     */
-    private List<BloqueMaqueta> datosDeEjemplo() {
-        List<BloqueMaqueta> bloques = new ArrayList<>(20);
-
-        agregar(bloques, 1, 1, ALQUILADO, MOROSO);
-        agregar(bloques, 1, 2, ALQUILADO, AL_DIA);
-        agregar(bloques, 1, 3, DISPONIBLE, null);
-        agregar(bloques, 1, 4, ALQUILADO, ATRASO_LEVE);
-        agregar(bloques, 1, 5, MANTENIMIENTO, null);
-
-        agregar(bloques, 2, 1, ALQUILADO, AL_DIA);
-        agregar(bloques, 2, 2, ALQUILADO, MOROSO);
-        agregar(bloques, 2, 3, ALQUILADO, ATRASO_LEVE);
-        agregar(bloques, 2, 4, DISPONIBLE, null);
-        agregar(bloques, 2, 5, INACTIVO, null);
-
-        agregar(bloques, 3, 1, DISPONIBLE, null);
-        agregar(bloques, 3, 2, ALQUILADO, AL_DIA);
-        agregar(bloques, 3, 3, MANTENIMIENTO, null);
-        agregar(bloques, 3, 4, ALQUILADO, AL_DIA);
-        agregar(bloques, 3, 5, ALQUILADO, ATRASO_LEVE);
-
-        agregar(bloques, 4, 1, ALQUILADO, MOROSO);
-        agregar(bloques, 4, 2, INACTIVO, null);
-        agregar(bloques, 4, 3, ALQUILADO, AL_DIA);
-        agregar(bloques, 4, 4, DISPONIBLE, null);
-        agregar(bloques, 4, 5, ALQUILADO, AL_DIA);
-
-        return bloques;
-    }
-
-    private void agregar(List<BloqueMaqueta> bloques, int nivel, int orden,
-                         EstadoInmueble estado, SemaforoMorosidad semaforo) {
-        long id = (long) nivel * 100 + orden;
-        bloques.add(new BloqueMaqueta(id, "Depto. " + id, nivel, orden, estado, semaforo));
-    }
 }

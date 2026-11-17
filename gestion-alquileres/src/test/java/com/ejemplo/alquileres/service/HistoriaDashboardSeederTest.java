@@ -8,15 +8,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ejemplo.alquileres.model.Contrato;
+import com.ejemplo.alquileres.model.EstadoContrato;
+import com.ejemplo.alquileres.model.EstadoInmueble;
+import com.ejemplo.alquileres.model.Inmueble;
 import com.ejemplo.alquileres.model.Pago;
+import com.ejemplo.alquileres.model.Persona;
+import com.ejemplo.alquileres.model.SemaforoMorosidad;
 import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
 import com.ejemplo.alquileres.repository.PagoRepository;
 import com.ejemplo.alquileres.repository.PersonaRepository;
 import com.ejemplo.alquileres.seeder.HistoriaDashboardSeeder;
+import com.ejemplo.alquileres.service.ConfiguracionService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -25,6 +34,7 @@ class HistoriaDashboardSeederTest {
     private final PagoRepository pagos = Mockito.mock(PagoRepository.class);
     private final InmuebleRepository inmuebles = Mockito.mock(InmuebleRepository.class);
     private final PersonaRepository personas = Mockito.mock(PersonaRepository.class);
+    private final ConfiguracionService configuracion = Mockito.mock(ConfiguracionService.class);
 
     @Test void reparaElDetalleFaltanteDeUnPagoDemo() {
         Contrato contrato = DatosFase6.contrato();
@@ -69,8 +79,49 @@ class HistoriaDashboardSeederTest {
         verify(pagos, never()).save(any(Pago.class));
     }
 
+    @Test void generaDiezContratosConRepartoDeSemaforos() {
+        when(contratos.count()).thenReturn(0L);
+        when(configuracion.umbralLeveDias()).thenReturn(15);
+        when(configuracion.cuotasRojo()).thenReturn(2);
+        when(configuracion.moraDiasGracia()).thenReturn(3);
+
+        List<Inmueble> alquilados = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            alquilados.add(Inmueble.builder().id((long) i).codigo("INM-" + i)
+                    .nombre("Unidad " + i).nivel((i - 1) / 5 + 1).orden((i - 1) % 5 + 1)
+                    .estado(EstadoInmueble.ALQUILADO).rentaReferencial(new BigDecimal("1200.00"))
+                    .build());
+        }
+        List<Persona> activas = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            activas.add(Persona.builder().id((long) i).nombres("Inquilino " + i)
+                    .apellidos("Demo").numeroDocumento(String.format("%08d", 73000000 + i))
+                    .activo(true).build());
+        }
+        List<Contrato> guardados = new ArrayList<>();
+        when(inmuebles.findAll()).thenReturn(alquilados);
+        when(personas.findAll()).thenReturn(activas);
+        when(contratos.save(any(Contrato.class))).thenAnswer(invocacion -> {
+            Contrato contrato = invocacion.getArgument(0);
+            guardados.add(contrato);
+            return contrato;
+        });
+        when(pagos.save(any(Pago.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
+
+        seeder().cargar();
+
+        assertEquals(10, guardados.size());
+        assertTrue(guardados.stream().allMatch(c -> c.getEstado() == EstadoContrato.VIGENTE));
+        MorosidadService morosidad = new MorosidadService(DatosFase6.servicioConfiguracion(), DatosFase6.CLOCK);
+        Map<SemaforoMorosidad, Long> reparto = guardados.stream()
+                .collect(Collectors.groupingBy(morosidad::semaforo, Collectors.counting()));
+        assertEquals(6L, reparto.getOrDefault(SemaforoMorosidad.AL_DIA, 0L));
+        assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.ATRASO_LEVE, 0L));
+        assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.MOROSO, 0L));
+    }
+
     private HistoriaDashboardSeeder seeder() {
-        return new HistoriaDashboardSeeder(contratos, pagos, inmuebles, personas, DatosFase6.CLOCK);
+        return new HistoriaDashboardSeeder(contratos, pagos, inmuebles, personas, configuracion, DatosFase6.CLOCK);
     }
 
     private Pago pagoDemo(Contrato contrato) {
