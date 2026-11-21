@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -120,10 +121,14 @@ public class MaquetaController implements Refrescable {
     private static final Color COLOR_MORA_ATRASO = Color.web("#ffc107");
     private static final Color COLOR_SELECCION = Color.web("#f8fafc");
 
+    private static final double ALFA_ATENUADO = 0.12;
+
     @FXML private StackPane contenedor3d;
     @FXML private Pane capaEtiquetas;
-    @FXML private Label etiquetaHover, ayuda, avisoUbicacion;
+    @FXML private Label etiquetaHover, ayuda, avisoUbicacion, resumen;
     @FXML private Button btnRestablecer;
+    @FXML private HBox leyendaDisponible, leyendaAlquilado, leyendaMantenimiento,
+            leyendaInactivo, leyendaAtraso, leyendaMoroso;
 
     private final MaquetaService service;
     private final Tareas tareas;
@@ -131,9 +136,14 @@ public class MaquetaController implements Refrescable {
     private final MainController principal;
 
     private final Map<EstadoInmueble, PhongMaterial> materiales = new EnumMap<>(EstadoInmueble.class);
+    private final Map<EstadoInmueble, PhongMaterial> materialesAtenuados =
+            new EnumMap<>(EstadoInmueble.class);
     private final Map<Color, PhongMaterial> materialesMora = new HashMap<>();
+    private final Map<Color, PhongMaterial> materialesMoraAtenuados = new HashMap<>();
     private final Map<Node, BloqueMaqueta> mapaBloques = new HashMap<>();
-    private final Map<BloqueMaqueta, Node> nodosPorBloque = new HashMap<>();
+    private final Map<BloqueMaqueta, Node> nodosPorBloque = new LinkedHashMap<>();
+    private final Map<BloqueMaqueta, Box> cajasPorBloque = new HashMap<>();
+    private final Map<BloqueMaqueta, Cylinder> marcasPorBloque = new HashMap<>();
     private final Map<BloqueMaqueta, String> textosHover = new HashMap<>();
     private final List<EtiquetaPiso> etiquetasPiso = new ArrayList<>();
 
@@ -156,6 +166,12 @@ public class MaquetaController implements Refrescable {
     private Node nodoHover;
     private VBox mensajeEscena;
 
+    private final List<ItemLeyenda> itemsLeyenda = new ArrayList<>();
+    private EstadoInmueble filtroEstado;
+    private SemaforoMorosidad filtroSemaforo;
+    private boolean filtroActivo;
+    private boolean filtroFijo;
+
     public MaquetaController(MaquetaService service, Tareas tareas, Notificador notificador,
                              MainController principal) {
         this.service = service;
@@ -168,6 +184,7 @@ public class MaquetaController implements Refrescable {
     public void initialize() {
         if (Platform.isFxApplicationThread()) iniciarMaqueta();
         else Platform.runLater(this::iniciarMaqueta);
+        configurarLeyenda();
 
         // RestriccionesUi desactiva los botones con la palabra "restablecer"; este control
         // solo devuelve la cámara a su posición y no requiere permisos de administrador.
@@ -180,6 +197,8 @@ public class MaquetaController implements Refrescable {
 
     @Override
     public void refrescar() {
+        if (Platform.isFxApplicationThread()) mostrarCargandoEscena();
+        else Platform.runLater(this::mostrarCargandoEscena);
         tareas.ejecutar(service::cargar, this::aplicarResultado, this::mostrarError);
     }
 
@@ -223,6 +242,7 @@ public class MaquetaController implements Refrescable {
         }
 
         actualizarAvisoUbicacion(resultado.sinUbicacion());
+        actualizarResumen(resultado.bloques());
         if (resultado.bloques().isEmpty()) {
             limpiarEscena();
             mostrarMensajeEscena("Sin inmuebles ubicados",
@@ -238,7 +258,8 @@ public class MaquetaController implements Refrescable {
     private void mostrarError(Throwable error) {
         String mensaje = "No se pudieron cargar los datos de la maqueta. Intenta nuevamente.";
         notificador.error(mensaje);
-        if (contenedor3d != null && mundo != null) {
+        if (contenedor3d != null && Platform.isSupported(ConditionalFeature.SCENE3D)) {
+            if (mundo == null) iniciarMaqueta();
             mostrarMensajeEscena("No se pudo actualizar la maqueta", mensaje);
         }
     }
@@ -290,6 +311,14 @@ public class MaquetaController implements Refrescable {
         materiales.put(ALQUILADO, material(COLOR_ALQUILADO));
         materiales.put(MANTENIMIENTO, material(COLOR_MANTENIMIENTO));
         materiales.put(INACTIVO, material(COLOR_INACTIVO));
+        materialesAtenuados.put(DISPONIBLE, materialAtenuado(COLOR_DISPONIBLE));
+        materialesAtenuados.put(ALQUILADO, materialAtenuado(COLOR_ALQUILADO));
+        materialesAtenuados.put(MANTENIMIENTO, materialAtenuado(COLOR_MANTENIMIENTO));
+        materialesAtenuados.put(INACTIVO, materialAtenuado(COLOR_INACTIVO));
+        materialesMora.put(COLOR_MORA_MOROSO, material(COLOR_MORA_MOROSO));
+        materialesMora.put(COLOR_MORA_ATRASO, material(COLOR_MORA_ATRASO));
+        materialesMoraAtenuados.put(COLOR_MORA_MOROSO, materialAtenuado(COLOR_MORA_MOROSO));
+        materialesMoraAtenuados.put(COLOR_MORA_ATRASO, materialAtenuado(COLOR_MORA_ATRASO));
         materialBase = material(COLOR_BASE);
         materialEstructura = material(COLOR_ESTRUCTURA);
         materialSeleccion = material(COLOR_SELECCION);
@@ -302,6 +331,14 @@ public class MaquetaController implements Refrescable {
         return material;
     }
 
+    private PhongMaterial materialAtenuado(Color color) {
+        PhongMaterial material = new PhongMaterial(new Color(color.getRed(), color.getGreen(),
+                color.getBlue(), ALFA_ATENUADO));
+        material.setSpecularColor(Color.TRANSPARENT);
+        material.setSpecularPower(0);
+        return material;
+    }
+
     private void construirEscena(List<BloqueMaqueta> bloques) {
         List<BloqueMaqueta> lista = bloques == null ? List.of() : bloques;
         limpiarSeleccion();
@@ -311,6 +348,8 @@ public class MaquetaController implements Refrescable {
         mundo.getChildren().clear();
         mapaBloques.clear();
         nodosPorBloque.clear();
+        cajasPorBloque.clear();
+        marcasPorBloque.clear();
         textosHover.clear();
         bloqueHover = null;
         nodoHover = null;
@@ -318,6 +357,7 @@ public class MaquetaController implements Refrescable {
         crearEtiquetasPiso();
         mundo.getChildren().add(crearEstructura());
         for (BloqueMaqueta bloque : lista) mundo.getChildren().add(crearBloque(bloque));
+        aplicarFiltroMateriales();
 
         Platform.runLater(this::actualizarEncuadreYEtiquetas);
     }
@@ -515,6 +555,7 @@ public class MaquetaController implements Refrescable {
         caja.setTranslateX(posicion.getX());
         caja.setTranslateY(posicion.getY());
         caja.setTranslateZ(posicion.getZ());
+        cajasPorBloque.put(bloque, caja);
 
         Group grupo = new Group(caja);
 
@@ -527,6 +568,7 @@ public class MaquetaController implements Refrescable {
                 marca.setTranslateY(posicion.getY() - ALTO_UNIDAD / 2 - ALTO_MARCA / 2);
                 marca.setTranslateZ(posicion.getZ());
                 grupo.getChildren().add(marca);
+                marcasPorBloque.put(bloque, marca);
                 mapaBloques.put(marca, bloque);
             }
         }
@@ -542,8 +584,16 @@ public class MaquetaController implements Refrescable {
         return materiales.get(estado);
     }
 
+    private PhongMaterial materialAtenuadoPara(EstadoInmueble estado) {
+        return materialesAtenuados.get(estado);
+    }
+
     private PhongMaterial materialMora(Color color) {
-        return materialesMora.computeIfAbsent(color, this::material);
+        return materialesMora.get(color);
+    }
+
+    private PhongMaterial materialMoraAtenuado(Color color) {
+        return materialesMoraAtenuados.get(color);
     }
 
     private Color colorMora(SemaforoMorosidad semaforo) {
@@ -1003,12 +1053,162 @@ public class MaquetaController implements Refrescable {
         actualizarHover(null);
     }
 
+    private void configurarLeyenda() {
+        itemsLeyenda.clear();
+        configurarItemLeyenda(leyendaDisponible, DISPONIBLE, null);
+        configurarItemLeyenda(leyendaAlquilado, ALQUILADO, null);
+        configurarItemLeyenda(leyendaMantenimiento, MANTENIMIENTO, null);
+        configurarItemLeyenda(leyendaInactivo, INACTIVO, null);
+        configurarItemLeyenda(leyendaAtraso, null, SemaforoMorosidad.ATRASO_LEVE);
+        configurarItemLeyenda(leyendaMoroso, null, SemaforoMorosidad.MOROSO);
+    }
+
+    private void configurarItemLeyenda(HBox item, EstadoInmueble estado, SemaforoMorosidad semaforo) {
+        if (item == null) return;
+        itemsLeyenda.add(new ItemLeyenda(item, estado, semaforo));
+        item.setOnMouseEntered(evento -> {
+            if (!filtroFijo) aplicarFiltro(estado, semaforo, false);
+        });
+        item.setOnMouseExited(evento -> {
+            if (!filtroFijo) aplicarFiltro(null, null, false);
+        });
+        item.setOnMouseClicked(evento -> {
+            boolean mismoFiltroFijo = filtroFijo && filtroActivo
+                    && filtroEstado == estado && filtroSemaforo == semaforo;
+            if (mismoFiltroFijo) aplicarFiltro(null, null, false);
+            else aplicarFiltro(estado, semaforo, true);
+            evento.consume();
+        });
+    }
+
+    private void aplicarFiltro(EstadoInmueble estado, SemaforoMorosidad semaforo, boolean fijo) {
+        filtroEstado = estado;
+        filtroSemaforo = semaforo;
+        filtroActivo = estado != null || semaforo != null;
+        filtroFijo = fijo;
+        aplicarFiltroMateriales();
+        actualizarEstiloLeyenda();
+    }
+
+    /**
+     * Atenúa los bloques que no coinciden con el filtro cambiando su material por
+     * la versión precalculada con alfa. No se toca la opacidad del nodo: los bloques
+     * siguen participando del picking, del hover y del clic.
+     */
+    private void aplicarFiltroMateriales() {
+        List<Node> opacos = new ArrayList<>();
+        List<Node> atenuados = new ArrayList<>();
+        for (Map.Entry<BloqueMaqueta, Node> entrada : nodosPorBloque.entrySet()) {
+            BloqueMaqueta bloque = entrada.getKey();
+            boolean coincide = !filtroActivo || coincideFiltro(bloque);
+            aplicarMateriales(bloque, coincide);
+            if (!filtroActivo) continue;
+            if (coincide) opacos.add(entrada.getValue());
+            else atenuados.add(entrada.getValue());
+        }
+        if (filtroActivo) ordenarBloques(opacos, atenuados);
+    }
+
+    private boolean coincideFiltro(BloqueMaqueta bloque) {
+        if (filtroEstado != null) return bloque.estado() == filtroEstado;
+        if (filtroSemaforo != null) return bloque.semaforo() == filtroSemaforo;
+        return true;
+    }
+
+    private void aplicarMateriales(BloqueMaqueta bloque, boolean coincide) {
+        Box caja = cajasPorBloque.get(bloque);
+        if (caja != null) {
+            PhongMaterial material = coincide
+                    ? materialPara(bloque.estado())
+                    : materialAtenuadoPara(bloque.estado());
+            if (material != null) caja.setMaterial(material);
+        }
+
+        Cylinder marca = marcasPorBloque.get(bloque);
+        if (marca == null) return;
+        Color color = colorMora(bloque.semaforo());
+        if (color == null) return;
+        PhongMaterial material = coincide
+                ? materialMora(color)
+                : materialMoraAtenuado(color);
+        if (material != null) marca.setMaterial(material);
+    }
+
+    /**
+     * Los materiales atenuados son transparentes; se dibujan después de los opacos
+     * para reducir los artefactos de orden del búfer de profundidad.
+     */
+    private void ordenarBloques(List<Node> opacos, List<Node> atenuados) {
+        if (mundo == null) return;
+        List<Node> bloques = new ArrayList<>(opacos.size() + atenuados.size());
+        bloques.addAll(opacos);
+        bloques.addAll(atenuados);
+        mundo.getChildren().removeAll(bloques);
+        mundo.getChildren().addAll(bloques);
+    }
+
+    private void actualizarEstiloLeyenda() {
+        for (ItemLeyenda item : itemsLeyenda) {
+            boolean activo = filtroActivo && (item.semaforo() != null
+                    ? filtroSemaforo == item.semaforo() && filtroEstado == null
+                    : filtroEstado == item.estado() && filtroSemaforo == null);
+            item.nodo().getStyleClass().remove("filtro-activo");
+            if (activo) item.nodo().getStyleClass().add("filtro-activo");
+        }
+    }
+
+    private void actualizarResumen(List<BloqueMaqueta> bloques) {
+        if (resumen == null) return;
+        if (bloques == null || bloques.isEmpty()) {
+            resumen.setText("Sin inmuebles ubicados");
+            return;
+        }
+        long disponibles = bloques.stream().filter(b -> b.estado() == DISPONIBLE).count();
+        long alquilados = bloques.stream().filter(b -> b.estado() == ALQUILADO).count();
+        long mantenimiento = bloques.stream().filter(b -> b.estado() == MANTENIMIENTO).count();
+        long inactivos = bloques.stream().filter(b -> b.estado() == INACTIVO).count();
+        long morosos = bloques.stream()
+                .filter(b -> b.semaforo() == SemaforoMorosidad.MOROSO).count();
+        long atraso = bloques.stream()
+                .filter(b -> b.semaforo() == SemaforoMorosidad.ATRASO_LEVE).count();
+        resumen.setText(contar(bloques.size(), "inmueble", "inmuebles")
+                + " · " + contar(disponibles, "disponible", "disponibles")
+                + " · " + contar(alquilados, "alquilado", "alquilados")
+                + " · " + mantenimiento + " en mantenimiento"
+                + " · " + contar(inactivos, "inactivo", "inactivos")
+                + " · " + contar(morosos, "moroso", "morosos")
+                + " · " + contar(atraso, "con atraso leve", "con atraso leve"));
+    }
+
+    private String contar(long cantidad, String singular, String plural) {
+        return cantidad + " " + (cantidad == 1 ? singular : plural);
+    }
+
+    private void mostrarCargandoEscena() {
+        if (contenedor3d == null || !Platform.isSupported(ConditionalFeature.SCENE3D)) return;
+        ocultarMensajeEscena();
+        ProgressIndicator indicador = new ProgressIndicator();
+        indicador.setPrefSize(34, 34);
+        indicador.setMaxSize(34, 34);
+        Label texto = new Label("Cargando maqueta…");
+        texto.getStyleClass().add("maqueta-aviso-detalle");
+        VBox aviso = new VBox(10, indicador, texto);
+        aviso.setAlignment(Pos.CENTER);
+        aviso.setMaxWidth(520);
+        aviso.setMouseTransparent(true);
+        aviso.getStyleClass().add("maqueta-aviso");
+        mensajeEscena = aviso;
+        contenedor3d.getChildren().add(aviso);
+    }
+
     private void limpiarEscena() {
         limpiarSeleccion();
         if (mundo != null) mundo.getChildren().clear();
         if (capaEtiquetas != null) capaEtiquetas.getChildren().clear();
         mapaBloques.clear();
         nodosPorBloque.clear();
+        cajasPorBloque.clear();
+        marcasPorBloque.clear();
         textosHover.clear();
         etiquetasPiso.clear();
         geometria = null;
@@ -1118,6 +1318,9 @@ public class MaquetaController implements Refrescable {
     }
 
     private record EtiquetaPiso(Label nodo, Point3D ancla) {
+    }
+
+    private record ItemLeyenda(HBox nodo, EstadoInmueble estado, SemaforoMorosidad semaforo) {
     }
 
     private record Proyeccion(double ojoX, double ojoY, double ojoZ, double tanV,

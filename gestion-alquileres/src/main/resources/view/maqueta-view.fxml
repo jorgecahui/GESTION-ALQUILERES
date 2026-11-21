@@ -34,32 +34,39 @@
 
     <HBox fx:id="leyenda" styleClass="maqueta-leyenda" alignment="CENTER_LEFT">
         <Label text="Estados" styleClass="maqueta-leyenda-titulo"/>
-        <HBox alignment="CENTER_LEFT" spacing="6">
+        <HBox fx:id="leyendaDisponible" alignment="CENTER_LEFT" spacing="6"
+              styleClass="maqueta-leyenda-item">
             <Region styleClass="maqueta-punto,maqueta-punto-disponible"/>
             <Label text="Disponible" styleClass="maqueta-leyenda-etiqueta"/>
         </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="6">
+        <HBox fx:id="leyendaAlquilado" alignment="CENTER_LEFT" spacing="6"
+              styleClass="maqueta-leyenda-item">
             <Region styleClass="maqueta-punto,maqueta-punto-alquilado"/>
             <Label text="Alquilado" styleClass="maqueta-leyenda-etiqueta"/>
         </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="6">
+        <HBox fx:id="leyendaMantenimiento" alignment="CENTER_LEFT" spacing="6"
+              styleClass="maqueta-leyenda-item">
             <Region styleClass="maqueta-punto,maqueta-punto-mantenimiento"/>
             <Label text="Mantenimiento" styleClass="maqueta-leyenda-etiqueta"/>
         </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="6">
+        <HBox fx:id="leyendaInactivo" alignment="CENTER_LEFT" spacing="6"
+              styleClass="maqueta-leyenda-item">
             <Region styleClass="maqueta-punto,maqueta-punto-inactivo"/>
             <Label text="Inactivo" styleClass="maqueta-leyenda-etiqueta"/>
         </HBox>
         <Region HBox.hgrow="ALWAYS"/>
         <Label text="Mora" styleClass="maqueta-leyenda-titulo"/>
-        <HBox alignment="CENTER_LEFT" spacing="6">
+        <HBox fx:id="leyendaAtraso" alignment="CENTER_LEFT" spacing="6"
+              styleClass="maqueta-leyenda-item">
             <Region styleClass="maqueta-punto,maqueta-punto-atraso"/>
             <Label text="Atraso leve" styleClass="maqueta-leyenda-etiqueta"/>
         </HBox>
-        <HBox alignment="CENTER_LEFT" spacing="6">
+        <HBox fx:id="leyendaMoroso" alignment="CENTER_LEFT" spacing="6"
+              styleClass="maqueta-leyenda-item">
             <Region styleClass="maqueta-punto,maqueta-punto-moroso"/>
             <Label text="Moroso" styleClass="maqueta-leyenda-etiqueta"/>
         </HBox>
     </HBox>
+    <Label fx:id="resumen" styleClass="maqueta-resumen" wrapText="true"/>
     <Label fx:id="avisoUbicacion" styleClass="maqueta-ayuda" visible="false" managed="false" wrapText="true"/>
 </VBox>

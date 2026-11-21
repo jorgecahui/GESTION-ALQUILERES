@@ -1751,6 +1751,29 @@
     -fx-font-size: 12px;
 }
 
+.maqueta-leyenda-item {
+    -fx-padding: 3 7 3 7;
+    -fx-background-radius: 7;
+    -fx-cursor: hand;
+}
+
+.maqueta-leyenda-item:hover {
+    -fx-background-color: -color-bg-subtle;
+}
+
+.maqueta-leyenda-item.filtro-activo {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.maqueta-leyenda-item.filtro-activo .maqueta-leyenda-etiqueta {
+    -fx-text-fill: -color-accent-fg;
+}
+
+.maqueta-resumen {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+}
+
 .maqueta-punto {
     -fx-min-width: 10;
     -fx-min-height: 10;
