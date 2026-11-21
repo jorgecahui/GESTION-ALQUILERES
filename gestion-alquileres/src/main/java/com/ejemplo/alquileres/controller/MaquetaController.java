@@ -9,10 +9,14 @@ import com.ejemplo.alquileres.model.EstadoInmueble;
 import com.ejemplo.alquileres.model.SemaforoMorosidad;
 import com.ejemplo.alquileres.service.MaquetaService;
 import com.ejemplo.alquileres.ui.BloqueMaqueta;
+import com.ejemplo.alquileres.ui.Fechas;
 import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
+import com.ejemplo.alquileres.ui.Semaforo;
+import com.ejemplo.alquileres.ui.Tablas;
 import com.ejemplo.alquileres.ui.Tareas;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -24,6 +28,7 @@ import java.util.TreeMap;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
@@ -36,19 +41,32 @@ import javafx.scene.PointLight;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
+import javafx.stage.Window;
 
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -100,6 +118,7 @@ public class MaquetaController implements Refrescable {
     private static final Color COLOR_ESTRUCTURA = Color.web("#6c7688");
     private static final Color COLOR_MORA_MOROSO = Color.web("#e53935");
     private static final Color COLOR_MORA_ATRASO = Color.web("#ffc107");
+    private static final Color COLOR_SELECCION = Color.web("#f8fafc");
 
     @FXML private StackPane contenedor3d;
     @FXML private Pane capaEtiquetas;
@@ -109,6 +128,7 @@ public class MaquetaController implements Refrescable {
     private final MaquetaService service;
     private final Tareas tareas;
     private final Notificador notificador;
+    private final MainController principal;
 
     private final Map<EstadoInmueble, PhongMaterial> materiales = new EnumMap<>(EstadoInmueble.class);
     private final Map<Color, PhongMaterial> materialesMora = new HashMap<>();
@@ -121,24 +141,27 @@ public class MaquetaController implements Refrescable {
     private SubScene subEscena;
     private PerspectiveCamera camara;
     private Rotate rotacionX, rotacionY;
-    private PhongMaterial materialBase, materialEstructura;
+    private PhongMaterial materialBase, materialEstructura, materialSeleccion;
     private Geometria geometria;
     private List<Point3D> puntosEncuadre = List.of();
+    private Box contornoSeleccion;
 
     private double centroZAuto;
     private double distanciaAuto;
 
-    private double xPresionado, yPresionado;
+    private double xPresionado, yPresionado, xInicialClic, yInicialClic;
     private boolean arrastrando;
     private boolean escenaIntentada;
     private BloqueMaqueta bloqueHover;
     private Node nodoHover;
     private VBox mensajeEscena;
 
-    public MaquetaController(MaquetaService service, Tareas tareas, Notificador notificador) {
+    public MaquetaController(MaquetaService service, Tareas tareas, Notificador notificador,
+                             MainController principal) {
         this.service = service;
         this.tareas = tareas;
         this.notificador = notificador;
+        this.principal = principal;
     }
 
     @FXML
@@ -179,6 +202,10 @@ public class MaquetaController implements Refrescable {
 
         Group raiz3d = new Group(mundo);
         prepararMateriales();
+        contornoSeleccion = new Box(ANCHO_UNIDAD + 3, ALTO_UNIDAD + 3, PROFUNDIDAD_UNIDAD + 3);
+        contornoSeleccion.setDrawMode(DrawMode.LINE);
+        contornoSeleccion.setMaterial(materialSeleccion);
+        contornoSeleccion.setMouseTransparent(true);
         agregarIluminacion(raiz3d);
         configurarCamara(raiz3d);
         configurarInteraccion();
@@ -265,6 +292,7 @@ public class MaquetaController implements Refrescable {
         materiales.put(INACTIVO, material(COLOR_INACTIVO));
         materialBase = material(COLOR_BASE);
         materialEstructura = material(COLOR_ESTRUCTURA);
+        materialSeleccion = material(COLOR_SELECCION);
     }
 
     private PhongMaterial material(Color color) {
@@ -276,6 +304,7 @@ public class MaquetaController implements Refrescable {
 
     private void construirEscena(List<BloqueMaqueta> bloques) {
         List<BloqueMaqueta> lista = bloques == null ? List.of() : bloques;
+        limpiarSeleccion();
         geometria = calcularGeometria(lista);
         puntosEncuadre = calcularPuntosEncuadre();
 
@@ -526,6 +555,227 @@ public class MaquetaController implements Refrescable {
         };
     }
 
+    private void seleccionar(BloqueMaqueta bloque) {
+        limpiarSeleccion();
+        if (bloque == null || contornoSeleccion == null || geometria == null) return;
+        Node nodo = nodosPorBloque.get(bloque);
+        Point3D posicion = geometria.posiciones().get(bloque.id());
+        if (!(nodo instanceof Group grupo) || posicion == null) return;
+        contornoSeleccion.setTranslateX(posicion.getX());
+        contornoSeleccion.setTranslateY(posicion.getY());
+        contornoSeleccion.setTranslateZ(posicion.getZ());
+        grupo.getChildren().add(contornoSeleccion);
+    }
+
+    private void limpiarSeleccion() {
+        if (contornoSeleccion != null && contornoSeleccion.getParent() instanceof Group grupo) {
+            grupo.getChildren().remove(contornoSeleccion);
+        }
+    }
+
+    private void abrirDetalle(BloqueMaqueta bloque) {
+        if (bloque == null) return;
+        seleccionar(bloque);
+
+        Dialog<ButtonType> dialogo = new Dialog<>();
+        dialogo.setTitle("Detalle del inmueble");
+        dialogo.setHeaderText(null);
+        Window ventana = ventana();
+        if (ventana != null) dialogo.initOwner(ventana);
+
+        DialogPane panel = dialogo.getDialogPane();
+        panel.getStyleClass().add("dialogo");
+        panel.setPrefWidth(700);
+        var hoja = getClass().getResource("/css/app.css");
+        if (hoja != null) panel.getStylesheets().add(hoja.toExternalForm());
+
+        ButtonType cerrar = new ButtonType("Cerrar", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType ver = new ButtonType("Ver en Inmuebles", ButtonBar.ButtonData.OTHER);
+        panel.getButtonTypes().addAll(cerrar, ver);
+
+        VBox cuerpo = new VBox(8);
+        cuerpo.setPadding(new Insets(0, 4, 0, 4));
+        ScrollPane scroll = new ScrollPane(cuerpo);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setPrefViewportHeight(520);
+        scroll.getStyleClass().add("pagina-scroll");
+        panel.setContent(scroll);
+        mostrarCargandoDetalle(cuerpo);
+
+        boolean[] activo = {true};
+        dialogo.setOnHidden(evento -> {
+            activo[0] = false;
+            limpiarSeleccion();
+        });
+
+        tareas.ejecutar(() -> service.detalle(bloque.id()), detalle -> {
+            if (!activo[0]) return;
+            cuerpo.getChildren().setAll(crearContenidoDetalle(detalle));
+            cuerpo.requestLayout();
+        }, error -> {
+            if (!activo[0]) return;
+            notificador.error("No se pudo cargar el detalle del inmueble.");
+            Label mensaje = new Label("No se pudo cargar el detalle. Intenta nuevamente.");
+            mensaje.getStyleClass().add("campo-error");
+            mensaje.setWrapText(true);
+            cuerpo.getChildren().setAll(mensaje);
+        });
+
+        var resultado = dialogo.showAndWait();
+        if (resultado.isPresent() && resultado.get() == ver && principal != null) {
+            principal.irA("inmuebles");
+        }
+    }
+
+    private void mostrarCargandoDetalle(VBox cuerpo) {
+        ProgressIndicator indicador = new ProgressIndicator();
+        indicador.setPrefSize(34, 34);
+        indicador.setMaxSize(34, 34);
+        Label texto = new Label("Cargando detalle…");
+        texto.getStyleClass().add("pagina-subtitulo");
+        VBox caja = new VBox(10, indicador, texto);
+        caja.setAlignment(Pos.CENTER);
+        caja.setPrefHeight(180);
+        cuerpo.getChildren().setAll(caja);
+    }
+
+    private Node crearContenidoDetalle(MaquetaService.DetalleMaqueta detalle) {
+        VBox contenido = new VBox(8);
+        Label titulo = new Label(detalle.codigo() + " · " + detalle.nombre());
+        titulo.getStyleClass().add("dialogo-titulo");
+        titulo.setWrapText(true);
+        contenido.getChildren().addAll(titulo, new Separator());
+
+        Label seccionInmueble = new Label("INMUEBLE");
+        seccionInmueble.getStyleClass().add("seccion-form");
+        GridPane datos = gridDetalle();
+        agregarPar(datos, 0, 0, "Tipo", valor(detalle.tipo()));
+        agregarPar(datos, 0, 1, "Nivel / orden", nivelOrden(detalle));
+        agregarFilaCompleta(datos, 1, "Dirección", valor(detalle.direccion()));
+        agregarPar(datos, 2, 0, "Distrito", valor(detalle.distrito()));
+        agregarPar(datos, 2, 1, "Área", detalle.areaM2() == null
+                ? "—" : detalle.areaM2().toPlainString() + " m²");
+        agregarPar(datos, 3, 0, "Dormitorios", numero(detalle.dormitorios()));
+        agregarPar(datos, 3, 1, "Baños", numero(detalle.banos()));
+        agregarPar(datos, 4, 0, "Renta referencial", moneda(detalle.rentaReferencial()));
+        agregarPar(datos, 4, 1, "Estado", detalle.estado().getEtiqueta());
+        contenido.getChildren().addAll(seccionInmueble, datos);
+
+        Label seccionContrato = new Label("CONTRATO VIGENTE");
+        seccionContrato.getStyleClass().add("seccion-form");
+        contenido.getChildren().add(seccionContrato);
+        MaquetaService.ContratoDetalle contrato = detalle.contrato();
+        if (contrato == null) {
+            Label sinContrato = new Label("Sin contrato vigente");
+            sinContrato.getStyleClass().add("campo-ayuda");
+            sinContrato.setWrapText(true);
+            contenido.getChildren().add(sinContrato);
+            if (detalle.inconsistencia()) {
+                Label aviso = new Label("Inconsistencia: el inmueble figura como alquilado "
+                        + "pero no tiene un contrato vigente.");
+                aviso.getStyleClass().add("campo-error");
+                aviso.setWrapText(true);
+                contenido.getChildren().add(aviso);
+            }
+        } else {
+            GridPane datosContrato = gridDetalle();
+            agregarPar(datosContrato, 0, 0, "Código", valor(contrato.codigo()));
+            agregarPar(datosContrato, 0, 1, "Renta mensual", moneda(contrato.rentaMensual()));
+            agregarFilaCompleta(datosContrato, 1, "Arrendatario", valor(contrato.arrendatario()));
+            agregarPar(datosContrato, 2, 0, "Documento", valor(contrato.documento()));
+            HBox semaforo = new HBox(8, Semaforo.crear(contrato.semaforo()));
+            semaforo.setAlignment(Pos.CENTER_LEFT);
+            agregarNodo(datosContrato, 2, 1, "Semáforo", semaforo);
+            agregarPar(datosContrato, 3, 0, "Fecha de inicio", Fechas.dia(contrato.fechaInicio()));
+            agregarPar(datosContrato, 3, 1, "Fecha de fin", Fechas.dia(contrato.fechaFin()));
+            contenido.getChildren().add(datosContrato);
+
+            HBox resumen = new HBox(30,
+                    datoResumen("Cuotas vencidas", String.valueOf(contrato.cuotasVencidas())),
+                    datoResumen("Monto total pendiente", moneda(contrato.montoPendiente())));
+            resumen.setAlignment(Pos.CENTER_LEFT);
+            resumen.getStyleClass().add("maqueta-resumen-cuotas");
+            contenido.getChildren().add(resumen);
+        }
+        return contenido;
+    }
+
+    private GridPane gridDetalle() {
+        GridPane grid = new GridPane();
+        grid.setHgap(16);
+        grid.setVgap(7);
+        ColumnConstraints etiqueta1 = new ColumnConstraints();
+        etiqueta1.setMinWidth(100);
+        etiqueta1.setPrefWidth(105);
+        ColumnConstraints valor1 = new ColumnConstraints();
+        valor1.setHgrow(Priority.ALWAYS);
+        ColumnConstraints etiqueta2 = new ColumnConstraints();
+        etiqueta2.setMinWidth(100);
+        etiqueta2.setPrefWidth(105);
+        ColumnConstraints valor2 = new ColumnConstraints();
+        valor2.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(etiqueta1, valor1, etiqueta2, valor2);
+        return grid;
+    }
+
+    private void agregarPar(GridPane grid, int fila, int par, String etiqueta, String valor) {
+        Label contenido = new Label(valor);
+        contenido.setWrapText(true);
+        contenido.setMaxWidth(Double.MAX_VALUE);
+        agregarNodo(grid, fila, par, etiqueta, contenido);
+    }
+
+    private void agregarFilaCompleta(GridPane grid, int fila, String etiqueta, String valor) {
+        Label nombre = new Label(etiqueta);
+        nombre.getStyleClass().add("campo-label");
+        Label contenido = new Label(valor);
+        contenido.setWrapText(true);
+        contenido.setMaxWidth(Double.MAX_VALUE);
+        grid.add(nombre, 0, fila);
+        grid.add(contenido, 1, fila, 3, 1);
+    }
+
+    private void agregarNodo(GridPane grid, int fila, int par, String etiqueta, Node valor) {
+        Label nombre = new Label(etiqueta);
+        nombre.getStyleClass().add("campo-label");
+        int columna = par * 2;
+        grid.add(nombre, columna, fila);
+        grid.add(valor, columna + 1, fila);
+    }
+
+    private VBox datoResumen(String etiqueta, String valor) {
+        Label nombre = new Label(etiqueta);
+        nombre.getStyleClass().add("maqueta-resumen-etiqueta");
+        Label contenido = new Label(valor);
+        contenido.getStyleClass().add("maqueta-resumen-valor");
+        return new VBox(2, nombre, contenido);
+    }
+
+    private String nivelOrden(MaquetaService.DetalleMaqueta detalle) {
+        String nivel = detalle.nivel() == null ? "—" : etiquetaNivel(detalle.nivel());
+        String orden = detalle.orden() == null ? "—" : String.valueOf(detalle.orden());
+        return nivel + " · Orden " + orden;
+    }
+
+    private String valor(String valor) {
+        return valor == null || valor.isBlank() ? "—" : valor;
+    }
+
+    private String numero(Integer valor) {
+        return valor == null ? "—" : String.valueOf(valor);
+    }
+
+    private String moneda(BigDecimal valor) {
+        return valor == null ? "—" : Tablas.moneda(valor);
+    }
+
+    private Window ventana() {
+        return contenedor3d == null || contenedor3d.getScene() == null
+                ? null : contenedor3d.getScene().getWindow();
+    }
+
     private void configurarInteraccion() {
         subEscena.setOnMouseEntered(evento -> subEscena.setCursor(Cursor.OPEN_HAND));
         subEscena.setOnMousePressed(this::alPresionar);
@@ -538,6 +788,8 @@ public class MaquetaController implements Refrescable {
 
     private void alPresionar(MouseEvent evento) {
         if (evento.getButton() != MouseButton.PRIMARY) return;
+        xInicialClic = evento.getSceneX();
+        yInicialClic = evento.getSceneY();
         xPresionado = evento.getSceneX();
         yPresionado = evento.getSceneY();
         arrastrando = true;
@@ -557,8 +809,15 @@ public class MaquetaController implements Refrescable {
     }
 
     private void alSoltar(MouseEvent evento) {
+        boolean fuePresion = arrastrando;
         arrastrando = false;
         if (subEscena != null) subEscena.setCursor(Cursor.OPEN_HAND);
+        if (!fuePresion || evento.getButton() != MouseButton.PRIMARY) return;
+        double dx = evento.getSceneX() - xInicialClic;
+        double dy = evento.getSceneY() - yInicialClic;
+        if (Math.hypot(dx, dy) > 5) return;
+        BloqueMaqueta bloque = mapaBloques.get(evento.getPickResult().getIntersectedNode());
+        if (bloque != null) abrirDetalle(bloque);
     }
 
     private void alMover(MouseEvent evento) {
@@ -745,6 +1004,7 @@ public class MaquetaController implements Refrescable {
     }
 
     private void limpiarEscena() {
+        limpiarSeleccion();
         if (mundo != null) mundo.getChildren().clear();
         if (capaEtiquetas != null) capaEtiquetas.getChildren().clear();
         mapaBloques.clear();

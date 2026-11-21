@@ -752,6 +752,26 @@
     -fx-border-radius: 9;
 }
 
+.maqueta-resumen-cuotas {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 10;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 10;
+    -fx-padding: 10 14 10 14;
+    -fx-spacing: 30;
+}
+
+.maqueta-resumen-etiqueta {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.maqueta-resumen-valor {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
 .zona-notificaciones {
     -fx-padding: 24;
 }

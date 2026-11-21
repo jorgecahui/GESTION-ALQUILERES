@@ -2,6 +2,7 @@ package com.ejemplo.alquileres.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -25,6 +26,7 @@ import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class MaquetaServiceTest {
@@ -32,7 +34,8 @@ class MaquetaServiceTest {
     private final ContratoRepository contratos = mock(ContratoRepository.class);
     private final MorosidadService morosidad = new MorosidadService(
             DatosFase6.servicioConfiguracion(), DatosFase6.CLOCK);
-    private final MaquetaService service = new MaquetaService(inmuebles, contratos, morosidad);
+    private final MaquetaService service = new MaquetaService(
+            inmuebles, contratos, morosidad, new CalculadoraMora(), DatosFase6.CLOCK);
 
     @Test void armaBloquesConSemaforosEInconsistencias() {
         TipoInmueble local = TipoInmueble.builder().id(1L).codigo("TI-LOC").nombre("Local comercial").build();
@@ -101,22 +104,134 @@ class MaquetaServiceTest {
         }
     }
 
+    @Test void detalleDeDisponibleSinContrato() {
+        Inmueble inmueble = inmuebleDetalle(1L, "INM-0001", "Depa 101",
+                EstadoInmueble.DISPONIBLE, 1, 1);
+        prepararDetalle(inmueble);
+
+        MaquetaService.DetalleMaqueta detalle = service.detalle(1L);
+
+        assertEquals("INM-0001", detalle.codigo());
+        assertEquals("Depa 101", detalle.nombre());
+        assertEquals("Departamento", detalle.tipo());
+        assertEquals(1, detalle.nivel());
+        assertEquals(1, detalle.orden());
+        assertEquals("Av. Los Andes 1245", detalle.direccion());
+        assertEquals("Juliaca", detalle.distrito());
+        assertEquals(new BigDecimal("80.00"), detalle.areaM2());
+        assertEquals(2, detalle.dormitorios());
+        assertEquals(1, detalle.banos());
+        assertEquals(new BigDecimal("1200.00"), detalle.rentaReferencial());
+        assertEquals(EstadoInmueble.DISPONIBLE, detalle.estado());
+        assertNull(detalle.contrato());
+        assertFalse(detalle.inconsistencia());
+    }
+
+    @Test void detalleDeAlquiladoAlDia() {
+        Inmueble inmueble = inmuebleDetalle(2L, "INM-0002", "Depa 201",
+                EstadoInmueble.ALQUILADO, 2, 1);
+        Contrato contrato = contrato(201L, inmueble, "Ana Pérez", "12345678",
+                LocalDate.of(2026, 3, 5));
+        prepararDetalle(inmueble, contrato);
+
+        MaquetaService.DetalleMaqueta detalle = service.detalle(2L);
+
+        assertNotNull(detalle.contrato());
+        assertEquals(SemaforoMorosidad.AL_DIA, detalle.contrato().semaforo());
+        assertEquals(0, detalle.contrato().cuotasVencidas());
+        assertEquals(new BigDecimal("1000.00"), detalle.contrato().montoPendiente());
+        assertEquals("Ana Pérez", detalle.contrato().arrendatario());
+        assertEquals("12345678", detalle.contrato().documento());
+        assertEquals(new BigDecimal("1000.00"), detalle.contrato().rentaMensual());
+        assertEquals(LocalDate.of(2026, 2, 1), detalle.contrato().fechaInicio());
+        assertFalse(detalle.inconsistencia());
+    }
+
+    @Test void detalleDeAlquiladoConAtrasoLeve() {
+        Inmueble inmueble = inmuebleDetalle(3L, "INM-0003", "Depa 202",
+                EstadoInmueble.ALQUILADO, 2, 2);
+        Contrato contrato = contrato(202L, inmueble, "Luis Paredes", "22345678",
+                LocalDate.of(2026, 2, 5));
+        prepararDetalle(inmueble, contrato);
+
+        MaquetaService.DetalleMaqueta detalle = service.detalle(3L);
+
+        assertEquals(SemaforoMorosidad.ATRASO_LEVE, detalle.contrato().semaforo());
+        assertEquals(1, detalle.contrato().cuotasVencidas());
+        assertEquals(new BigDecimal("1005.00"), detalle.contrato().montoPendiente());
+    }
+
+    @Test void detalleDeAlquiladoMoroso() {
+        Inmueble inmueble = inmuebleDetalle(4L, "INM-0004", "Depa 203",
+                EstadoInmueble.ALQUILADO, 2, 3);
+        Contrato contrato = contrato(203L, inmueble, "Rosa Vega", "32345678",
+                LocalDate.of(2025, 12, 20));
+        prepararDetalle(inmueble, contrato);
+
+        MaquetaService.DetalleMaqueta detalle = service.detalle(4L);
+
+        assertEquals(SemaforoMorosidad.MOROSO, detalle.contrato().semaforo());
+        assertEquals(1, detalle.contrato().cuotasVencidas());
+        assertEquals(new BigDecimal("1052.00"), detalle.contrato().montoPendiente());
+    }
+
+    @Test void detalleDeAlquiladoSinContratoVigente() {
+        Inmueble inmueble = inmuebleDetalle(5L, "INM-0005", "Depa 204",
+                EstadoInmueble.ALQUILADO, 2, 4);
+        prepararDetalle(inmueble);
+
+        MaquetaService.DetalleMaqueta detalle = service.detalle(5L);
+
+        assertNull(detalle.contrato());
+        assertTrue(detalle.inconsistencia());
+        assertEquals(EstadoInmueble.ALQUILADO, detalle.estado());
+        for (RecordComponent componente : MaquetaService.DetalleMaqueta.class.getRecordComponents()) {
+            assertFalse(Inmueble.class.isAssignableFrom(componente.getType()));
+            assertFalse(Contrato.class.isAssignableFrom(componente.getType()));
+        }
+        for (RecordComponent componente : MaquetaService.ContratoDetalle.class.getRecordComponents()) {
+            assertFalse(Inmueble.class.isAssignableFrom(componente.getType()));
+            assertFalse(Contrato.class.isAssignableFrom(componente.getType()));
+        }
+    }
+
     private Inmueble inmueble(Long id, String codigo, String nombre, TipoInmueble tipo,
                               EstadoInmueble estado, Integer nivel, Integer orden) {
         return Inmueble.builder().id(id).codigo(codigo).nombre(nombre).tipo(tipo)
                 .estado(estado).nivel(nivel).orden(orden).build();
     }
 
+    private Inmueble inmuebleDetalle(Long id, String codigo, String nombre, EstadoInmueble estado,
+                                     Integer nivel, Integer orden) {
+        return Inmueble.builder().id(id).codigo(codigo).nombre(nombre)
+                .tipo(TipoInmueble.builder().id(2L).codigo("TI-DEP").nombre("Departamento").build())
+                .estado(estado).nivel(nivel).orden(orden)
+                .direccion("Av. Los Andes 1245").distrito("Juliaca")
+                .areaM2(new BigDecimal("80.00")).dormitorios(2).banos(1)
+                .rentaReferencial(new BigDecimal("1200.00")).build();
+    }
+
     private Contrato contrato(Long id, Inmueble inmueble, String nombres, String documento,
                               LocalDate vencimiento) {
         Persona arrendatario = Persona.builder().id(id).tipoDocumento(TipoDocumento.DNI)
                 .numeroDocumento(documento).nombres(nombres).build();
+        LocalDate inicio = vencimiento.minusMonths(1).withDayOfMonth(1);
         Contrato contrato = Contrato.builder().id(id).codigo("CTR-" + id).inmueble(inmueble)
-                .arrendatario(arrendatario).diasGracia(3).estado(EstadoContrato.VIGENTE).build();
+                .arrendatario(arrendatario).fechaInicio(inicio)
+                .fechaFin(inicio.plusMonths(12).minusDays(1))
+                .rentaMensual(new BigDecimal("1000.00")).diasGracia(3)
+                .tipoMora(com.ejemplo.alquileres.model.TipoMora.PORCENTAJE_DIARIO)
+                .valorMora(new BigDecimal("0.10")).estado(EstadoContrato.VIGENTE).build();
         contrato.agregarCuota(Cuota.builder().numero(1).tipo(TipoCuota.RENTA)
                 .fechaVencimiento(vencimiento).montoCuota(new BigDecimal("1000.00"))
                 .montoPagado(BigDecimal.ZERO).estado(EstadoCuota.PENDIENTE).build());
         return contrato;
+    }
+
+    private void prepararDetalle(Inmueble inmueble, Contrato... contratosVigentes) {
+        when(inmuebles.detallePorId(inmueble.getId())).thenReturn(Optional.of(inmueble));
+        when(contratos.vigentesPorInmuebleConDetalle(inmueble.getId()))
+                .thenReturn(List.of(contratosVigentes));
     }
 
     private BloqueMaqueta bloque(MaquetaService.ResultadoMaqueta resultado, Long id) {

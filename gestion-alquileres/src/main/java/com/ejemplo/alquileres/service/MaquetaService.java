@@ -1,12 +1,19 @@
 package com.ejemplo.alquileres.service;
 
+import com.ejemplo.alquileres.exception.NegocioException;
 import com.ejemplo.alquileres.model.Contrato;
+import com.ejemplo.alquileres.model.Cuota;
+import com.ejemplo.alquileres.model.EstadoCuota;
 import com.ejemplo.alquileres.model.EstadoInmueble;
 import com.ejemplo.alquileres.model.Inmueble;
 import com.ejemplo.alquileres.model.SemaforoMorosidad;
 import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
 import com.ejemplo.alquileres.ui.BloqueMaqueta;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +30,26 @@ public class MaquetaService {
     private final InmuebleRepository inmuebles;
     private final ContratoRepository contratos;
     private final MorosidadService morosidad;
+    private final CalculadoraMora calculadora;
+    private final Clock clock;
 
     public record ResultadoMaqueta(List<BloqueMaqueta> bloques, int sinUbicacion) {
         public ResultadoMaqueta {
             bloques = List.copyOf(bloques);
         }
+    }
+
+    public record ContratoDetalle(Long id, String codigo, String arrendatario, String documento,
+                                  LocalDate fechaInicio, LocalDate fechaFin, BigDecimal rentaMensual,
+                                  SemaforoMorosidad semaforo, long cuotasVencidas,
+                                  BigDecimal montoPendiente) {
+    }
+
+    public record DetalleMaqueta(Long id, String codigo, String nombre, String tipo,
+                                 Integer nivel, Integer orden, String direccion, String distrito,
+                                 BigDecimal areaM2, Integer dormitorios, Integer banos,
+                                 BigDecimal rentaReferencial, EstadoInmueble estado,
+                                 ContratoDetalle contrato, boolean inconsistencia) {
     }
 
     public List<BloqueMaqueta> listarBloques() {
@@ -74,5 +96,66 @@ public class MaquetaService {
                     inconsistencia));
         }
         return new ResultadoMaqueta(bloques, sinUbicacion);
+    }
+
+    public DetalleMaqueta detalle(Long inmuebleId) {
+        if (inmuebleId == null) throw new NegocioException("El inmueble no existe.");
+        Inmueble inmueble = inmuebles.detallePorId(inmuebleId)
+                .orElseThrow(() -> new NegocioException("El inmueble no existe."));
+        Contrato contrato = contratos.vigentesPorInmuebleConDetalle(inmuebleId).stream()
+                .findFirst().orElse(null);
+        ContratoDetalle contratoDetalle = contrato == null ? null : contratoDetalle(contrato);
+        boolean inconsistencia = inmueble.getEstado() == EstadoInmueble.ALQUILADO && contrato == null;
+        String tipo = inmueble.getTipo() == null ? "Sin tipo" : inmueble.getTipo().getNombre();
+        return new DetalleMaqueta(
+                inmueble.getId(),
+                inmueble.getCodigo(),
+                inmueble.getNombre(),
+                tipo,
+                inmueble.getNivel(),
+                inmueble.getOrden(),
+                inmueble.getDireccion(),
+                inmueble.getDistrito(),
+                inmueble.getAreaM2(),
+                inmueble.getDormitorios(),
+                inmueble.getBanos(),
+                inmueble.getRentaReferencial(),
+                inmueble.getEstado(),
+                contratoDetalle,
+                inconsistencia);
+    }
+
+    private ContratoDetalle contratoDetalle(Contrato contrato) {
+        LocalDate hoy = LocalDate.now(clock);
+        List<Cuota> vencidas = morosidad.vencidas(contrato);
+        BigDecimal pendiente = BigDecimal.ZERO;
+        if (contrato.getCuotas() != null) {
+            for (Cuota cuota : contrato.getCuotas()) {
+                if (cuota.getEstado() != EstadoCuota.PENDIENTE && cuota.getEstado() != EstadoCuota.PARCIAL) {
+                    continue;
+                }
+                pendiente = pendiente
+                        .add(calculadora.saldoCapital(cuota))
+                        .add(calculadora.pendiente(cuota, contrato, hoy));
+            }
+        }
+        pendiente = pendiente.setScale(2, RoundingMode.HALF_UP);
+        String arrendatario = contrato.getArrendatario() == null
+                ? null
+                : contrato.getArrendatario().getNombreCompleto();
+        String documento = contrato.getArrendatario() == null
+                ? null
+                : contrato.getArrendatario().getNumeroDocumento();
+        return new ContratoDetalle(
+                contrato.getId(),
+                contrato.getCodigo(),
+                arrendatario,
+                documento,
+                contrato.getFechaInicio(),
+                contrato.getFechaFin(),
+                contrato.getRentaMensual(),
+                morosidad.semaforo(contrato),
+                vencidas.size(),
+                pendiente);
     }
 }
