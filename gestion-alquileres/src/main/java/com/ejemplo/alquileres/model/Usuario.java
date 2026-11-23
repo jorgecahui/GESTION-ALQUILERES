@@ -18,6 +18,7 @@ public class Usuario {
     @Column(name = "ultimo_acceso") private LocalDateTime ultimoAcceso;
     @Column(name = "intentos_fallidos", nullable = false) @Builder.Default private int intentosFallidos = 0;
     @Column(name = "bloqueado_hasta") private LocalDateTime bloqueadoHasta;
+    @Version @Column(nullable = false, columnDefinition = "bigint default 0") private Long version;
 
     public boolean estaBloqueado(LocalDateTime ahora) {
         return bloqueadoHasta != null && bloqueadoHasta.isAfter(ahora);

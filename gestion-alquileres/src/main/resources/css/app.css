@@ -563,6 +563,43 @@
     -fx-icon-color: -color-accent-fg;
 }
 
+.pago-resumen-fila {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+    -fx-padding: 1 0 1 0;
+}
+
+.pago-resumen-etiqueta {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.pago-resumen-valor {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.pago-resumen-total {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+    -fx-padding: 10 12 10 12;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 10;
+}
+
+.pago-resumen-total-etiqueta {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.pago-resumen-total-valor {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
 .prefijo-moneda {
     -fx-text-fill: -color-fg-muted;
     -fx-font-weight: bold;

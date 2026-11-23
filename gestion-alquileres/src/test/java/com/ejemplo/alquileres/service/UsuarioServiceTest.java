@@ -2,6 +2,7 @@ package com.ejemplo.alquileres.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,7 @@ import com.ejemplo.alquileres.repository.UsuarioRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 class UsuarioServiceTest {
@@ -68,6 +70,19 @@ class UsuarioServiceTest {
 
         assertEquals(RolUsuario.OPERADOR, actualizado.getRol());
         verify(usuarios).save(admin);
+    }
+
+    @Test void detectaEdicionConcurrenteConMensajeClaro() {
+        Usuario operador = Usuario.builder().id(1L).username("operador").nombre("Luis")
+                .rol(RolUsuario.OPERADOR).activo(true).build();
+        when(usuarios.findById(1L)).thenReturn(Optional.of(operador));
+        when(usuarios.save(any(Usuario.class)))
+                .thenThrow(new ObjectOptimisticLockingFailureException(Usuario.class, 1L));
+
+        NegocioException error = assertThrows(NegocioException.class,
+                () -> servicio.actualizar(1L, "Luis", RolUsuario.OPERADOR, true));
+
+        assertTrue(error.getMessage().contains("modificado por otra operación"));
     }
 
     @Test void restablecePasswordConPolitica() {

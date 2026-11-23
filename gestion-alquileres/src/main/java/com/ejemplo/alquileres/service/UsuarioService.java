@@ -7,6 +7,7 @@ import com.ejemplo.alquileres.model.Usuario;
 import com.ejemplo.alquileres.repository.UsuarioRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +36,7 @@ public class UsuarioService {
         if (rol == null) throw new NegocioException("Selecciona un rol.");
         String usuario = AutenticacionService.normalizarUsername(username);
         if (usuarios.existsByUsernameIgnoreCase(usuario)) throw new NegocioException("El usuario ya existe.");
-        Usuario creado = usuarios.save(Usuario.builder()
+        Usuario creado = guardar(Usuario.builder()
                 .username(usuario)
                 .nombre(nombre.trim())
                 .passwordHash(encoder.encode(password))
@@ -61,7 +62,7 @@ public class UsuarioService {
         usuario.setNombre(nombre.trim());
         usuario.setRol(rol);
         usuario.setActivo(activo);
-        Usuario guardado = usuarios.save(usuario);
+        Usuario guardado = guardar(usuario);
         auditoria.registrar(AccionAuditoria.GESTION_USUARIO, "Usuario", id,
                 "Actualización de usuario " + usuario.getUsername() + " (" + rol.name() + ", "
                         + (activo ? "activo" : "inactivo") + ")");
@@ -77,8 +78,17 @@ public class UsuarioService {
         usuario.setPasswordHash(encoder.encode(password));
         usuario.setIntentosFallidos(0);
         usuario.setBloqueadoHasta(null);
-        usuarios.save(usuario);
+        guardar(usuario);
         auditoria.registrar(AccionAuditoria.GESTION_USUARIO, "Usuario", id,
                 "Restablecimiento de contraseña de " + usuario.getUsername());
+    }
+
+    private Usuario guardar(Usuario usuario) {
+        try {
+            return usuarios.save(usuario);
+        } catch (ObjectOptimisticLockingFailureException error) {
+            throw new NegocioException(
+                    "El usuario fue modificado por otra operación. Actualice e intente de nuevo.");
+        }
     }
 }
