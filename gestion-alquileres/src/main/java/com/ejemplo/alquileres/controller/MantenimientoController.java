@@ -16,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -258,7 +259,15 @@ public class MantenimientoController implements Refrescable {
 
     @FXML private void onCancelar() {
         Mantenimiento m = seleccion();
-        if (m != null) tareas.ejecutar(() -> service.cancelar(m.getId()), x -> {
+        if (m == null) return;
+        if (!DialogoConfirmacion.mostrar(ventana(), "Cancelar mantenimiento",
+                "Se cancelará el mantenimiento «" + m.getCodigo() + "». "
+                        + "Se anulará la cuota de cargo si no tiene pagos y el inmueble "
+                        + "volverá a su estado anterior.",
+                "Cancelar mantenimiento")) {
+            return;
+        }
+        tareas.ejecutar(() -> service.cancelar(m.getId()), x -> {
             aviso.info("Mantenimiento cancelado.");
             refrescar();
         }, e -> aviso.error(msg(e)));
@@ -313,6 +322,10 @@ public class MantenimientoController implements Refrescable {
         Mantenimiento m = tabla.getSelectionModel().getSelectedItem();
         if (m == null) aviso.error("Selecciona un mantenimiento.");
         return m;
+    }
+
+    private Window ventana() {
+        return tabla.getScene() == null ? null : tabla.getScene().getWindow();
     }
 
     private TableCell<Mantenimiento, BigDecimal> moneda() {

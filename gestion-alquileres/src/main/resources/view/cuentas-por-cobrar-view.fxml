@@ -8,7 +8,7 @@
             <Label text="Cuotas pendientes, mora estimada y prioridad de cobranza." styleClass="pagina-subtitulo"/>
         </VBox>
         <Button text="Exportar Excel" onAction="#onExportar"/>
-        <Button text="Recordar a todos los vencidos" onAction="#onRecordarTodos"/>
+        <Button text="Recordar a todos los vencidos" onAction="#onRecordarTodos" styleClass="requiere-gestion"/>
     </HBox>
     <HBox spacing="12">
         <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Total por cobrar"/><Label fx:id="totalCobrar" text="S/ 0.00" styleClass="kpi-valor"/></VBox>
@@ -21,8 +21,8 @@
             <TextField fx:id="buscar" promptText="Buscar arrendatario, inmueble o concepto" HBox.hgrow="ALWAYS"/>
             <ComboBox fx:id="filtro" prefWidth="170"/>
             <Button text="Estado de cuenta" onAction="#onEstadoCuenta"/>
-            <Button text="Recordar" onAction="#onRecordar"/>
-            <Button text="Cobrar" onAction="#onCobrar" styleClass="boton-primario"/>
+            <Button text="Recordar" onAction="#onRecordar" styleClass="requiere-gestion"/>
+            <Button text="Cobrar" onAction="#onCobrar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
         <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
             <columns>

@@ -12,17 +12,17 @@
                     <Label text="Propietarios" styleClass="pagina-titulo"/>
                     <Label text="Personas y empresas propietarias." styleClass="pagina-subtitulo"/>
                 </VBox>
-                <Button text="Nuevo propietario" onAction="#onNuevo" styleClass="boton-primario"/>
+                <Button text="Nuevo propietario" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
 
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar nombre o documento" HBox.hgrow="ALWAYS"/>
                 <CheckBox fx:id="activos" text="Solo activos"/>
-                <Button text="Editar" onAction="#onEditar"/>
+                <Button text="Editar" onAction="#onEditar" styleClass="requiere-gestion"/>
                 <Button fx:id="btnEliminarDesactivar" text="Eliminar / desactivar" onAction="#onEliminar"
-                        visible="false" managed="false"/>
+                        styleClass="requiere-gestion" visible="false" managed="false"/>
                 <Button fx:id="btnReactivar" text="Reactivar" onAction="#onReactivar"
-                        visible="false" managed="false"/>
+                        styleClass="requiere-gestion" visible="false" managed="false"/>
             </HBox>
 
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
@@ -121,7 +121,7 @@
 
         <HBox styleClass="drawer-footer">
             <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
-            <Button text="Guardar propietario" onAction="#onGuardar" styleClass="boton-primario"/>
+            <Button text="Guardar propietario" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
     </VBox>
 </StackPane>

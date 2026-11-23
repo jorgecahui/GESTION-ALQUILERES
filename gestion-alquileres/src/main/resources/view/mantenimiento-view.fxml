@@ -16,7 +16,7 @@
                     <Label text="Incidencias, reparaciones y gastos de los inmuebles." styleClass="pagina-subtitulo"/>
                 </VBox>
                 <Button text="Exportar Excel" onAction="#onExportar"/>
-                <Button text="Nuevo mantenimiento" onAction="#onNuevo" styleClass="boton-primario"/>
+                <Button text="Nuevo mantenimiento" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
 
             <HBox spacing="12" styleClass="tarjeta">
@@ -31,10 +31,10 @@
                 <ComboBox fx:id="filtroEstado" promptText="Estado"/>
                 <ComboBox fx:id="filtroPrioridad" promptText="Prioridad"/>
                 <ComboBox fx:id="filtroCategoria" promptText="Categoría"/>
-                <Button text="Iniciar" onAction="#onIniciar"/>
-                <Button text="Resolver" onAction="#onResolver"/>
-                <Button text="Cancelar" onAction="#onCancelar"/>
-                <Button text="Generar cargo" onAction="#onCargo"/>
+                <Button text="Iniciar" onAction="#onIniciar" styleClass="requiere-gestion"/>
+                <Button text="Resolver" onAction="#onResolver" styleClass="requiere-gestion"/>
+                <Button text="Cancelar" onAction="#onCancelar" styleClass="requiere-gestion"/>
+                <Button text="Generar cargo" onAction="#onCargo" styleClass="requiere-gestion"/>
             </HBox>
 
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
@@ -174,7 +174,7 @@
 
         <HBox styleClass="drawer-footer">
             <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
-            <Button text="Guardar mantenimiento" onAction="#onGuardar" styleClass="boton-primario"/>
+            <Button text="Guardar mantenimiento" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
     </VBox>
 </StackPane>

@@ -12,14 +12,14 @@
                     <Label text="Inmuebles" styleClass="pagina-titulo"/>
                     <Label text="Disponibilidad, propietario y renta referencial." styleClass="pagina-subtitulo"/>
                 </VBox>
-                <Button text="Nuevo inmueble" onAction="#onNuevo" styleClass="boton-primario"/>
+                <Button text="Nuevo inmueble" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
 
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar código, nombre o dirección" HBox.hgrow="ALWAYS"/>
                 <ComboBox fx:id="filtroEstado" promptText="Estado"/>
                 <ComboBox fx:id="filtroTipo" prefWidth="180" promptText="Tipo"/>
-                <Button text="Editar" onAction="#onEditar"/>
+                <Button text="Editar" onAction="#onEditar" styleClass="requiere-gestion"/>
                 <Button text="Ver ficha" onAction="#onFicha"/>
                 <Button text="Exportar Excel" onAction="#onExportar"/>
             </HBox>
@@ -262,7 +262,7 @@
 
         <HBox styleClass="drawer-footer">
             <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
-            <Button text="Guardar inmueble" onAction="#onGuardar" styleClass="boton-primario"/>
+            <Button text="Guardar inmueble" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
     </VBox>
 </StackPane>

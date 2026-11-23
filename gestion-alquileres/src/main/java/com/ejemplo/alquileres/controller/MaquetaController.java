@@ -191,14 +191,6 @@ public class MaquetaController implements Refrescable {
         if (Platform.isFxApplicationThread()) iniciarMaqueta();
         else Platform.runLater(this::iniciarMaqueta);
         configurarLeyenda();
-
-        // RestriccionesUi desactiva los botones con la palabra "restablecer"; este control
-        // solo devuelve la cámara a su posición y no requiere permisos de administrador.
-        Platform.runLater(() -> {
-            if (btnRestablecer == null) return;
-            btnRestablecer.setDisable(false);
-            btnRestablecer.setTooltip(null);
-        });
     }
 
     @Override

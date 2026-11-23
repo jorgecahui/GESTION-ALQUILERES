@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -212,6 +213,11 @@ public class PersonaController implements Refrescable {
             aviso.error("Selecciona una persona.");
             return;
         }
+        if (!DialogoConfirmacion.mostrar(ventana(), "Desactivar persona",
+                "Se desactivará «" + p.getNombreCompleto() + "». Podrás reactivarla después.",
+                "Desactivar")) {
+            return;
+        }
         tareas.ejecutar(() -> { service.desactivar(p.getId()); return null; },
                 x -> { aviso.info("Persona desactivada."); refrescar(); },
                 e -> aviso.error(msg(e)));
@@ -269,6 +275,10 @@ public class PersonaController implements Refrescable {
     }
 
     private String n(String v) { return v == null ? "" : v; }
+
+    private Window ventana() {
+        return tabla.getScene() == null ? null : tabla.getScene().getWindow();
+    }
 
     private void limitar(TextInputControl campo, int maximo) {
         campo.setTextFormatter(new TextFormatter<>(c ->

@@ -85,7 +85,7 @@
             </TableView>
             <Label fx:id="mensaje" styleClass="campo-error" wrapText="true"/>
             <Button fx:id="btnRegistrar" text="Registrar contrato" onAction="#onRegistrar"
-                    styleClass="boton-primario" maxWidth="Infinity"/>
+                    styleClass="boton-primario,requiere-gestion" maxWidth="Infinity"/>
             <Button text="Cancelar" onAction="#onCancelar" maxWidth="Infinity"/>
         </VBox>
     </HBox>

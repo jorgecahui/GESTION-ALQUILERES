@@ -12,7 +12,7 @@
                    styleClass="pagina-subtitulo"/>
         </VBox>
         <Label fx:id="estado" styleClass="pagina-subtitulo"/>
-        <Button text="Guardar cambios" onAction="#onGuardar" styleClass="boton-primario"/>
+        <Button text="Guardar cambios" onAction="#onGuardar" styleClass="boton-primario,requiere-admin"/>
     </HBox>
     <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
         <Tab text="Arrendador">
@@ -38,8 +38,8 @@
                         <Label text="Logo" styleClass="campo-label" GridPane.rowIndex="6"/>
                         <HBox spacing="8" GridPane.rowIndex="6" GridPane.columnIndex="1">
                             <TextField fx:id="logoArchivo" editable="false" promptText="Sin logo" HBox.hgrow="ALWAYS"/>
-                            <Button text="Elegir…" onAction="#onElegirLogo"/>
-                            <Button text="Quitar" onAction="#onQuitarLogo"/>
+                            <Button text="Elegir…" onAction="#onElegirLogo" styleClass="requiere-admin"/>
+                            <Button text="Quitar" onAction="#onQuitarLogo" styleClass="requiere-admin"/>
                         </HBox>
                     </GridPane>
                     <ImageView fx:id="logoVista" fitWidth="160" fitHeight="70" preserveRatio="true" visible="false" managed="false"/>
@@ -133,7 +133,7 @@
                         <TextArea fx:id="plantillaVencido" prefRowCount="5" wrapText="true"/></VBox>
                     <VBox spacing="6"><Label text="Aviso de fin de contrato" styleClass="campo-label"/>
                         <TextArea fx:id="plantillaFinContrato" prefRowCount="4" wrapText="true"/></VBox>
-                    <Button text="Restaurar textos por defecto" onAction="#onRestaurarPlantillas"/>
+                    <Button text="Restaurar textos por defecto" onAction="#onRestaurarPlantillas" styleClass="requiere-admin"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -160,8 +160,8 @@
                         <VBox HBox.hgrow="ALWAYS"><Label text="Respaldo y restauración" styleClass="pagina-titulo"/>
                             <Label text="Copia consistente de la base de datos y restauración con validación previa."
                                    styleClass="pagina-subtitulo"/></VBox>
-                        <Button text="Crear respaldo ahora" onAction="#onCrearRespaldo" styleClass="boton-primario"/>
-                        <Button text="Restaurar respaldo" onAction="#onRestaurarRespaldo"/>
+                        <Button text="Crear respaldo ahora" onAction="#onCrearRespaldo" styleClass="boton-primario,requiere-admin"/>
+                        <Button text="Restaurar respaldo" onAction="#onRestaurarRespaldo" styleClass="requiere-admin"/>
                     </HBox>
                     <Label fx:id="rutaDatos" styleClass="campo-ayuda" wrapText="true"/>
                     <Label text="Respaldos automáticos (se conservan los últimos 10 al cerrar la aplicación)"
@@ -185,10 +185,10 @@
                         <VBox HBox.hgrow="ALWAYS"><Label text="Usuarios" styleClass="pagina-titulo"/>
                             <Label text="Solo el administrador puede crear, editar y restablecer contraseñas."
                                    styleClass="pagina-subtitulo"/></VBox>
-                        <Button text="Nuevo usuario" onAction="#onNuevoUsuario" styleClass="boton-primario"/>
-                        <Button text="Editar" onAction="#onEditarUsuario"/>
-                        <Button text="Activar / desactivar" onAction="#onDesactivarUsuario"/>
-                        <Button text="Restablecer contraseña" onAction="#onRestablecerPassword"/>
+                        <Button text="Nuevo usuario" onAction="#onNuevoUsuario" styleClass="boton-primario,requiere-admin"/>
+                        <Button text="Editar" onAction="#onEditarUsuario" styleClass="requiere-admin"/>
+                        <Button text="Activar / desactivar" onAction="#onDesactivarUsuario" styleClass="requiere-admin"/>
+                        <Button text="Restablecer contraseña" onAction="#onRestablecerPassword" styleClass="requiere-admin"/>
                     </HBox>
                     <TableView fx:id="tablaUsuarios" VBox.vgrow="ALWAYS" styleClass="tabla" prefHeight="420">
                         <columns>

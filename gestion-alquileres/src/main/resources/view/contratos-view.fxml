@@ -10,7 +10,7 @@
             <Label text="Vigencia, cronograma y garantías." styleClass="pagina-subtitulo"/>
         </VBox>
         <Button text="Exportar Excel" onAction="#onExportar"/>
-        <Button text="Nuevo contrato" onAction="#onNuevo" styleClass="boton-primario"/>
+        <Button text="Nuevo contrato" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
     </HBox>
 
     <HBox spacing="12">
@@ -95,13 +95,13 @@
             </HBox>
 
             <HBox spacing="8">
-                <Button text="Renovar" onAction="#onRenovar" styleClass="button-outlined"
+                <Button text="Renovar" onAction="#onRenovar" styleClass="button-outlined,requiere-gestion"
                         maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button text="Avisar fin" onAction="#onAvisarFin" styleClass="button-outlined"
+                <Button text="Avisar fin" onAction="#onAvisarFin" styleClass="button-outlined,requiere-gestion"
                         maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button text="Finalizar" onAction="#onFinalizar" styleClass="button-outlined"
+                <Button text="Finalizar" onAction="#onFinalizar" styleClass="button-outlined,requiere-admin"
                         maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button text="Rescindir" onAction="#onRescindir" styleClass="button-outlined"
+                <Button text="Rescindir" onAction="#onRescindir" styleClass="button-outlined,requiere-admin"
                         maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
             </HBox>
 
