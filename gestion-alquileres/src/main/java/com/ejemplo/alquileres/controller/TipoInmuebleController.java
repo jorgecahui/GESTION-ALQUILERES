@@ -2,6 +2,7 @@ package com.ejemplo.alquileres.controller;
 
 import com.ejemplo.alquileres.model.TipoInmueble;
 import com.ejemplo.alquileres.service.TipoInmuebleService;
+import com.ejemplo.alquileres.ui.DialogoConfirmacion;
 import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
 import com.ejemplo.alquileres.ui.Tareas;
@@ -17,6 +18,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -147,9 +149,32 @@ public class TipoInmuebleController implements Refrescable {
             aviso.error("Selecciona un tipo de inmueble.");
             return;
         }
-        tareas.ejecutar(() -> { service.eliminar(t.getId()); return null; },
-                x -> { aviso.info("Tipo eliminado o desactivado según sus referencias."); refrescar(); },
+        tareas.ejecutar(() -> service.tieneReferencias(t.getId()),
+                referencias -> confirmarAccion(t, referencias),
                 e -> aviso.error(mensaje(e)));
+    }
+
+    private void confirmarAccion(TipoInmueble t, boolean referencias) {
+        String titulo = referencias ? "Desactivar" : "Eliminar definitivamente";
+        String mensaje = referencias
+                ? "«" + t.getNombre() + "» está en uso, por lo que se desactivará "
+                        + "y podrás reactivarlo después."
+                : "Se eliminará «" + t.getNombre() + "» de forma permanente. "
+                        + "Esta acción no se puede deshacer.";
+        if (!DialogoConfirmacion.mostrar(ventana(), titulo, mensaje,
+                referencias ? "Desactivar" : "Eliminar")) {
+            return;
+        }
+        tareas.ejecutar(() -> { service.eliminar(t.getId()); return null; },
+                x -> {
+                    aviso.info(referencias ? "Tipo de inmueble desactivado." : "Tipo de inmueble eliminado.");
+                    refrescar();
+                },
+                e -> aviso.error(mensaje(e)));
+    }
+
+    private Window ventana() {
+        return tabla.getScene() == null ? null : tabla.getScene().getWindow();
     }
 
     @FXML private void onReactivar() {

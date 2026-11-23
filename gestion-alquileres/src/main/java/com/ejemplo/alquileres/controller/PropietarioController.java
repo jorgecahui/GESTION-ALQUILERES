@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -166,9 +167,32 @@ public class PropietarioController implements Refrescable {
             aviso.error("Selecciona un propietario.");
             return;
         }
-        tareas.ejecutar(() -> { service.eliminar(p.getId()); return null; },
-                x -> { aviso.info("Propietario eliminado o desactivado según sus referencias."); refrescar(); },
+        tareas.ejecutar(() -> service.tieneReferencias(p.getId()),
+                referencias -> confirmarAccion(p, referencias),
                 e -> aviso.error(msg(e)));
+    }
+
+    private void confirmarAccion(Propietario p, boolean referencias) {
+        String titulo = referencias ? "Desactivar" : "Eliminar definitivamente";
+        String mensaje = referencias
+                ? "«" + p.getNombre() + "» está en uso, por lo que se desactivará "
+                        + "y podrás reactivarlo después."
+                : "Se eliminará «" + p.getNombre() + "» de forma permanente. "
+                        + "Esta acción no se puede deshacer.";
+        if (!DialogoConfirmacion.mostrar(ventana(), titulo, mensaje,
+                referencias ? "Desactivar" : "Eliminar")) {
+            return;
+        }
+        tareas.ejecutar(() -> { service.eliminar(p.getId()); return null; },
+                x -> {
+                    aviso.info(referencias ? "Propietario desactivado." : "Propietario eliminado.");
+                    refrescar();
+                },
+                e -> aviso.error(msg(e)));
+    }
+
+    private Window ventana() {
+        return tabla.getScene() == null ? null : tabla.getScene().getWindow();
     }
 
     @FXML private void onReactivar() {
