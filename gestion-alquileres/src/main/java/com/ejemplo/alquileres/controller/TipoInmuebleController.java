@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -26,9 +27,11 @@ public class TipoInmuebleController implements Refrescable {
     private final Notificador aviso;
     private final ObservableList<TipoInmueble> datos = FXCollections.observableArrayList();
     private Long id;
+    private boolean activo = true;
 
     @FXML private TextField buscar, codigo, nombre;
     @FXML private TextArea descripcion;
+    @FXML private Button btnEliminarDesactivar, btnReactivar;
     @FXML private TableView<TipoInmueble> tabla;
     @FXML private TableColumn<TipoInmueble, String> colCodigo, colNombre, colEstado;
     @FXML private VBox drawer;
@@ -46,6 +49,9 @@ public class TipoInmuebleController implements Refrescable {
         colNombre.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNombre()));
         colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
         tabla.setItems(datos);
+        tabla.getSelectionModel().selectedItemProperty().addListener(
+                (o, a, b) -> actualizarAcciones(b));
+        actualizarAcciones(null);
         tabla.setOnMouseClicked(e -> { if (e.getClickCount() == 2) editar(tabla.getSelectionModel().getSelectedItem()); });
         buscar.textProperty().addListener((o, a, b) -> refrescar());
         codigo.textProperty().addListener((o, a, b) -> ocultarError(errorCodigo));
@@ -61,6 +67,7 @@ public class TipoInmuebleController implements Refrescable {
 
     @FXML private void onNuevo() {
         id = null;
+        activo = true;
         limpiarErrores();
         codigo.clear();
         nombre.clear();
@@ -82,6 +89,7 @@ public class TipoInmuebleController implements Refrescable {
         if (t == null) return;
         limpiarErrores();
         id = t.getId();
+        activo = t.isActivo();
         codigo.setText(t.getCodigo());
         nombre.setText(t.getNombre());
         descripcion.setText(t.getDescripcion() == null ? "" : t.getDescripcion());
@@ -93,7 +101,7 @@ public class TipoInmuebleController implements Refrescable {
         limpiarErrores();
         if (!validarFormulario()) return;
         TipoInmueble t = TipoInmueble.builder().id(id).codigo(codigo.getText()).nombre(nombre.getText())
-                .descripcion(descripcion.getText()).activo(true).build();
+                .descripcion(descripcion.getText()).activo(activo).build();
         tareas.ejecutar(() -> service.guardar(t), x -> {
             cerrar();
             aviso.info("Tipo de inmueble guardado.");
@@ -142,6 +150,28 @@ public class TipoInmuebleController implements Refrescable {
         tareas.ejecutar(() -> { service.eliminar(t.getId()); return null; },
                 x -> { aviso.info("Tipo eliminado o desactivado según sus referencias."); refrescar(); },
                 e -> aviso.error(mensaje(e)));
+    }
+
+    @FXML private void onReactivar() {
+        TipoInmueble t = tabla.getSelectionModel().getSelectedItem();
+        if (t == null) {
+            aviso.error("Selecciona un tipo de inmueble.");
+            return;
+        }
+        tareas.ejecutar(() -> { service.reactivar(t.getId()); return null; },
+                x -> { aviso.info("Tipo de inmueble reactivado."); refrescar(); },
+                e -> aviso.error(mensaje(e)));
+    }
+
+    private void actualizarAcciones(TipoInmueble t) {
+        mostrar(btnEliminarDesactivar, t != null && t.isActivo());
+        mostrar(btnReactivar, t != null && !t.isActivo());
+    }
+
+    private void mostrar(Button boton, boolean visible) {
+        if (boton == null) return;
+        boton.setVisible(visible);
+        boton.setManaged(visible);
     }
 
     @FXML private void onCerrar() { cerrar(); }

@@ -18,6 +18,7 @@
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar código, nombre o dirección" HBox.hgrow="ALWAYS"/>
                 <ComboBox fx:id="filtroEstado" promptText="Estado"/>
+                <ComboBox fx:id="filtroTipo" prefWidth="180" promptText="Tipo"/>
                 <Button text="Editar" onAction="#onEditar"/>
                 <Button text="Ver ficha" onAction="#onFicha"/>
                 <Button text="Exportar Excel" onAction="#onExportar"/>

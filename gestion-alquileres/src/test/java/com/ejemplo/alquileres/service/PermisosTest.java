@@ -40,7 +40,8 @@ class PermisosTest {
 
     @Test void consultaNoPuedeCrearCatalogos() {
         TipoInmuebleService servicio = new TipoInmuebleService(Mockito.mock(TipoInmuebleRepository.class),
-                Mockito.mock(InmuebleRepository.class), DatosFase6.permisosConsulta());
+                Mockito.mock(InmuebleRepository.class), DatosFase6.permisosConsulta(),
+                DatosFase6.auditoria());
 
         assertThrows(NegocioException.class, () -> servicio.guardar(com.ejemplo.alquileres.model.TipoInmueble.builder()
                 .codigo("DEP").nombre("Departamento").build()));

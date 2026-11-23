@@ -18,7 +18,10 @@
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar por nombre o código" HBox.hgrow="ALWAYS"/>
                 <Button text="Editar" onAction="#onEditar"/>
-                <Button text="Eliminar / desactivar" onAction="#onEliminar"/>
+                <Button fx:id="btnEliminarDesactivar" text="Eliminar / desactivar" onAction="#onEliminar"
+                        visible="false" managed="false"/>
+                <Button fx:id="btnReactivar" text="Reactivar" onAction="#onReactivar"
+                        visible="false" managed="false"/>
             </HBox>
 
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">

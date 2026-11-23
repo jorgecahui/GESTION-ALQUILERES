@@ -4,6 +4,7 @@ import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.service.*;
 import com.ejemplo.alquileres.ui.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class InmuebleController implements Refrescable {
+    private static final TipoFiltro TODOS_LOS_TIPOS = new TipoFiltro(null, "Todos los tipos");
+
     private final InmuebleService service;
     private final TipoInmuebleService tipos;
     private final PropietarioService propietarios;
@@ -32,6 +35,7 @@ public class InmuebleController implements Refrescable {
     private final ObservableList<Inmueble> datos = FXCollections.observableArrayList();
     private List<Inmueble> visibles = List.of();
     private Long id;
+    private boolean actualizandoTipos;
 
     @FXML private TextField buscar, codigo, nombre, direccion, referencia, distrito, provincia,
             departamento, piso, nivel, orden, dormitorios, banos, estacionamientos, renta, area;
@@ -39,6 +43,7 @@ public class InmuebleController implements Refrescable {
     @FXML private CheckBox amoblado;
     @FXML private ComboBox<EstadoInmueble> filtroEstado, estado;
     @FXML private ComboBox<TipoInmueble> tipo;
+    @FXML private ComboBox<TipoFiltro> filtroTipo;
     @FXML private ComboBox<Propietario> propietario;
     @FXML private TableView<Inmueble> tabla;
     @FXML private TableColumn<Inmueble, String> colCodigo, colNombre, colTipo, colPropietario, colEstado;
@@ -86,6 +91,14 @@ public class InmuebleController implements Refrescable {
         Formularios.soloDigitos(estacionamientos, 3);
         filtroEstado.setItems(FXCollections.observableArrayList(EstadoInmueble.values()));
         estadosEditables();
+        filtroTipo.setConverter(new StringConverter<>() {
+            public String toString(TipoFiltro valor) {
+                return valor == null ? TODOS_LOS_TIPOS.nombre() : valor.nombre();
+            }
+            public TipoFiltro fromString(String texto) { return null; }
+        });
+        filtroTipo.setItems(FXCollections.observableArrayList(TODOS_LOS_TIPOS));
+        filtroTipo.setValue(TODOS_LOS_TIPOS);
         tipo.setConverter(new StringConverter<>() {
             public String toString(TipoInmueble valor) {
                 return valor == null ? "" : valor.getNombre() + " · " + valor.getCodigo();
@@ -116,8 +129,11 @@ public class InmuebleController implements Refrescable {
         colRenta.setCellFactory(x -> moneda());
         colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
         tabla.setItems(datos);
-        buscar.textProperty().addListener((o, a, b) -> refrescar());
-        filtroEstado.valueProperty().addListener((o, a, b) -> refrescar());
+        buscar.textProperty().addListener((o, a, b) -> refrescarLista());
+        filtroEstado.valueProperty().addListener((o, a, b) -> refrescarLista());
+        filtroTipo.valueProperty().addListener((o, a, b) -> {
+            if (!actualizandoTipos) refrescarLista();
+        });
         tabla.setOnMouseClicked(e -> { if (e.getClickCount() == 2) verFicha(tabla.getSelectionModel().getSelectedItem()); });
 
         colFichaContratoCodigo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCodigo()));
@@ -142,10 +158,44 @@ public class InmuebleController implements Refrescable {
     }
 
     @Override public void refrescar() {
+        cargarTiposFiltro();
+    }
+
+    private void refrescarLista() {
+        if (buscar == null || filtroEstado == null || filtroTipo == null) return;
         String texto = buscar.getText();
         EstadoInmueble filtro = filtroEstado.getValue();
-        tareas.ejecutar(() -> service.listar(texto, filtro, null, 0, 100),
+        TipoFiltro elegido = filtroTipo.getValue();
+        Long tipoId = elegido == null ? null : elegido.id();
+        tareas.ejecutar(() -> service.listar(texto, filtro, tipoId, 0, 100),
                 this::mostrar, e -> aviso.error(msg(e)));
+    }
+
+    private void cargarTiposFiltro() {
+        TipoFiltro actual = filtroTipo == null ? null : filtroTipo.getValue();
+        Long seleccionado = actual == null ? null : actual.id();
+        tareas.ejecutar(tipos::activos, lista -> {
+            List<TipoFiltro> opciones = new ArrayList<>();
+            opciones.add(TODOS_LOS_TIPOS);
+            for (TipoInmueble tipo : lista) {
+                opciones.add(new TipoFiltro(tipo.getId(), tipo.getNombre()));
+            }
+            TipoFiltro elegido = opciones.stream()
+                    .filter(opcion -> opcion.id() == null
+                            ? seleccionado == null : opcion.id().equals(seleccionado))
+                    .findFirst().orElse(TODOS_LOS_TIPOS);
+            actualizandoTipos = true;
+            try {
+                filtroTipo.setItems(FXCollections.observableArrayList(opciones));
+                filtroTipo.setValue(elegido);
+            } finally {
+                actualizandoTipos = false;
+            }
+            refrescarLista();
+        }, e -> {
+            aviso.error(msg(e));
+            refrescarLista();
+        });
     }
 
     private void mostrar(Page<Inmueble> p) {
@@ -421,4 +471,6 @@ public class InmuebleController implements Refrescable {
     private String msg(Throwable e) {
         return e.getCause() != null && e.getCause().getMessage() != null ? e.getCause().getMessage() : e.getMessage();
     }
+
+    private record TipoFiltro(Long id, String nombre) { }
 }

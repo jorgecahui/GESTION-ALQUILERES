@@ -25,6 +25,7 @@ public class PropietarioController implements Refrescable {
     @FXML private TextField buscar, documento, nombre, telefono, email, banco, cuenta;
     @FXML private ComboBox<TipoDocumento> tipo;
     @FXML private CheckBox activos;
+    @FXML private Button btnEliminarDesactivar, btnReactivar;
     @FXML private TableView<Propietario> tabla;
     @FXML private TableColumn<Propietario, String> colNombre, colDocumento, colTelefono, colEmail, colEstado;
     @FXML private VBox drawer;
@@ -48,6 +49,9 @@ public class PropietarioController implements Refrescable {
         colEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
         colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
         tabla.setItems(datos);
+        tabla.getSelectionModel().selectedItemProperty().addListener(
+                (o, a, b) -> actualizarAcciones(b));
+        actualizarAcciones(null);
         buscar.textProperty().addListener((o, a, b) -> refrescar());
         activos.selectedProperty().addListener((o, a, b) -> refrescar());
         tabla.setOnMouseClicked(e -> { if (e.getClickCount() == 2) editar(tabla.getSelectionModel().getSelectedItem()); });
@@ -165,6 +169,28 @@ public class PropietarioController implements Refrescable {
         tareas.ejecutar(() -> { service.eliminar(p.getId()); return null; },
                 x -> { aviso.info("Propietario eliminado o desactivado según sus referencias."); refrescar(); },
                 e -> aviso.error(msg(e)));
+    }
+
+    @FXML private void onReactivar() {
+        Propietario p = tabla.getSelectionModel().getSelectedItem();
+        if (p == null) {
+            aviso.error("Selecciona un propietario.");
+            return;
+        }
+        tareas.ejecutar(() -> { service.reactivar(p.getId()); return null; },
+                x -> { aviso.info("Propietario reactivado."); refrescar(); },
+                e -> aviso.error(msg(e)));
+    }
+
+    private void actualizarAcciones(Propietario p) {
+        mostrar(btnEliminarDesactivar, p != null && p.isActivo());
+        mostrar(btnReactivar, p != null && !p.isActivo());
+    }
+
+    private void mostrar(Button boton, boolean visible) {
+        if (boton == null) return;
+        boton.setVisible(visible);
+        boton.setManaged(visible);
     }
 
     @FXML private void onCerrar() { cerrar(); }

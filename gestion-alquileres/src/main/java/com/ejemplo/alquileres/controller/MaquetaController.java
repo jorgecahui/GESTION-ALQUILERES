@@ -71,6 +71,9 @@ import javafx.stage.Window;
 
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -78,7 +81,10 @@ import org.springframework.stereotype.Component;
  * {@link MaquetaService} fuera del hilo de JavaFX y se convierten en nodos en el hilo FX.
  */
 @Component
+@Scope("prototype")
 public class MaquetaController implements Refrescable {
+
+    private static final Logger log = LoggerFactory.getLogger(MaquetaController.class);
 
     private static final double ANCHO_UNIDAD = 62;
     private static final double ALTO_UNIDAD = 48;
@@ -252,7 +258,15 @@ public class MaquetaController implements Refrescable {
         }
 
         ocultarMensajeEscena();
-        construirEscena(resultado.bloques());
+        try {
+            construirEscena(resultado.bloques());
+        } catch (RuntimeException error) {
+            log.error("No se pudo construir la escena 3D de la maqueta", error);
+            limpiarEscena();
+            mostrarMensajeEscena("No se pudo dibujar la maqueta",
+                    "Ocurrió un error al construir la vista 3D. Intenta nuevamente.");
+            notificador.error("No se pudo dibujar la maqueta 3D. Intenta nuevamente.");
+        }
     }
 
     private void mostrarError(Throwable error) {

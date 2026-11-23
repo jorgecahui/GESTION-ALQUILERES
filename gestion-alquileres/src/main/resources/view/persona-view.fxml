@@ -19,7 +19,10 @@
                 <TextField fx:id="buscar" promptText="Buscar nombre o documento" HBox.hgrow="ALWAYS"/>
                 <CheckBox fx:id="activos" text="Solo activos"/>
                 <Button text="Editar" onAction="#onEditar"/>
-                <Button text="Desactivar" onAction="#onDesactivar"/>
+                <Button fx:id="btnDesactivar" text="Desactivar" onAction="#onDesactivar"
+                        visible="false" managed="false"/>
+                <Button fx:id="btnReactivar" text="Reactivar" onAction="#onReactivar"
+                        visible="false" managed="false"/>
                 <Button text="WhatsApp" onAction="#onWhatsApp"/>
             </HBox>
 
@@ -103,12 +106,39 @@
                     <VBox styleClass="campo" GridPane.columnIndex="0">
                         <Label text="Teléfono" styleClass="campo-label"/>
                         <TextField fx:id="telefono" promptText="Ej. 999 888 777" maxWidth="Infinity"/>
+                        <Label fx:id="errorTelefono" styleClass="campo-error" visible="false" managed="false"/>
                     </VBox>
                     <VBox styleClass="campo" GridPane.columnIndex="1">
                         <Label text="Email" styleClass="campo-label"/>
                         <TextField fx:id="email" promptText="correo@ejemplo.com" maxWidth="Infinity"/>
                     </VBox>
+                    <VBox styleClass="campo" GridPane.rowIndex="1" GridPane.columnIndex="0">
+                        <Label text="Teléfono secundario" styleClass="campo-label"/>
+                        <TextField fx:id="telefonoSecundario" promptText="Opcional" maxWidth="Infinity"/>
+                        <Label fx:id="errorTelefonoSecundario" styleClass="campo-error"
+                               visible="false" managed="false"/>
+                    </VBox>
+                    <VBox styleClass="campo" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                        <Label text="Ocupación" styleClass="campo-label"/>
+                        <TextField fx:id="ocupacion" promptText="Ej. Docente, comerciante" maxWidth="Infinity"/>
+                    </VBox>
                 </GridPane>
+
+                <VBox styleClass="campo">
+                    <Label text="Dirección" styleClass="campo-label"/>
+                    <TextField fx:id="direccion" promptText="Av. / Calle, número, distrito" maxWidth="Infinity"/>
+                </VBox>
+
+                <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
+
+                <VBox spacing="10">
+                    <Label text="DATOS ADICIONALES" styleClass="seccion-form"/>
+                    <VBox styleClass="campo">
+                        <Label text="Observaciones" styleClass="campo-label"/>
+                        <TextArea fx:id="observaciones" promptText="Notas internas sobre la persona"
+                                  prefRowCount="3" wrapText="true"/>
+                    </VBox>
+                </VBox>
             </VBox>
         </ScrollPane>
 
