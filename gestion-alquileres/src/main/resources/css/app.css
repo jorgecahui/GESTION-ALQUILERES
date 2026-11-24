@@ -1838,6 +1838,18 @@
     -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 10, 0, 0, 2);
 }
 
+.maqueta-unidad-etiqueta {
+    -fx-font-size: 9.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 4;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 4;
+    -fx-padding: 0 4 0 4;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.10), 6, 0, 0, 1);
+}
+
 .maqueta-aviso {
     -fx-max-width: 520;
 }
