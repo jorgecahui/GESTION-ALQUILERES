@@ -24,7 +24,18 @@
     </HBox>
 
     <StackPane fx:id="contenedor3d" styleClass="maqueta-contenedor" VBox.vgrow="ALWAYS">
-        <Pane fx:id="capaEtiquetas" mouseTransparent="true" pickOnBounds="false"/>
+        <Pane fx:id="capaEtiquetas" pickOnBounds="false"/>
+        <HBox fx:id="barraNavegacion" styleClass="maqueta-navegacion" spacing="10"
+              alignment="CENTER_LEFT" visible="false" managed="false"
+              maxWidth="-Infinity" maxHeight="-Infinity"
+              StackPane.alignment="TOP_CENTER">
+            <StackPane.margin><Insets top="14.0" left="16.0" right="16.0"/></StackPane.margin>
+            <Label fx:id="migaNavegacion" styleClass="maqueta-miga"/>
+            <Button fx:id="btnVolverEdificio" text="Volver al edificio"
+                    onAction="#onVolverAlEdificio" styleClass="button-outlined">
+                <graphic><FontIcon iconLiteral="fth-arrow-left"/></graphic>
+            </Button>
+        </HBox>
         <Label fx:id="etiquetaHover" styleClass="maqueta-hover" visible="false"
                mouseTransparent="true" wrapText="true" maxWidth="420"
                StackPane.alignment="TOP_LEFT">

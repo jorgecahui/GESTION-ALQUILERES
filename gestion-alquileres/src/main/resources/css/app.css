@@ -1881,6 +1881,26 @@
     -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 10, 0, 0, 2);
 }
 
+.maqueta-piso-etiqueta:hover {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.maqueta-navegacion {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 10;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 10;
+    -fx-padding: 7 10 7 14;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.18), 12, 0, 0, 3);
+}
+
+.maqueta-miga {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
 .maqueta-unidad-etiqueta {
     -fx-font-size: 9.5px;
     -fx-font-weight: bold;
