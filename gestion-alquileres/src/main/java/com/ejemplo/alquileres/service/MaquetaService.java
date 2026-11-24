@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MaquetaService {
+    public static final int TONOS_RENTA = 8;
+
     private final InmuebleRepository inmuebles;
     private final ContratoRepository contratos;
     private final MorosidadService morosidad;
@@ -42,7 +45,15 @@ public class MaquetaService {
     public record ContratoDetalle(Long id, String codigo, String arrendatario, String documento,
                                   LocalDate fechaInicio, LocalDate fechaFin, BigDecimal rentaMensual,
                                   SemaforoMorosidad semaforo, long cuotasVencidas,
-                                  BigDecimal montoPendiente) {
+                                  BigDecimal montoPendiente, Long diasParaVencer) {
+        /** Constructor compatible con la firma anterior a los días para vencer. */
+        public ContratoDetalle(Long id, String codigo, String arrendatario, String documento,
+                               LocalDate fechaInicio, LocalDate fechaFin, BigDecimal rentaMensual,
+                               SemaforoMorosidad semaforo, long cuotasVencidas,
+                               BigDecimal montoPendiente) {
+            this(id, codigo, arrendatario, documento, fechaInicio, fechaFin, rentaMensual,
+                    semaforo, cuotasVencidas, montoPendiente, null);
+        }
     }
 
     public record DetalleMaqueta(Long id, String codigo, String nombre, String tipo,
@@ -57,6 +68,7 @@ public class MaquetaService {
     }
 
     public ResultadoMaqueta cargar() {
+        LocalDate hoy = LocalDate.now(clock);
         List<Inmueble> todos = inmuebles.listarParaMaqueta();
         Map<Long, Contrato> vigentes = new HashMap<>();
         for (Contrato contrato : contratos.vigentesConDetalle()) {
@@ -82,6 +94,8 @@ public class MaquetaService {
             String arrendatario = contrato == null || contrato.getArrendatario() == null
                     ? null
                     : contrato.getArrendatario().getNombreCompleto();
+            LocalDate fechaFin = contrato == null ? null : contrato.getFechaFin();
+            Long diasParaVencer = fechaFin == null ? null : ChronoUnit.DAYS.between(hoy, fechaFin);
             bloques.add(new BloqueMaqueta(
                     inmueble.getId(),
                     inmueble.getCodigo(),
@@ -93,7 +107,10 @@ public class MaquetaService {
                     contrato == null ? null : contrato.getId(),
                     arrendatario,
                     semaforo,
-                    inconsistencia));
+                    inconsistencia,
+                    inmueble.getRentaReferencial(),
+                    fechaFin,
+                    diasParaVencer));
         }
         return new ResultadoMaqueta(bloques, sinUbicacion);
     }
@@ -156,6 +173,28 @@ public class MaquetaService {
                 contrato.getRentaMensual(),
                 morosidad.semaforo(contrato),
                 vencidas.size(),
-                pendiente);
+                pendiente,
+                contrato.getFechaFin() == null
+                        ? null : ChronoUnit.DAYS.between(hoy, contrato.getFechaFin()));
+    }
+
+    /**
+     * Ubica una renta dentro de una escala fija de tonos. Devuelve -1 cuando no
+     * hay renta. Si el rango es cero (todas las rentas iguales) usa el tono medio
+     * para no dividir por cero.
+     */
+    public static int tonoRenta(BigDecimal renta, BigDecimal minima, BigDecimal maxima, int tonos) {
+        if (tonos < 1) throw new IllegalArgumentException("La escala debe tener al menos un tono");
+        if (tonos == 1) return 0;
+        if (renta == null || minima == null || maxima == null) return -1;
+        if (maxima.compareTo(minima) <= 0) return (tonos - 1) / 2;
+
+        BigDecimal proporcion = renta.subtract(minima)
+                .divide(maxima.subtract(minima), 6, RoundingMode.HALF_UP);
+        if (proporcion.signum() < 0) proporcion = BigDecimal.ZERO;
+        if (proporcion.compareTo(BigDecimal.ONE) > 0) proporcion = BigDecimal.ONE;
+        int indice = proporcion.multiply(BigDecimal.valueOf(tonos - 1))
+                .setScale(0, RoundingMode.HALF_UP).intValue();
+        return Math.max(0, Math.min(tonos - 1, indice));
     }
 }

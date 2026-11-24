@@ -1,5 +1,6 @@
 package com.ejemplo.alquileres;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -62,6 +63,7 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
@@ -147,6 +149,14 @@ class FxmlSmokeTest {
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
         assertNotNull(raiz);
+
+        ComboBox<?> selector = nodos(raiz).stream()
+                .filter(ComboBox.class::isInstance)
+                .map(ComboBox.class::cast)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No se encontró el selector Ver por"));
+        assertEquals(java.util.List.of("Estado", "Mora", "Renta", "Vencimiento"),
+                selector.getItems());
     }
 
     @Test void cadaCargaDeLaMaquetaCreaControladorYSubScenePropios() throws Exception {

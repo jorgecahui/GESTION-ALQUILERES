@@ -9,13 +9,18 @@
     <HBox styleClass="pagina-cabecera">
         <VBox HBox.hgrow="ALWAYS" spacing="2">
             <Label text="Maqueta 3D" styleClass="pagina-titulo"/>
-            <Label text="Vista general del edificio: estado de cada unidad y alertas de mora."
+            <Label text="Vista general del edificio: estado, mora, renta y vencimiento de cada unidad."
                    styleClass="pagina-subtitulo"/>
         </VBox>
-        <Button fx:id="btnRestablecer" text="Restablecer vista" onAction="#onRestablecerVista"
-                styleClass="button-outlined">
-            <graphic><FontIcon iconLiteral="fth-rotate-ccw"/></graphic>
-        </Button>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label text="Ver por" styleClass="maqueta-selector-etiqueta"/>
+            <ComboBox fx:id="selectorModo" onAction="#onCambiarModo"
+                      styleClass="maqueta-selector" prefWidth="150"/>
+            <Button fx:id="btnRestablecer" text="Restablecer vista" onAction="#onRestablecerVista"
+                    styleClass="button-outlined">
+                <graphic><FontIcon iconLiteral="fth-rotate-ccw"/></graphic>
+            </Button>
+        </HBox>
     </HBox>
 
     <StackPane fx:id="contenedor3d" styleClass="maqueta-contenedor" VBox.vgrow="ALWAYS">
@@ -32,41 +37,7 @@
         </Label>
     </StackPane>
 
-    <HBox fx:id="leyenda" styleClass="maqueta-leyenda" alignment="CENTER_LEFT">
-        <Label text="Estados" styleClass="maqueta-leyenda-titulo"/>
-        <HBox fx:id="leyendaDisponible" alignment="CENTER_LEFT" spacing="6"
-              styleClass="maqueta-leyenda-item">
-            <Region styleClass="maqueta-punto,maqueta-punto-disponible"/>
-            <Label text="Disponible" styleClass="maqueta-leyenda-etiqueta"/>
-        </HBox>
-        <HBox fx:id="leyendaAlquilado" alignment="CENTER_LEFT" spacing="6"
-              styleClass="maqueta-leyenda-item">
-            <Region styleClass="maqueta-punto,maqueta-punto-alquilado"/>
-            <Label text="Alquilado" styleClass="maqueta-leyenda-etiqueta"/>
-        </HBox>
-        <HBox fx:id="leyendaMantenimiento" alignment="CENTER_LEFT" spacing="6"
-              styleClass="maqueta-leyenda-item">
-            <Region styleClass="maqueta-punto,maqueta-punto-mantenimiento"/>
-            <Label text="Mantenimiento" styleClass="maqueta-leyenda-etiqueta"/>
-        </HBox>
-        <HBox fx:id="leyendaInactivo" alignment="CENTER_LEFT" spacing="6"
-              styleClass="maqueta-leyenda-item">
-            <Region styleClass="maqueta-punto,maqueta-punto-inactivo"/>
-            <Label text="Inactivo" styleClass="maqueta-leyenda-etiqueta"/>
-        </HBox>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label text="Mora" styleClass="maqueta-leyenda-titulo"/>
-        <HBox fx:id="leyendaAtraso" alignment="CENTER_LEFT" spacing="6"
-              styleClass="maqueta-leyenda-item">
-            <Region styleClass="maqueta-punto,maqueta-punto-atraso"/>
-            <Label text="Atraso leve" styleClass="maqueta-leyenda-etiqueta"/>
-        </HBox>
-        <HBox fx:id="leyendaMoroso" alignment="CENTER_LEFT" spacing="6"
-              styleClass="maqueta-leyenda-item">
-            <Region styleClass="maqueta-punto,maqueta-punto-moroso"/>
-            <Label text="Moroso" styleClass="maqueta-leyenda-etiqueta"/>
-        </HBox>
-    </HBox>
+    <HBox fx:id="leyenda" styleClass="maqueta-leyenda" alignment="CENTER_LEFT"/>
     <Label fx:id="resumen" styleClass="maqueta-resumen" wrapText="true"/>
     <Label fx:id="avisoUbicacion" styleClass="maqueta-ayuda" visible="false" managed="false" wrapText="true"/>
 </VBox>

@@ -17,6 +17,7 @@ import com.ejemplo.alquileres.ui.Tablas;
 import com.ejemplo.alquileres.ui.Tareas;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -25,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +50,7 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
@@ -64,6 +67,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -132,8 +136,13 @@ public class MaquetaController implements Refrescable {
     private static final Color COLOR_INACTIVO = Color.web("#8a94a6");
     private static final Color COLOR_ESTRUCTURA = Color.web("#8a96a8");
     private static final Color COLOR_LOSA = Color.web("#95a2b4");
-    private static final Color COLOR_MORA_MOROSO = Color.web("#e53935");
+    private static final Color COLOR_MORA_AL_DIA = Color.web("#2f9e6e");
     private static final Color COLOR_MORA_ATRASO = Color.web("#ffc107");
+    private static final Color COLOR_MORA_MOROSO = Color.web("#e53935");
+    private static final Color COLOR_SIN_DATO = Color.web("#b8c1cd");
+    private static final Color COLOR_VENCIDO = Color.web("#8e1b1b");
+    private static final Color COLOR_RENTA_INICIO = Color.web("#cfe2f7");
+    private static final Color COLOR_RENTA_FIN = Color.web("#1f5f9e");
     private static final Color COLOR_SELECCION = Color.web("#f8fafc");
     private static final Color COLOR_HOVER = Color.web("#9fd3ff");
     private static final Color COLOR_SUELO_CLARO_CENTRO = Color.web("#d7dee8");
@@ -141,15 +150,18 @@ public class MaquetaController implements Refrescable {
     private static final Color COLOR_SUELO_OSCURO_CENTRO = Color.web("#566273");
     private static final Color COLOR_SUELO_OSCURO_BORDE = Color.web("#303945");
 
+    private static final List<Color> COLORES_RENTA = crearPaletaRenta();
+
     private static final double ALFA_ATENUADO = 0.12;
     private static final Pattern NUMERO_UNIDAD = Pattern.compile("(\\d{1,4})\\s*$");
+    private static final String PREFERENCIA_MODO = "maqueta.modo";
 
     @FXML private StackPane contenedor3d;
     @FXML private Pane capaEtiquetas;
     @FXML private Label etiquetaHover, ayuda, avisoUbicacion, resumen;
     @FXML private Button btnRestablecer;
-    @FXML private HBox leyendaDisponible, leyendaAlquilado, leyendaMantenimiento,
-            leyendaInactivo, leyendaAtraso, leyendaMoroso;
+    @FXML private ComboBox<String> selectorModo;
+    @FXML private HBox leyenda;
 
     private final MaquetaService service;
     private final Tareas tareas;
@@ -161,20 +173,31 @@ public class MaquetaController implements Refrescable {
             new EnumMap<>(EstadoInmueble.class);
     private final Map<Color, PhongMaterial> materialesMora = new HashMap<>();
     private final Map<Color, PhongMaterial> materialesMoraAtenuados = new HashMap<>();
+    private final Map<BloqueMaqueta.CategoriaMora, PhongMaterial> materialesCategoriaMora =
+            new EnumMap<>(BloqueMaqueta.CategoriaMora.class);
+    private final Map<BloqueMaqueta.CategoriaMora, PhongMaterial> materialesCategoriaMoraAtenuados =
+            new EnumMap<>(BloqueMaqueta.CategoriaMora.class);
+    private final Map<BloqueMaqueta.CategoriaVencimiento, PhongMaterial> materialesVencimiento =
+            new EnumMap<>(BloqueMaqueta.CategoriaVencimiento.class);
+    private final Map<BloqueMaqueta.CategoriaVencimiento, PhongMaterial> materialesVencimientoAtenuados =
+            new EnumMap<>(BloqueMaqueta.CategoriaVencimiento.class);
+    private final List<PhongMaterial> materialesRenta = new ArrayList<>();
+    private final List<PhongMaterial> materialesRentaAtenuados = new ArrayList<>();
     private final Map<Node, BloqueMaqueta> mapaBloques = new HashMap<>();
     private final Map<BloqueMaqueta, Node> nodosPorBloque = new LinkedHashMap<>();
     private final Map<BloqueMaqueta, Box> cajasPorBloque = new HashMap<>();
     private final Map<BloqueMaqueta, Cylinder> marcasPorBloque = new HashMap<>();
-    private final Map<BloqueMaqueta, String> textosHover = new HashMap<>();
     private final List<EtiquetaPiso> etiquetasPiso = new ArrayList<>();
     private final List<EtiquetaUnidad> etiquetasUnidad = new ArrayList<>();
+    private final Preferences preferencias = Preferences.userNodeForPackage(MaquetaController.class);
 
     private Group mundo;
     private SubScene subEscena;
     private PerspectiveCamera camara;
     private Rotate rotacionX, rotacionY;
     private PhongMaterial materialEstructura, materialSeleccion, materialHover,
-            materialLosa, materialSueloClaro, materialSueloOscuro;
+            materialLosa, materialSueloClaro, materialSueloOscuro,
+            materialSinDato, materialSinDatoAtenuado;
     private Box suelo;
     private Geometria geometria;
     private List<Point3D> puntosEncuadre = List.of();
@@ -192,8 +215,11 @@ public class MaquetaController implements Refrescable {
     private VBox mensajeEscena;
 
     private final List<ItemLeyenda> itemsLeyenda = new ArrayList<>();
-    private EstadoInmueble filtroEstado;
-    private SemaforoMorosidad filtroSemaforo;
+    private List<BloqueMaqueta> bloquesActuales = List.of();
+    private ModoVista modoVista = ModoVista.ESTADO;
+    private BigDecimal rentaMinima;
+    private BigDecimal rentaMaxima;
+    private String filtroClave;
     private boolean filtroActivo;
     private boolean filtroFijo;
 
@@ -207,6 +233,9 @@ public class MaquetaController implements Refrescable {
 
     @FXML
     public void initialize() {
+        modoVista = ModoVista.desdePreferencia(
+                preferencias.get(PREFERENCIA_MODO, ModoVista.ESTADO.name()));
+        configurarSelectorModo();
         if (Platform.isFxApplicationThread()) iniciarMaqueta();
         else Platform.runLater(this::iniciarMaqueta);
         configurarLeyenda();
@@ -263,6 +292,7 @@ public class MaquetaController implements Refrescable {
             if (mundo == null) return;
         }
 
+        bloquesActuales = List.copyOf(resultado.bloques());
         actualizarAvisoUbicacion(resultado.sinUbicacion());
         actualizarResumen(resultado.bloques());
         if (resultado.bloques().isEmpty()) {
@@ -369,12 +399,67 @@ public class MaquetaController implements Refrescable {
         materialesMora.put(COLOR_MORA_ATRASO, material(COLOR_MORA_ATRASO));
         materialesMoraAtenuados.put(COLOR_MORA_MOROSO, materialAtenuado(COLOR_MORA_MOROSO));
         materialesMoraAtenuados.put(COLOR_MORA_ATRASO, materialAtenuado(COLOR_MORA_ATRASO));
+
+        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.AL_DIA,
+                material(COLOR_MORA_AL_DIA));
+        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.ATRASO_LEVE,
+                material(COLOR_MORA_ATRASO));
+        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.MOROSO,
+                material(COLOR_MORA_MOROSO));
+        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.SIN_MORA,
+                material(COLOR_SIN_DATO));
+        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.AL_DIA,
+                materialAtenuado(COLOR_MORA_AL_DIA));
+        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.ATRASO_LEVE,
+                materialAtenuado(COLOR_MORA_ATRASO));
+        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.MOROSO,
+                materialAtenuado(COLOR_MORA_MOROSO));
+        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.SIN_MORA,
+                materialAtenuado(COLOR_SIN_DATO));
+
+        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.VENCIDO,
+                material(COLOR_VENCIDO));
+        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS,
+                material(COLOR_MORA_MOROSO));
+        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS,
+                material(COLOR_MANTENIMIENTO));
+        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS,
+                material(COLOR_DISPONIBLE));
+        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO,
+                material(COLOR_SIN_DATO));
+        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.VENCIDO,
+                materialAtenuado(COLOR_VENCIDO));
+        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS,
+                materialAtenuado(COLOR_MORA_MOROSO));
+        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS,
+                materialAtenuado(COLOR_MANTENIMIENTO));
+        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS,
+                materialAtenuado(COLOR_DISPONIBLE));
+        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO,
+                materialAtenuado(COLOR_SIN_DATO));
+
+        for (Color color : COLORES_RENTA) {
+            materialesRenta.add(material(color));
+            materialesRentaAtenuados.add(materialAtenuado(color));
+        }
+        materialSinDato = material(COLOR_SIN_DATO);
+        materialSinDatoAtenuado = materialAtenuado(COLOR_SIN_DATO);
+
         materialEstructura = material(COLOR_ESTRUCTURA);
         materialLosa = material(COLOR_LOSA);
         materialSeleccion = material(COLOR_SELECCION);
         materialHover = material(COLOR_HOVER);
         materialSueloClaro = materialSuelo(COLOR_SUELO_CLARO_CENTRO, COLOR_SUELO_CLARO_BORDE);
         materialSueloOscuro = materialSuelo(COLOR_SUELO_OSCURO_CENTRO, COLOR_SUELO_OSCURO_BORDE);
+    }
+
+    private static List<Color> crearPaletaRenta() {
+        List<Color> colores = new ArrayList<>(MaquetaService.TONOS_RENTA);
+        for (int i = 0; i < MaquetaService.TONOS_RENTA; i++) {
+            double avance = i / (double) (MaquetaService.TONOS_RENTA - 1);
+            colores.add(COLOR_RENTA_INICIO.interpolate(COLOR_RENTA_FIN, avance));
+        }
+        return List.copyOf(colores);
     }
 
     private PhongMaterial material(Color color) {
@@ -422,19 +507,31 @@ public class MaquetaController implements Refrescable {
         nodosPorBloque.clear();
         cajasPorBloque.clear();
         marcasPorBloque.clear();
-        textosHover.clear();
         bloqueHover = null;
         nodoHover = null;
         suelo = null;
+        calcularRentas(lista);
 
         crearEtiquetasPiso();
         mundo.getChildren().add(crearEstructura());
         for (BloqueMaqueta bloque : lista) mundo.getChildren().add(crearBloque(bloque));
         crearEtiquetasUnidad(lista);
         aplicarFiltroMateriales();
+        configurarLeyenda();
         actualizarMaterialSuelo();
 
         Platform.runLater(this::actualizarEncuadreYEtiquetas);
+    }
+
+    private void calcularRentas(List<BloqueMaqueta> bloques) {
+        rentaMinima = null;
+        rentaMaxima = null;
+        for (BloqueMaqueta bloque : bloques) {
+            BigDecimal renta = bloque.rentaReferencial();
+            if (renta == null) continue;
+            if (rentaMinima == null || renta.compareTo(rentaMinima) < 0) rentaMinima = renta;
+            if (rentaMaxima == null || renta.compareTo(rentaMaxima) > 0) rentaMaxima = renta;
+        }
     }
 
     static Geometria calcularGeometria(List<BloqueMaqueta> bloques) {
@@ -732,7 +829,6 @@ public class MaquetaController implements Refrescable {
         mapaBloques.put(grupo, bloque);
         mapaBloques.put(caja, bloque);
         nodosPorBloque.put(bloque, grupo);
-        textosHover.put(bloque, descripcionHover(bloque));
         return grupo;
     }
 
@@ -853,6 +949,13 @@ public class MaquetaController implements Refrescable {
         titulo.getStyleClass().add("dialogo-titulo");
         titulo.setWrapText(true);
         contenido.getChildren().addAll(titulo, new Separator());
+        if (modoVista != ModoVista.ESTADO) {
+            Label datoModo = new Label("Vista " + modoVista.etiqueta()
+                    + " · " + descripcionModo(detalle));
+            datoModo.getStyleClass().add("maqueta-detalle-modo");
+            datoModo.setWrapText(true);
+            contenido.getChildren().add(datoModo);
+        }
 
         Label seccionInmueble = new Label("INMUEBLE");
         seccionInmueble.getStyleClass().add("seccion-form");
@@ -1238,7 +1341,7 @@ public class MaquetaController implements Refrescable {
         if (contornoHover != null && nodoHover instanceof Group grupo) {
             grupo.getChildren().add(contornoHover);
         }
-        etiquetaHover.setText(textosHover.get(bloque));
+        etiquetaHover.setText(descripcionHover(bloque));
         etiquetaHover.setVisible(true);
     }
 
@@ -1259,39 +1362,167 @@ public class MaquetaController implements Refrescable {
         actualizarHover(null);
     }
 
-    private void configurarLeyenda() {
-        itemsLeyenda.clear();
-        configurarItemLeyenda(leyendaDisponible, DISPONIBLE, null);
-        configurarItemLeyenda(leyendaAlquilado, ALQUILADO, null);
-        configurarItemLeyenda(leyendaMantenimiento, MANTENIMIENTO, null);
-        configurarItemLeyenda(leyendaInactivo, INACTIVO, null);
-        configurarItemLeyenda(leyendaAtraso, null, SemaforoMorosidad.ATRASO_LEVE);
-        configurarItemLeyenda(leyendaMoroso, null, SemaforoMorosidad.MOROSO);
+    @FXML
+    private void onCambiarModo() {
+        if (selectorModo == null) return;
+        ModoVista nuevo = ModoVista.desdeEtiqueta(selectorModo.getValue());
+        if (nuevo == modoVista) return;
+        modoVista = nuevo;
+        preferencias.put(PREFERENCIA_MODO, nuevo.name());
+        filtroClave = null;
+        filtroActivo = false;
+        filtroFijo = false;
+        actualizarHover(null);
+        aplicarFiltroMateriales();
+        actualizarResumen(bloquesActuales);
+        configurarLeyenda();
     }
 
-    private void configurarItemLeyenda(HBox item, EstadoInmueble estado, SemaforoMorosidad semaforo) {
-        if (item == null) return;
-        itemsLeyenda.add(new ItemLeyenda(item, estado, semaforo));
+    private void configurarSelectorModo() {
+        if (selectorModo == null) return;
+        selectorModo.getItems().setAll(ModoVista.etiquetas());
+        selectorModo.setValue(modoVista.etiqueta());
+    }
+
+    private void configurarLeyenda() {
+        itemsLeyenda.clear();
+        if (leyenda == null) return;
+        leyenda.getChildren().clear();
+        switch (modoVista) {
+            case ESTADO -> configurarLeyendaEstado();
+            case MORA -> configurarLeyendaMora();
+            case RENTA -> configurarLeyendaRenta();
+            case VENCIMIENTO -> configurarLeyendaVencimiento();
+        }
+        actualizarEstiloLeyenda();
+    }
+
+    private void configurarLeyendaEstado() {
+        leyenda.getChildren().add(tituloLeyenda("Estados"));
+        leyenda.getChildren().addAll(
+                itemLeyenda("Disponible", "maqueta-punto-disponible", claveEstado(DISPONIBLE)),
+                itemLeyenda("Alquilado", "maqueta-punto-alquilado", claveEstado(ALQUILADO)),
+                itemLeyenda("Mantenimiento", "maqueta-punto-mantenimiento",
+                        claveEstado(MANTENIMIENTO)),
+                itemLeyenda("Inactivo", "maqueta-punto-inactivo", claveEstado(INACTIVO)));
+        Region espacio = new Region();
+        HBox.setHgrow(espacio, Priority.ALWAYS);
+        leyenda.getChildren().add(espacio);
+        leyenda.getChildren().add(tituloLeyenda("Mora"));
+        leyenda.getChildren().addAll(
+                itemLeyenda("Atraso leve", "maqueta-punto-atraso",
+                        claveMora(BloqueMaqueta.CategoriaMora.ATRASO_LEVE)),
+                itemLeyenda("Moroso", "maqueta-punto-moroso",
+                        claveMora(BloqueMaqueta.CategoriaMora.MOROSO)));
+    }
+
+    private void configurarLeyendaMora() {
+        leyenda.getChildren().add(tituloLeyenda("Mora"));
+        for (BloqueMaqueta.CategoriaMora categoria : BloqueMaqueta.CategoriaMora.values()) {
+            leyenda.getChildren().add(itemLeyenda(categoria.getEtiqueta(),
+                    clasePuntoMora(categoria), claveMora(categoria)));
+        }
+    }
+
+    private void configurarLeyendaRenta() {
+        leyenda.getChildren().add(tituloLeyenda("Renta (S/)"));
+        if (rentaMinima == null || rentaMaxima == null) {
+            Label vacio = new Label("Sin rentas registradas");
+            vacio.getStyleClass().add("maqueta-leyenda-etiqueta");
+            vacio.setMinHeight(21);
+            vacio.setPrefHeight(21);
+            leyenda.getChildren().add(vacio);
+            return;
+        }
+        if (rentaMinima.compareTo(rentaMaxima) == 0) {
+            int tono = MaquetaService.tonoRenta(rentaMinima, rentaMinima, rentaMaxima,
+                    MaquetaService.TONOS_RENTA);
+            leyenda.getChildren().add(itemRentaUnica(rentaMinima, tono));
+            return;
+        }
+
+        HBox escala = new HBox();
+        escala.setAlignment(Pos.CENTER_LEFT);
+        for (int i = 0; i < COLORES_RENTA.size(); i++) {
+            Region tono = new Region();
+            tono.getStyleClass().add("maqueta-renta-tono");
+            tono.setStyle("-fx-background-color: " + colorHex(COLORES_RENTA.get(i)) + ";");
+            StackPane celda = new StackPane(tono);
+            celda.getStyleClass().addAll("maqueta-leyenda-item", "maqueta-renta-celda");
+            registrarItemLeyenda(celda, claveRenta(i));
+            escala.getChildren().add(celda);
+        }
+        Label etiquetas = new Label("Mín. " + Tablas.moneda(rentaMinima)
+                + "  ·  Máx. " + Tablas.moneda(rentaMaxima));
+        etiquetas.getStyleClass().add("maqueta-leyenda-etiqueta");
+        leyenda.getChildren().addAll(escala, etiquetas);
+        if (hayBloquesSinRenta()) {
+            leyenda.getChildren().add(itemLeyenda("Sin renta", "maqueta-punto-sin-renta",
+                    claveRenta(null)));
+        }
+    }
+
+    private void configurarLeyendaVencimiento() {
+        leyenda.getChildren().add(tituloLeyenda("Vencimiento"));
+        for (BloqueMaqueta.CategoriaVencimiento categoria
+                : BloqueMaqueta.CategoriaVencimiento.values()) {
+            leyenda.getChildren().add(itemLeyenda(categoria.getEtiqueta(),
+                    clasePuntoVencimiento(categoria), claveVencimiento(categoria)));
+        }
+    }
+
+    private Label tituloLeyenda(String texto) {
+        Label titulo = new Label(texto);
+        titulo.getStyleClass().add("maqueta-leyenda-titulo");
+        return titulo;
+    }
+
+    private HBox itemLeyenda(String texto, String clasePunto, String clave) {
+        Region punto = new Region();
+        punto.getStyleClass().addAll("maqueta-punto", clasePunto);
+        Label etiqueta = new Label(texto);
+        etiqueta.getStyleClass().add("maqueta-leyenda-etiqueta");
+        HBox item = new HBox(6, punto, etiqueta);
+        item.setAlignment(Pos.CENTER_LEFT);
+        item.getStyleClass().add("maqueta-leyenda-item");
+        registrarItemLeyenda(item, clave);
+        return item;
+    }
+
+    private HBox itemRentaUnica(BigDecimal renta, int tono) {
+        int indice = limitarIndiceRenta(tono);
+        Region muestra = new Region();
+        muestra.getStyleClass().add("maqueta-renta-tono");
+        muestra.setStyle("-fx-background-color: " + colorHex(COLORES_RENTA.get(indice)) + ";");
+        Label etiqueta = new Label(Tablas.moneda(renta));
+        etiqueta.getStyleClass().add("maqueta-leyenda-etiqueta");
+        HBox item = new HBox(6, muestra, etiqueta);
+        item.setAlignment(Pos.CENTER_LEFT);
+        item.getStyleClass().add("maqueta-leyenda-item");
+        registrarItemLeyenda(item, claveRenta(indice));
+        return item;
+    }
+
+    private void registrarItemLeyenda(Node item, String clave) {
+        itemsLeyenda.add(new ItemLeyenda(item, clave));
         item.setOnMouseEntered(evento -> {
-            if (!filtroFijo) aplicarFiltro(estado, semaforo, false);
+            if (!filtroFijo) aplicarFiltro(clave, false);
         });
         item.setOnMouseExited(evento -> {
-            if (!filtroFijo) aplicarFiltro(null, null, false);
+            if (!filtroFijo) aplicarFiltro(null, false);
         });
         item.setOnMouseClicked(evento -> {
-            boolean mismoFiltroFijo = filtroFijo && filtroActivo
-                    && filtroEstado == estado && filtroSemaforo == semaforo;
-            if (mismoFiltroFijo) aplicarFiltro(null, null, false);
-            else aplicarFiltro(estado, semaforo, true);
+            boolean mismoFiltroFijo = filtroFijo && filtroActivo && clave.equals(filtroClave);
+            if (mismoFiltroFijo) aplicarFiltro(null, false);
+            else aplicarFiltro(clave, true);
             evento.consume();
         });
     }
 
-    private void aplicarFiltro(EstadoInmueble estado, SemaforoMorosidad semaforo, boolean fijo) {
-        filtroEstado = estado;
-        filtroSemaforo = semaforo;
-        filtroActivo = estado != null || semaforo != null;
-        filtroFijo = fijo;
+    private void aplicarFiltro(String clave, boolean fijo) {
+        filtroClave = clave;
+        filtroActivo = clave != null;
+        filtroFijo = fijo && clave != null;
         aplicarFiltroMateriales();
         actualizarEstiloLeyenda();
     }
@@ -1316,28 +1547,124 @@ public class MaquetaController implements Refrescable {
     }
 
     private boolean coincideFiltro(BloqueMaqueta bloque) {
-        if (filtroEstado != null) return bloque.estado() == filtroEstado;
-        if (filtroSemaforo != null) return bloque.semaforo() == filtroSemaforo;
-        return true;
+        if (filtroClave == null) return true;
+        if (modoVista == ModoVista.ESTADO && filtroClave.startsWith("MORA:")) {
+            return filtroClave.equals(claveMora(bloque.categoriaMora()));
+        }
+        return filtroClave.equals(claveCategoria(bloque));
+    }
+
+    private String claveCategoria(BloqueMaqueta bloque) {
+        return switch (modoVista) {
+            case ESTADO -> claveEstado(bloque.estado());
+            case MORA -> claveMora(bloque.categoriaMora());
+            case RENTA -> claveRenta(tonoRenta(bloque));
+            case VENCIMIENTO -> claveVencimiento(bloque.categoriaVencimiento());
+        };
     }
 
     private void aplicarMateriales(BloqueMaqueta bloque, boolean coincide) {
         Box caja = cajasPorBloque.get(bloque);
         if (caja != null) {
-            PhongMaterial material = coincide
-                    ? materialPara(bloque.estado())
-                    : materialAtenuadoPara(bloque.estado());
+            PhongMaterial material = materialParaModo(bloque, coincide);
             if (material != null) caja.setMaterial(material);
         }
 
         Cylinder marca = marcasPorBloque.get(bloque);
         if (marca == null) return;
+        marca.setVisible(modoVista == ModoVista.ESTADO);
         Color color = colorMora(bloque.semaforo());
         if (color == null) return;
         PhongMaterial material = coincide
                 ? materialMora(color)
                 : materialMoraAtenuado(color);
         if (material != null) marca.setMaterial(material);
+    }
+
+    private PhongMaterial materialParaModo(BloqueMaqueta bloque, boolean coincide) {
+        return switch (modoVista) {
+            case ESTADO -> coincide
+                    ? materialPara(bloque.estado())
+                    : materialAtenuadoPara(bloque.estado());
+            case MORA -> {
+                BloqueMaqueta.CategoriaMora categoria = bloque.categoriaMora();
+                yield coincide
+                        ? materialesCategoriaMora.get(categoria)
+                        : materialesCategoriaMoraAtenuados.get(categoria);
+            }
+            case RENTA -> {
+                Integer tono = tonoRenta(bloque);
+                if (tono == null) {
+                    yield coincide ? materialSinDato : materialSinDatoAtenuado;
+                }
+                yield coincide
+                        ? materialesRenta.get(tono)
+                        : materialesRentaAtenuados.get(tono);
+            }
+            case VENCIMIENTO -> {
+                BloqueMaqueta.CategoriaVencimiento categoria = bloque.categoriaVencimiento();
+                yield coincide
+                        ? materialesVencimiento.get(categoria)
+                        : materialesVencimientoAtenuados.get(categoria);
+            }
+        };
+    }
+
+    private Integer tonoRenta(BloqueMaqueta bloque) {
+        if (bloque.rentaReferencial() == null) return null;
+        int tono = MaquetaService.tonoRenta(bloque.rentaReferencial(), rentaMinima, rentaMaxima,
+                MaquetaService.TONOS_RENTA);
+        return tono < 0 ? null : tono;
+    }
+
+    private boolean hayBloquesSinRenta() {
+        return bloquesActuales.stream().anyMatch(bloque -> bloque.rentaReferencial() == null);
+    }
+
+    private static String claveEstado(EstadoInmueble estado) {
+        return "ESTADO:" + estado.name();
+    }
+
+    private static String claveMora(BloqueMaqueta.CategoriaMora categoria) {
+        return "MORA:" + categoria.name();
+    }
+
+    private static String claveVencimiento(BloqueMaqueta.CategoriaVencimiento categoria) {
+        return "VENCIMIENTO:" + categoria.name();
+    }
+
+    private static String claveRenta(Integer tono) {
+        return tono == null ? "RENTA:SIN" : "RENTA:" + tono;
+    }
+
+    private static String clasePuntoMora(BloqueMaqueta.CategoriaMora categoria) {
+        return switch (categoria) {
+            case AL_DIA -> "maqueta-punto-al-dia";
+            case ATRASO_LEVE -> "maqueta-punto-atraso";
+            case MOROSO -> "maqueta-punto-moroso";
+            case SIN_MORA -> "maqueta-punto-sin-mora";
+        };
+    }
+
+    private static String clasePuntoVencimiento(BloqueMaqueta.CategoriaVencimiento categoria) {
+        return switch (categoria) {
+            case VENCIDO -> "maqueta-punto-vencido";
+            case HASTA_30_DIAS -> "maqueta-punto-por-vencer";
+            case DE_31_A_90_DIAS -> "maqueta-punto-entre-31-y-90";
+            case MAS_DE_90_DIAS -> "maqueta-punto-mas-de-90";
+            case SIN_CONTRATO -> "maqueta-punto-sin-contrato";
+        };
+    }
+
+    private static int limitarIndiceRenta(int tono) {
+        return Math.max(0, Math.min(COLORES_RENTA.size() - 1, tono));
+    }
+
+    private static String colorHex(Color color) {
+        return String.format("#%02X%02X%02X",
+                (int) Math.round(color.getRed() * 255),
+                (int) Math.round(color.getGreen() * 255),
+                (int) Math.round(color.getBlue() * 255));
     }
 
     /**
@@ -1355,9 +1682,7 @@ public class MaquetaController implements Refrescable {
 
     private void actualizarEstiloLeyenda() {
         for (ItemLeyenda item : itemsLeyenda) {
-            boolean activo = filtroActivo && (item.semaforo() != null
-                    ? filtroSemaforo == item.semaforo() && filtroEstado == null
-                    : filtroEstado == item.estado() && filtroSemaforo == null);
+            boolean activo = filtroActivo && item.clave().equals(filtroClave);
             item.nodo().getStyleClass().remove("filtro-activo");
             if (activo) item.nodo().getStyleClass().add("filtro-activo");
         }
@@ -1369,6 +1694,15 @@ public class MaquetaController implements Refrescable {
             resumen.setText("Sin inmuebles ubicados");
             return;
         }
+        resumen.setText(switch (modoVista) {
+            case ESTADO -> resumenEstado(bloques);
+            case MORA -> resumenMora(bloques);
+            case RENTA -> resumenRenta(bloques);
+            case VENCIMIENTO -> resumenVencimiento(bloques);
+        });
+    }
+
+    private String resumenEstado(List<BloqueMaqueta> bloques) {
         long disponibles = bloques.stream().filter(b -> b.estado() == DISPONIBLE).count();
         long alquilados = bloques.stream().filter(b -> b.estado() == ALQUILADO).count();
         long mantenimiento = bloques.stream().filter(b -> b.estado() == MANTENIMIENTO).count();
@@ -1377,13 +1711,82 @@ public class MaquetaController implements Refrescable {
                 .filter(b -> b.semaforo() == SemaforoMorosidad.MOROSO).count();
         long atraso = bloques.stream()
                 .filter(b -> b.semaforo() == SemaforoMorosidad.ATRASO_LEVE).count();
-        resumen.setText(contar(bloques.size(), "inmueble", "inmuebles")
+        return contar(bloques.size(), "inmueble", "inmuebles")
                 + " · " + contar(disponibles, "disponible", "disponibles")
                 + " · " + contar(alquilados, "alquilado", "alquilados")
                 + " · " + mantenimiento + " en mantenimiento"
                 + " · " + contar(inactivos, "inactivo", "inactivos")
                 + " · " + contar(morosos, "moroso", "morosos")
-                + " · " + contar(atraso, "con atraso leve", "con atraso leve"));
+                + " · " + contar(atraso, "con atraso leve", "con atraso leve");
+    }
+
+    private String resumenMora(List<BloqueMaqueta> bloques) {
+        long alDia = contarCategoriaMora(bloques, BloqueMaqueta.CategoriaMora.AL_DIA);
+        long atraso = contarCategoriaMora(bloques, BloqueMaqueta.CategoriaMora.ATRASO_LEVE);
+        long morosos = contarCategoriaMora(bloques, BloqueMaqueta.CategoriaMora.MOROSO);
+        long sinMora = contarCategoriaMora(bloques, BloqueMaqueta.CategoriaMora.SIN_MORA);
+        return contar(bloques.size(), "inmueble", "inmuebles")
+                + " · " + contar(alDia, "al día", "al día")
+                + " · " + contar(atraso, "con atraso leve", "con atraso leve")
+                + " · " + contar(morosos, "moroso", "morosos")
+                + " · " + contar(sinMora, "sin mora", "sin mora");
+    }
+
+    private String resumenRenta(List<BloqueMaqueta> bloques) {
+        List<BigDecimal> rentas = bloques.stream()
+                .map(BloqueMaqueta::rentaReferencial)
+                .filter(renta -> renta != null)
+                .toList();
+        String base = contar(bloques.size(), "inmueble", "inmuebles");
+        if (rentas.isEmpty()) return base + " · Sin rentas registradas";
+
+        BigDecimal minima = rentas.get(0);
+        BigDecimal maxima = rentas.get(0);
+        BigDecimal suma = BigDecimal.ZERO;
+        for (BigDecimal renta : rentas) {
+            if (renta.compareTo(minima) < 0) minima = renta;
+            if (renta.compareTo(maxima) > 0) maxima = renta;
+            suma = suma.add(renta);
+        }
+        BigDecimal promedio = suma.divide(BigDecimal.valueOf(rentas.size()), 2,
+                RoundingMode.HALF_UP);
+        long sinRenta = bloques.size() - rentas.size();
+        String texto = base + " · " + contar(rentas.size(), "con renta", "con renta")
+                + " · Mín. " + Tablas.moneda(minima)
+                + " · Máx. " + Tablas.moneda(maxima)
+                + " · Prom. " + Tablas.moneda(promedio);
+        if (sinRenta > 0) texto += " · " + contar(sinRenta, "sin renta", "sin renta");
+        return texto;
+    }
+
+    private String resumenVencimiento(List<BloqueMaqueta> bloques) {
+        long vencidos = contarCategoriaVencimiento(bloques,
+                BloqueMaqueta.CategoriaVencimiento.VENCIDO);
+        long hasta30 = contarCategoriaVencimiento(bloques,
+                BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS);
+        long entre31y90 = contarCategoriaVencimiento(bloques,
+                BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS);
+        long masDe90 = contarCategoriaVencimiento(bloques,
+                BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS);
+        long sinContrato = contarCategoriaVencimiento(bloques,
+                BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO);
+        return contar(bloques.size(), "inmueble", "inmuebles")
+                + " · " + contar(vencidos, "vencido", "vencidos")
+                + " · " + contar(hasta30, "vence en 30 días o menos",
+                        "vencen en 30 días o menos")
+                + " · " + contar(entre31y90, "entre 31 y 90 días", "entre 31 y 90 días")
+                + " · " + contar(masDe90, "con más de 90 días", "con más de 90 días")
+                + " · " + contar(sinContrato, "sin contrato", "sin contrato");
+    }
+
+    private long contarCategoriaMora(List<BloqueMaqueta> bloques,
+                                     BloqueMaqueta.CategoriaMora categoria) {
+        return bloques.stream().filter(b -> b.categoriaMora() == categoria).count();
+    }
+
+    private long contarCategoriaVencimiento(List<BloqueMaqueta> bloques,
+                                            BloqueMaqueta.CategoriaVencimiento categoria) {
+        return bloques.stream().filter(b -> b.categoriaVencimiento() == categoria).count();
     }
 
     private String contar(long cantidad, String singular, String plural) {
@@ -1416,15 +1819,17 @@ public class MaquetaController implements Refrescable {
         nodosPorBloque.clear();
         cajasPorBloque.clear();
         marcasPorBloque.clear();
-        textosHover.clear();
         etiquetasPiso.clear();
         etiquetasUnidad.clear();
         geometria = null;
         puntosEncuadre = List.of();
+        rentaMinima = null;
+        rentaMaxima = null;
         bloqueHover = null;
         nodoHover = null;
         suelo = null;
         if (etiquetaHover != null) etiquetaHover.setVisible(false);
+        configurarLeyenda();
     }
 
     private void actualizarAvisoUbicacion(int sinUbicacion) {
@@ -1510,9 +1915,90 @@ public class MaquetaController implements Refrescable {
                 .append(" · ").append(etiquetaNivel(bloque.nivel()))
                 .append(" · ").append(bloque.estado().getEtiqueta());
         if (bloque.arrendatario() != null) texto.append(" · ").append(bloque.arrendatario());
-        if (bloque.semaforo() != null) texto.append(" · ").append(bloque.semaforo().getEtiqueta());
-        if (bloque.inconsistencia()) texto.append(" · Sin contrato vigente");
+        switch (modoVista) {
+            case ESTADO -> {
+                if (bloque.semaforo() != null) {
+                    texto.append(" · ").append(bloque.semaforo().getEtiqueta());
+                }
+                if (bloque.inconsistencia()) texto.append(" · Sin contrato vigente");
+            }
+            case MORA -> texto.append(" · Mora: ").append(textoMora(bloque));
+            case RENTA -> texto.append(" · ").append(textoRenta(bloque.rentaReferencial()));
+            case VENCIMIENTO -> texto.append(" · ")
+                    .append(textoVencimiento(bloque.diasParaVencer()));
+        }
         return texto.toString();
+    }
+
+    private String textoMora(BloqueMaqueta bloque) {
+        if (bloque.estado() != ALQUILADO) return "Sin mora";
+        if (bloque.semaforo() == null) return "Sin contrato vigente";
+        return bloque.semaforo().getEtiqueta();
+    }
+
+    private String descripcionModo(MaquetaService.DetalleMaqueta detalle) {
+        return switch (modoVista) {
+            case ESTADO -> detalle.estado().getEtiqueta();
+            case MORA -> {
+                if (detalle.estado() != ALQUILADO) yield "Sin mora";
+                if (detalle.contrato() == null) yield "Sin contrato vigente";
+                yield detalle.contrato().semaforo().getEtiqueta();
+            }
+            case RENTA -> detalle.rentaReferencial() == null
+                    ? "Sin renta registrada" : Tablas.moneda(detalle.rentaReferencial());
+            case VENCIMIENTO -> detalle.contrato() == null
+                    ? "Sin contrato vigente"
+                    : textoVencimiento(detalle.contrato().diasParaVencer());
+        };
+    }
+
+    private String textoRenta(BigDecimal renta) {
+        return renta == null ? "Sin renta registrada" : "Renta " + Tablas.moneda(renta);
+    }
+
+    private String textoVencimiento(Long dias) {
+        if (dias == null) return "Sin contrato vigente";
+        if (dias < 0) {
+            long cantidad = -dias;
+            return "Venció hace " + cantidad + (cantidad == 1 ? " día" : " días");
+        }
+        if (dias == 0) return "Vence hoy";
+        return "Vence en " + dias + (dias == 1 ? " día" : " días");
+    }
+
+    enum ModoVista {
+        ESTADO("Estado"),
+        MORA("Mora"),
+        RENTA("Renta"),
+        VENCIMIENTO("Vencimiento");
+
+        private final String etiqueta;
+
+        ModoVista(String etiqueta) { this.etiqueta = etiqueta; }
+
+        String etiqueta() { return etiqueta; }
+
+        static List<String> etiquetas() {
+            List<String> etiquetas = new ArrayList<>();
+            for (ModoVista modo : values()) etiquetas.add(modo.etiqueta);
+            return List.copyOf(etiquetas);
+        }
+
+        static ModoVista desdeEtiqueta(String etiqueta) {
+            for (ModoVista modo : values()) {
+                if (modo.etiqueta.equals(etiqueta)) return modo;
+            }
+            return ESTADO;
+        }
+
+        static ModoVista desdePreferencia(String valor) {
+            if (valor == null || valor.isBlank()) return ESTADO;
+            try {
+                return valueOf(valor.trim());
+            } catch (IllegalArgumentException error) {
+                return ESTADO;
+            }
+        }
     }
 
     private double limitar(double valor, double minimo, double maximo) {
@@ -1539,7 +2025,7 @@ public class MaquetaController implements Refrescable {
     private record EtiquetaUnidad(Label nodo, Point3D ancla) {
     }
 
-    private record ItemLeyenda(HBox nodo, EstadoInmueble estado, SemaforoMorosidad semaforo) {
+    private record ItemLeyenda(Node nodo, String clave) {
     }
 
     private record Proyeccion(double ojoX, double ojoY, double ojoZ, double tanV,

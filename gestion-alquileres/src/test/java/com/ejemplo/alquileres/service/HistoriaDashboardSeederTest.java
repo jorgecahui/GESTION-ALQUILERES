@@ -1,6 +1,7 @@
 package com.ejemplo.alquileres.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -8,7 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ejemplo.alquileres.model.Contrato;
+import com.ejemplo.alquileres.model.Cuota;
 import com.ejemplo.alquileres.model.EstadoContrato;
+import com.ejemplo.alquileres.model.EstadoCuota;
 import com.ejemplo.alquileres.model.EstadoInmueble;
 import com.ejemplo.alquileres.model.Inmueble;
 import com.ejemplo.alquileres.model.Pago;
@@ -22,9 +25,12 @@ import com.ejemplo.alquileres.seeder.HistoriaDashboardSeeder;
 import com.ejemplo.alquileres.service.ConfiguracionService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -118,6 +124,81 @@ class HistoriaDashboardSeederTest {
         assertEquals(6L, reparto.getOrDefault(SemaforoMorosidad.AL_DIA, 0L));
         assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.ATRASO_LEVE, 0L));
         assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.MOROSO, 0L));
+        for (Contrato contrato : guardados) {
+            long vencidas = morosidad.vencidas(contrato).size();
+            switch (morosidad.semaforo(contrato)) {
+                case AL_DIA -> assertEquals(0, vencidas, contrato.getCodigo());
+                case ATRASO_LEVE -> assertEquals(1, vencidas, contrato.getCodigo());
+                case MOROSO -> assertEquals(2, vencidas, contrato.getCodigo());
+            }
+        }
+
+        LocalDate hoy = DatosFase6.HOY;
+        Map<String, Long> vencimientos = guardados.stream()
+                .collect(Collectors.groupingBy(
+                        contrato -> categoriaVencimiento(contrato, hoy), Collectors.counting()));
+        assertEquals(2L, vencimientos.getOrDefault("0-30", 0L));
+        assertEquals(2L, vencimientos.getOrDefault("31-90", 0L));
+        assertEquals(5L, vencimientos.getOrDefault("MAS-90", 0L));
+        assertEquals(1L, vencimientos.getOrDefault("VENCIDO", 0L));
+
+        List<Contrato> lejanos = guardados.stream()
+                .filter(contrato -> diasParaVencer(contrato, hoy) > 90)
+                .toList();
+        assertEquals(5, lejanos.size());
+        assertEquals(5, lejanos.stream().map(Contrato::getFechaFin).distinct().count());
+
+        assertTrue(guardados.stream().anyMatch(contrato ->
+                morosidad.semaforo(contrato) == SemaforoMorosidad.MOROSO
+                        && diasParaVencer(contrato, hoy) > 90));
+        assertTrue(guardados.stream().anyMatch(contrato ->
+                morosidad.semaforo(contrato) == SemaforoMorosidad.AL_DIA
+                        && diasParaVencer(contrato, hoy) >= 0
+                        && diasParaVencer(contrato, hoy) <= 30));
+
+        Set<Long> alquiladosIds = alquilados.stream()
+                .map(Inmueble::getId)
+                .collect(Collectors.toSet());
+        Set<Long> conContrato = guardados.stream()
+                .map(contrato -> contrato.getInmueble().getId())
+                .collect(Collectors.toSet());
+        assertEquals(alquiladosIds, conContrato);
+
+        for (Contrato contrato : guardados) {
+            int meses = (int) ChronoUnit.MONTHS.between(contrato.getFechaInicio(),
+                    contrato.getFechaFin().plusDays(1));
+            List<Cuota> cuotas = contrato.getCuotas().stream()
+                    .sorted(Comparator.comparingInt(Cuota::getNumero))
+                    .toList();
+            assertEquals(meses, cuotas.size(), contrato.getCodigo());
+            assertEquals(1, cuotas.get(0).getNumero());
+            assertEquals(meses, cuotas.get(meses - 1).getNumero());
+            for (Cuota cuota : cuotas) {
+                assertNotNull(cuota.getPeriodo());
+                assertTrue(!cuota.getFechaVencimiento().isBefore(contrato.getFechaInicio()));
+                assertTrue(!cuota.getFechaVencimiento().isAfter(contrato.getFechaFin()));
+            }
+        }
+
+        Contrato vencido = guardados.stream()
+                .filter(contrato -> contrato.getFechaFin().isBefore(hoy))
+                .findFirst().orElseThrow();
+        assertTrue(vencido.getCuotas().stream()
+                .allMatch(cuota -> cuota.getFechaVencimiento().isBefore(hoy)));
+        assertEquals(2, vencido.getCuotas().stream()
+                .filter(cuota -> cuota.getEstado() == EstadoCuota.PENDIENTE).count());
+    }
+
+    private long diasParaVencer(Contrato contrato, LocalDate hoy) {
+        return ChronoUnit.DAYS.between(hoy, contrato.getFechaFin());
+    }
+
+    private String categoriaVencimiento(Contrato contrato, LocalDate hoy) {
+        long dias = diasParaVencer(contrato, hoy);
+        if (dias < 0) return "VENCIDO";
+        if (dias <= 30) return "0-30";
+        if (dias <= 90) return "31-90";
+        return "MAS-90";
     }
 
     private HistoriaDashboardSeeder seeder() {

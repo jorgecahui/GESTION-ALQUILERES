@@ -22,6 +22,8 @@ import com.ejemplo.alquileres.model.TipoInmueble;
 import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
 import com.ejemplo.alquileres.ui.BloqueMaqueta;
+import com.ejemplo.alquileres.ui.BloqueMaqueta.CategoriaMora;
+import com.ejemplo.alquileres.ui.BloqueMaqueta.CategoriaVencimiento;
 import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -79,6 +81,11 @@ class MaquetaServiceTest {
         assertEquals("Ana Pérez", b1.arrendatario());
         assertEquals(SemaforoMorosidad.AL_DIA, b1.semaforo());
         assertFalse(b1.inconsistencia());
+        assertEquals(new BigDecimal("1200.00"), b1.rentaReferencial());
+        assertEquals(LocalDate.of(2027, 1, 31), b1.fechaFinContrato());
+        assertEquals(355L, b1.diasParaVencer());
+        assertEquals(CategoriaMora.AL_DIA, b1.categoriaMora());
+        assertEquals(CategoriaVencimiento.MAS_DE_90_DIAS, b1.categoriaVencimiento());
 
         assertEquals(SemaforoMorosidad.ATRASO_LEVE, bloque(resultado, 2L).semaforo());
         assertEquals(SemaforoMorosidad.MOROSO, bloque(resultado, 3L).semaforo());
@@ -88,11 +95,20 @@ class MaquetaServiceTest {
         assertNull(b4.semaforo());
         assertNull(b4.contratoId());
         assertFalse(b4.inconsistencia());
+        assertEquals(new BigDecimal("1200.00"), b4.rentaReferencial());
+        assertNull(b4.fechaFinContrato());
+        assertNull(b4.diasParaVencer());
+        assertEquals(CategoriaMora.SIN_MORA, b4.categoriaMora());
+        assertEquals(CategoriaVencimiento.SIN_CONTRATO, b4.categoriaVencimiento());
 
         BloqueMaqueta b5 = bloque(resultado, 5L);
         assertEquals(EstadoInmueble.ALQUILADO, b5.estado());
         assertNull(b5.semaforo());
         assertTrue(b5.inconsistencia());
+        assertNull(b5.fechaFinContrato());
+        assertNull(b5.diasParaVencer());
+        assertEquals(CategoriaMora.SIN_MORA, b5.categoriaMora());
+        assertEquals(CategoriaVencimiento.SIN_CONTRATO, b5.categoriaVencimiento());
 
         assertNull(bloque(resultado, 6L).semaforo());
         assertNull(bloque(resultado, 9L).semaforo());
@@ -144,6 +160,8 @@ class MaquetaServiceTest {
         assertEquals("12345678", detalle.contrato().documento());
         assertEquals(new BigDecimal("1000.00"), detalle.contrato().rentaMensual());
         assertEquals(LocalDate.of(2026, 2, 1), detalle.contrato().fechaInicio());
+        assertEquals(LocalDate.of(2027, 1, 31), detalle.contrato().fechaFin());
+        assertEquals(355L, detalle.contrato().diasParaVencer());
         assertFalse(detalle.inconsistencia());
     }
 
@@ -195,10 +213,75 @@ class MaquetaServiceTest {
         }
     }
 
+    @Test void categoriasDeVencimientoRespetanLosLimites() {
+        assertEquals(CategoriaVencimiento.VENCIDO,
+                bloqueConVencimiento(-1L).categoriaVencimiento());
+        assertEquals(CategoriaVencimiento.HASTA_30_DIAS,
+                bloqueConVencimiento(0L).categoriaVencimiento());
+        assertEquals(CategoriaVencimiento.HASTA_30_DIAS,
+                bloqueConVencimiento(30L).categoriaVencimiento());
+        assertEquals(CategoriaVencimiento.DE_31_A_90_DIAS,
+                bloqueConVencimiento(31L).categoriaVencimiento());
+        assertEquals(CategoriaVencimiento.DE_31_A_90_DIAS,
+                bloqueConVencimiento(90L).categoriaVencimiento());
+        assertEquals(CategoriaVencimiento.MAS_DE_90_DIAS,
+                bloqueConVencimiento(91L).categoriaVencimiento());
+        assertEquals(CategoriaVencimiento.SIN_CONTRATO,
+                bloqueConVencimiento(null).categoriaVencimiento());
+        assertEquals(CategoriaVencimiento.SIN_CONTRATO,
+                bloqueSinContrato().categoriaVencimiento());
+    }
+
+    @Test void categoriasDeMoraSoloAplicanAAlquiladosConSemaforo() {
+        assertEquals(CategoriaMora.AL_DIA,
+                bloqueMora(EstadoInmueble.ALQUILADO, SemaforoMorosidad.AL_DIA).categoriaMora());
+        assertEquals(CategoriaMora.ATRASO_LEVE,
+                bloqueMora(EstadoInmueble.ALQUILADO,
+                        SemaforoMorosidad.ATRASO_LEVE).categoriaMora());
+        assertEquals(CategoriaMora.MOROSO,
+                bloqueMora(EstadoInmueble.ALQUILADO, SemaforoMorosidad.MOROSO).categoriaMora());
+        assertEquals(CategoriaMora.SIN_MORA,
+                bloqueMora(EstadoInmueble.ALQUILADO, null).categoriaMora());
+        assertEquals(CategoriaMora.SIN_MORA,
+                bloqueMora(EstadoInmueble.DISPONIBLE, null).categoriaMora());
+    }
+
+    @Test void degradadoDeRentaManejaRangosIgualesYDistintos() {
+        BigDecimal mil = new BigDecimal("1000.00");
+        BigDecimal dosMil = new BigDecimal("2000.00");
+
+        assertEquals(0, MaquetaService.tonoRenta(mil, mil, dosMil, 8));
+        assertEquals(4, MaquetaService.tonoRenta(new BigDecimal("1500.00"), mil, dosMil, 8));
+        assertEquals(7, MaquetaService.tonoRenta(dosMil, mil, dosMil, 8));
+        assertEquals(0, MaquetaService.tonoRenta(new BigDecimal("900.00"), mil, dosMil, 8));
+        assertEquals(7, MaquetaService.tonoRenta(new BigDecimal("2100.00"), mil, dosMil, 8));
+        assertEquals(3, MaquetaService.tonoRenta(mil, mil, mil, 8));
+        assertEquals(-1, MaquetaService.tonoRenta(null, mil, dosMil, 8));
+    }
+
+    private BloqueMaqueta bloqueConVencimiento(Long dias) {
+        return new BloqueMaqueta(1L, "INM-0001", "Depa 101", "Departamento", 1, 1,
+                EstadoInmueble.ALQUILADO, 10L, "Ana Pérez", SemaforoMorosidad.AL_DIA, false,
+                new BigDecimal("1000.00"), LocalDate.of(2027, 1, 1), dias);
+    }
+
+    private BloqueMaqueta bloqueSinContrato() {
+        return new BloqueMaqueta(2L, "INM-0002", "Depa 102", "Departamento", 1, 2,
+                EstadoInmueble.DISPONIBLE, null, null, null, false,
+                new BigDecimal("1000.00"), null, null);
+    }
+
+    private BloqueMaqueta bloqueMora(EstadoInmueble estado, SemaforoMorosidad semaforo) {
+        return new BloqueMaqueta(3L, "INM-0003", "Depa 103", "Departamento", 1, 3,
+                estado, null, null, semaforo, false,
+                new BigDecimal("1000.00"), null, null);
+    }
+
     private Inmueble inmueble(Long id, String codigo, String nombre, TipoInmueble tipo,
                               EstadoInmueble estado, Integer nivel, Integer orden) {
         return Inmueble.builder().id(id).codigo(codigo).nombre(nombre).tipo(tipo)
-                .estado(estado).nivel(nivel).orden(orden).build();
+                .estado(estado).nivel(nivel).orden(orden)
+                .rentaReferencial(new BigDecimal("1200.00")).build();
     }
 
     private Inmueble inmuebleDetalle(Long id, String codigo, String nombre, EstadoInmueble estado,

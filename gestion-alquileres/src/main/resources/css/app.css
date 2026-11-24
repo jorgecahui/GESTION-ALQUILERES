@@ -1809,6 +1809,9 @@
 .maqueta-resumen {
     -fx-text-fill: -color-fg-muted;
     -fx-font-size: 12px;
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+    -fx-max-height: 34;
 }
 
 .maqueta-punto {
@@ -1819,12 +1822,52 @@
     -fx-background-radius: 999;
 }
 
+.maqueta-selector-etiqueta {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+}
+
+.maqueta-selector {
+    -fx-font-size: 12.5px;
+}
+
 .maqueta-punto-disponible { -fx-background-color: #2f9e6e; }
 .maqueta-punto-alquilado { -fx-background-color: #3d7fc4; }
 .maqueta-punto-mantenimiento { -fx-background-color: #e08a2e; }
 .maqueta-punto-inactivo { -fx-background-color: #8a94a6; }
 .maqueta-punto-atraso { -fx-background-color: #ffc107; }
 .maqueta-punto-moroso { -fx-background-color: #e53935; }
+.maqueta-punto-al-dia { -fx-background-color: #2f9e6e; }
+.maqueta-punto-sin-mora { -fx-background-color: #b8c1cd; }
+.maqueta-punto-vencido { -fx-background-color: #8e1b1b; }
+.maqueta-punto-por-vencer { -fx-background-color: #e53935; }
+.maqueta-punto-entre-31-y-90 { -fx-background-color: #e08a2e; }
+.maqueta-punto-mas-de-90 { -fx-background-color: #2f9e6e; }
+.maqueta-punto-sin-contrato { -fx-background-color: #b8c1cd; }
+.maqueta-punto-sin-renta { -fx-background-color: #b8c1cd; }
+
+.maqueta-renta-celda {
+    -fx-padding: 3 2 3 2;
+}
+
+.maqueta-renta-tono {
+    -fx-min-width: 16;
+    -fx-min-height: 15;
+    -fx-pref-width: 16;
+    -fx-pref-height: 15;
+    -fx-background-radius: 3;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 3;
+}
+
+.maqueta-detalle-modo {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-accent-fg;
+    -fx-background-color: -color-accent-subtle;
+    -fx-background-radius: 7;
+    -fx-padding: 6 10 6 10;
+}
 
 .maqueta-piso-etiqueta {
     -fx-font-size: 14px;

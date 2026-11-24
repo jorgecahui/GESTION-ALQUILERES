@@ -19,12 +19,21 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Datos idempotentes del perfil dev: 10 contratos y su historial de cobros. */
+/** Datos idempotentes del perfil dev: 10 contratos con vencimientos distribuidos y su historial de cobros. */
 @Component
 public class HistoriaDashboardSeeder {
     private static final int CONTRATOS = 10;
-    private static final int CUOTAS = 12;
+    private static final int PLAZO_MESES = 12;
     private static final int DIA_PAGO = 5;
+
+    /**
+     * Días entre hoy y el fin de cada contrato demo. Los índices 0-5 quedan AL_DIA,
+     * 6-7 ATRASO_LEVE y 8-9 MOROSO, igual que el reparto de mora del seeder.
+     * Los valores se interpretan siempre desde LocalDate.now(clock), nunca como
+     * fechas fijas: 2 contratos a 0-30 días, 2 a 31-90, 5 a más de 90 (distintos)
+     * y 1 vencido.
+     */
+    private static final int[] DIAS_HASTA_FIN = {10, 25, 45, 100, 130, 160, 75, 200, -10, 240};
 
     private final ContratoRepository contratos;
     private final PagoRepository pagos;
@@ -75,12 +84,16 @@ public class HistoriaDashboardSeeder {
                     ? BigDecimal.valueOf(1000) : inmueble.getRentaReferencial());
             int gracia = Math.max(0, configuracion.moraDiasGracia());
 
+            LocalDate finObjetivo = hoy.plusDays(DIAS_HASTA_FIN[n]);
+            LocalDate inicio = finObjetivo.plusDays(1).minusMonths(PLAZO_MESES);
+            LocalDate fin = inicio.plusMonths(PLAZO_MESES).minusDays(1);
+
             Contrato contrato = Contrato.builder()
                     .codigo("CTR-DEV-" + (n + 1))
                     .inmueble(inmueble)
                     .arrendatario(arrendatario)
-                    .fechaInicio(hoy.minusMonths(6).withDayOfMonth(1))
-                    .fechaFin(hoy.plusMonths(6).withDayOfMonth(1).minusDays(1))
+                    .fechaInicio(inicio)
+                    .fechaFin(fin)
                     .diaPago(DIA_PAGO)
                     .rentaMensual(renta)
                     .incrementoAnualPct(BigDecimal.ZERO)
@@ -90,10 +103,10 @@ public class HistoriaDashboardSeeder {
                     .tipoMora(TipoMora.PORCENTAJE_DIARIO)
                     .valorMora(new BigDecimal("0.10"))
                     .estado(EstadoContrato.VIGENTE)
-                    .fechaRegistro(contratoFechaRegistro(hoy))
+                    .fechaRegistro(inicio)
                     .build();
 
-            List<Cuota> cuotas = crearCuotas(contrato, renta, hoy);
+            List<Cuota> cuotas = crearCuotas(contrato, renta);
             prepararEstados(cuotas, n, hoy, gracia);
             contratos.save(contrato);
 
@@ -109,16 +122,17 @@ public class HistoriaDashboardSeeder {
         }
     }
 
-    private LocalDate contratoFechaRegistro(LocalDate hoy) {
-        return hoy.minusMonths(6).withDayOfMonth(1);
-    }
-
-    private List<Cuota> crearCuotas(Contrato contrato, BigDecimal renta, LocalDate hoy) {
-        List<Cuota> cuotas = new ArrayList<>();
-        for (int mes = 0; mes < CUOTAS; mes++) {
-            LocalDate vencimiento = contrato.getFechaInicio().plusMonths(mes)
-                    .withDayOfMonth(Math.min(DIA_PAGO, contrato.getFechaInicio().plusMonths(mes).lengthOfMonth()));
-            LocalDate periodo = vencimiento.withDayOfMonth(1);
+    private List<Cuota> crearCuotas(Contrato contrato, BigDecimal renta) {
+        int meses = Math.max(1, (int) ChronoUnit.MONTHS.between(
+                contrato.getFechaInicio(), contrato.getFechaFin().plusDays(1)));
+        List<Cuota> cuotas = new ArrayList<>(meses);
+        for (int mes = 0; mes < meses; mes++) {
+            LocalDate periodo = contrato.getFechaInicio().plusMonths(mes).withDayOfMonth(1);
+            LocalDate vencimiento = periodo.withDayOfMonth(
+                    Math.min(DIA_PAGO, periodo.lengthOfMonth()));
+            if (mes == 0 && vencimiento.isBefore(contrato.getFechaInicio())) {
+                vencimiento = contrato.getFechaInicio();
+            }
             Cuota cuota = Cuota.builder()
                     .numero(mes + 1)
                     .tipo(TipoCuota.RENTA)
