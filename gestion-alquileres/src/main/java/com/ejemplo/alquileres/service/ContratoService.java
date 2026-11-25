@@ -3,14 +3,17 @@ package com.ejemplo.alquileres.service;
 import com.ejemplo.alquileres.exception.NegocioException;
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.repository.*;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,17 +29,30 @@ public class ContratoService {
     private final AuditoriaService auditoria;
     private final Clock clock;
 
-    public record Solicitud(Long inmuebleId, Long arrendatarioId, Long garanteId, LocalDate inicio,
-                            int meses, int diaPago, BigDecimal renta, BigDecimal incremento,
-                            BigDecimal garantia, boolean garantiaRecibida, Integer gracia,
-                            TipoMora tipoMora, BigDecimal valorMora, String observaciones) { }
+    public record Solicitud(
+            Long inmuebleId,
+            Long arrendatarioId,
+            Long garanteId,
+            LocalDate inicio,
+            int meses,
+            int diaPago,
+            BigDecimal renta,
+            BigDecimal incremento,
+            BigDecimal garantia,
+            boolean garantiaRecibida,
+            Integer gracia,
+            TipoMora tipoMora,
+            BigDecimal valorMora,
+            String observaciones) {}
 
     @Transactional
     public Contrato crear(Solicitud s) {
         permisos.exigirGestion();
         validar(s);
-        Inmueble i = inmuebles.findById(s.inmuebleId())
-                .orElseThrow(() -> new NegocioException("El inmueble no existe"));
+        Inmueble i =
+                inmuebles
+                        .findById(s.inmuebleId())
+                        .orElseThrow(() -> new NegocioException("El inmueble no existe"));
         if (i.getEstado() != EstadoInmueble.DISPONIBLE) {
             throw new NegocioException("El inmueble debe estar disponible");
         }
@@ -49,41 +65,68 @@ public class ContratoService {
             throw new NegocioException("El garante debe ser distinto del arrendatario");
         }
         BigDecimal garantia = nvl(s.garantia());
-        Contrato c = Contrato.builder()
-                .codigo(secuencias.formatear("CTR-", secuencias.siguiente("CONTRATO"), 6))
-                .inmueble(i)
-                .arrendatario(a)
-                .garante(s.garanteId() == null ? null : personaActiva(s.garanteId(), "garante"))
-                .fechaInicio(s.inicio())
-                .fechaFin(fin)
-                .diaPago(s.diaPago())
-                .rentaMensual(s.renta().setScale(2, RoundingMode.HALF_UP))
-                .incrementoAnualPct(nvl(s.incremento()))
-                .garantiaMonto(garantia)
-                .garantiaEstado(garantia.signum() == 0
-                        ? GarantiaEstado.SIN_GARANTIA
-                        : (s.garantiaRecibida() ? GarantiaEstado.RECIBIDA : GarantiaEstado.PENDIENTE))
-                .diasGracia(s.gracia() == null ? configuracion.moraDiasGracia() : s.gracia())
-                .tipoMora(s.tipoMora() == null ? configuracion.moraTipo() : s.tipoMora())
-                .valorMora(s.valorMora() == null ? configuracion.moraValor() : s.valorMora())
-                .estado(EstadoContrato.VIGENTE)
-                .observaciones(s.observaciones())
-                .fechaRegistro(LocalDate.now(clock))
-                .build();
-        generador.generar(s.inicio(), s.meses(), s.diaPago(), c.getRentaMensual(), c.getIncrementoAnualPct())
+        Contrato c =
+                Contrato.builder()
+                        .codigo(secuencias.formatear("CTR-", secuencias.siguiente("CONTRATO"), 6))
+                        .inmueble(i)
+                        .arrendatario(a)
+                        .garante(
+                                s.garanteId() == null
+                                        ? null
+                                        : personaActiva(s.garanteId(), "garante"))
+                        .fechaInicio(s.inicio())
+                        .fechaFin(fin)
+                        .diaPago(s.diaPago())
+                        .rentaMensual(s.renta().setScale(2, RoundingMode.HALF_UP))
+                        .incrementoAnualPct(nvl(s.incremento()))
+                        .garantiaMonto(garantia)
+                        .garantiaEstado(
+                                garantia.signum() == 0
+                                        ? GarantiaEstado.SIN_GARANTIA
+                                        : (s.garantiaRecibida()
+                                                ? GarantiaEstado.RECIBIDA
+                                                : GarantiaEstado.PENDIENTE))
+                        .diasGracia(
+                                s.gracia() == null ? configuracion.moraDiasGracia() : s.gracia())
+                        .tipoMora(s.tipoMora() == null ? configuracion.moraTipo() : s.tipoMora())
+                        .valorMora(
+                                s.valorMora() == null ? configuracion.moraValor() : s.valorMora())
+                        .estado(EstadoContrato.VIGENTE)
+                        .observaciones(s.observaciones())
+                        .fechaRegistro(LocalDate.now(clock))
+                        .build();
+        generador
+                .generar(
+                        s.inicio(),
+                        s.meses(),
+                        s.diaPago(),
+                        c.getRentaMensual(),
+                        c.getIncrementoAnualPct())
                 .forEach(c::agregarCuota);
         i.setEstado(EstadoInmueble.ALQUILADO);
         Contrato guardado = contratos.save(c);
-        auditoria.registrar(AccionAuditoria.CREACION_CONTRATO, "Contrato", guardado.getId(),
+        auditoria.registrar(
+                AccionAuditoria.CREACION_CONTRATO,
+                "Contrato",
+                guardado.getId(),
                 "Código " + guardado.getCodigo());
         return guardado;
     }
 
     @Transactional
-    public void terminar(Long id, LocalDate fecha, String motivo, boolean rescindir,
-                         BigDecimal devuelta, BigDecimal descontada, String motivoGarantia) {
+    public void terminar(
+            Long id,
+            LocalDate fecha,
+            String motivo,
+            boolean rescindir,
+            BigDecimal devuelta,
+            BigDecimal descontada,
+            String motivoGarantia) {
         permisos.exigirAdmin();
-        Contrato c = contratos.detalle(id).orElseThrow(() -> new NegocioException("Contrato inexistente"));
+        Contrato c =
+                contratos
+                        .detalle(id)
+                        .orElseThrow(() -> new NegocioException("Contrato inexistente"));
         if (c.getEstado() != EstadoContrato.VIGENTE) {
             throw new NegocioException("Solo se puede terminar un contrato vigente");
         }
@@ -109,11 +152,20 @@ public class ContratoService {
         c.setGarantiaDevuelta(devueltaFinal);
         c.setGarantiaDescontada(descontadaFinal);
         c.setGarantiaMotivo(motivoGarantia);
-        c.setGarantiaEstado(garantia.signum() == 0 ? GarantiaEstado.SIN_GARANTIA
-                : (devueltaFinal.compareTo(garantia) < 0 ? GarantiaEstado.RETENIDA_PARCIAL : GarantiaEstado.DEVUELTA));
+        c.setGarantiaEstado(
+                garantia.signum() == 0
+                        ? GarantiaEstado.SIN_GARANTIA
+                        : (devueltaFinal.compareTo(garantia) < 0
+                                ? GarantiaEstado.RETENIDA_PARCIAL
+                                : GarantiaEstado.DEVUELTA));
         c.getInmueble().setEstado(EstadoInmueble.DISPONIBLE);
-        auditoria.registrar(rescindir ? AccionAuditoria.RESCISION_CONTRATO : AccionAuditoria.FINALIZACION_CONTRATO,
-                "Contrato", id, "Contrato " + c.getCodigo());
+        auditoria.registrar(
+                rescindir
+                        ? AccionAuditoria.RESCISION_CONTRATO
+                        : AccionAuditoria.FINALIZACION_CONTRATO,
+                "Contrato",
+                id,
+                "Contrato " + c.getCodigo());
     }
 
     @Transactional
@@ -122,8 +174,10 @@ public class ContratoService {
         if (propuesta == null || propuesta.inicio() == null) {
             throw new NegocioException("Indica la fecha de inicio de la renovación");
         }
-        Contrato anterior = contratos.detalle(anteriorId)
-                .orElseThrow(() -> new NegocioException("Contrato inexistente"));
+        Contrato anterior =
+                contratos
+                        .detalle(anteriorId)
+                        .orElseThrow(() -> new NegocioException("Contrato inexistente"));
         if (anterior.getEstado() != EstadoContrato.VIGENTE) {
             throw new NegocioException("Solo se renueva un contrato vigente");
         }
@@ -132,19 +186,35 @@ public class ContratoService {
             throw new NegocioException("La renovación conserva inmueble y arrendatario");
         }
         if (!propuesta.inicio().equals(anterior.getFechaFin().plusDays(1))) {
-            throw new NegocioException("La renovación debe iniciar al día siguiente del contrato anterior");
+            throw new NegocioException(
+                    "La renovación debe iniciar al día siguiente del contrato anterior");
         }
         anterior.setEstado(EstadoContrato.FINALIZADO);
         anterior.setFechaTerminoEfectiva(anterior.getFechaFin());
         anterior.setMotivoTermino("Renovado");
-        Solicitud s = new Solicitud(propuesta.inmuebleId(), propuesta.arrendatarioId(), propuesta.garanteId(),
-                propuesta.inicio(), propuesta.meses(), propuesta.diaPago(), propuesta.renta(),
-                propuesta.incremento(), nvl(anterior.getGarantiaMonto()), true, propuesta.gracia(),
-                propuesta.tipoMora(), propuesta.valorMora(), propuesta.observaciones());
+        Solicitud s =
+                new Solicitud(
+                        propuesta.inmuebleId(),
+                        propuesta.arrendatarioId(),
+                        propuesta.garanteId(),
+                        propuesta.inicio(),
+                        propuesta.meses(),
+                        propuesta.diaPago(),
+                        propuesta.renta(),
+                        propuesta.incremento(),
+                        nvl(anterior.getGarantiaMonto()),
+                        true,
+                        propuesta.gracia(),
+                        propuesta.tipoMora(),
+                        propuesta.valorMora(),
+                        propuesta.observaciones());
         anterior.getInmueble().setEstado(EstadoInmueble.DISPONIBLE);
         Contrato nuevo = crear(s);
         nuevo.setContratoAnterior(anterior);
-        auditoria.registrar(AccionAuditoria.RENOVACION_CONTRATO, "Contrato", nuevo.getId(),
+        auditoria.registrar(
+                AccionAuditoria.RENOVACION_CONTRATO,
+                "Contrato",
+                nuevo.getId(),
                 "Renovación de " + anterior.getCodigo());
         return nuevo;
     }
@@ -156,7 +226,9 @@ public class ContratoService {
 
     @Transactional(readOnly = true)
     public Contrato obtener(Long id) {
-        return contratos.detalle(id).orElseThrow(() -> new NegocioException("Contrato inexistente"));
+        return contratos
+                .detalle(id)
+                .orElseThrow(() -> new NegocioException("Contrato inexistente"));
     }
 
     public EstadoVisual estadoVisual(Contrato c) {
@@ -182,9 +254,18 @@ public class ContratoService {
 
         private final String etiqueta;
 
-        EstadoVisual(String etiqueta) { this.etiqueta = etiqueta; }
-        public String getEtiqueta() { return etiqueta; }
-        @Override public String toString() { return etiqueta; }
+        EstadoVisual(String etiqueta) {
+            this.etiqueta = etiqueta;
+        }
+
+        public String getEtiqueta() {
+            return etiqueta;
+        }
+
+        @Override
+        public String toString() {
+            return etiqueta;
+        }
     }
 
     private void validar(Solicitud s) {
@@ -216,8 +297,9 @@ public class ContratoService {
     }
 
     private Persona personaActiva(Long id, String rol) {
-        Persona p = personas.findById(id)
-                .orElseThrow(() -> new NegocioException("El " + rol + " no existe"));
+        Persona p =
+                personas.findById(id)
+                        .orElseThrow(() -> new NegocioException("El " + rol + " no existe"));
         if (!p.isActivo()) {
             throw new NegocioException("El " + rol + " debe estar activo");
         }

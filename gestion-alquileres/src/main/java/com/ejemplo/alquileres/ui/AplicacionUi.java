@@ -2,10 +2,11 @@ package com.ejemplo.alquileres.ui;
 
 import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
+
 import com.ejemplo.alquileres.controller.BloqueoController;
 import com.ejemplo.alquileres.service.AutenticacionService;
 import com.ejemplo.alquileres.service.ConfiguracionService;
-import java.util.Objects;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,10 +14,12 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-/** Coordina las escenas de inicio de sesión, primer usuario, ventana principal y bloqueo. */
+import java.util.Objects;
+
 @Component
 public class AplicacionUi {
     private final ApplicationContext context;
@@ -26,8 +29,11 @@ public class AplicacionUi {
     private Stage stage;
     private ControlInactividad inactividad;
 
-    public AplicacionUi(ApplicationContext context, PreferenciaTema preferencias,
-                        AutenticacionService autenticacion, ConfiguracionService configuracion) {
+    public AplicacionUi(
+            ApplicationContext context,
+            PreferenciaTema preferencias,
+            AutenticacionService autenticacion,
+            ConfiguracionService configuracion) {
         this.context = context;
         this.preferencias = preferencias;
         this.autenticacion = autenticacion;
@@ -37,23 +43,42 @@ public class AplicacionUi {
     public void iniciar(Stage stage, boolean hayUsuarios) {
         this.stage = stage;
         aplicarTema();
-        if (hayUsuarios) mostrarLogin(); else mostrarPrimerUsuario();
+        if (hayUsuarios) mostrarLogin();
+        else mostrarPrimerUsuario();
     }
 
     public void mostrarLogin() {
         detenerInactividad();
-        cargar("/view/login-view.fxml", "Iniciar sesión | Gestión de Alquileres", 460, 560, 420, 500);
+        cargar(
+                "/view/login-view.fxml",
+                "Iniciar sesión | Gestión de Alquileres",
+                460,
+                560,
+                420,
+                500);
     }
 
     public void mostrarPrimerUsuario() {
         detenerInactividad();
-        cargar("/view/primer-usuario-view.fxml", "Primer administrador | Gestión de Alquileres", 540, 680, 470, 600);
+        cargar(
+                "/view/primer-usuario-view.fxml",
+                "Primer administrador | Gestión de Alquileres",
+                540,
+                680,
+                470,
+                600);
     }
 
     public void mostrarPrincipal() {
         detenerInactividad();
-        Parent raiz = cargar("/view/main-view.fxml", "Panel administrativo | Contratos, Cobranza e Inmuebles",
-                1280, 800, 1100, 700);
+        Parent raiz =
+                cargar(
+                        "/view/main-view.fxml",
+                        "Panel administrativo | Contratos, Cobranza e Inmuebles",
+                        1280,
+                        800,
+                        1100,
+                        700);
         inactividad = new ControlInactividad(raiz.getScene(), configuracion, this::bloquear);
         inactividad.instalar();
     }
@@ -71,7 +96,10 @@ public class AplicacionUi {
             loader.setControllerFactory(context::getBean);
             Parent raiz = loader.load();
             Scene escena = new Scene(raiz, 420, 330);
-            escena.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/app.css")).toExternalForm());
+            escena.getStylesheets()
+                    .add(
+                            Objects.requireNonNull(getClass().getResource("/css/app.css"))
+                                    .toExternalForm());
             if (preferencias.oscuro()) raiz.getStyleClass().add("dark");
             Stage bloqueo = new Stage(StageStyle.UNDECORATED);
             bloqueo.initOwner(stage);
@@ -93,7 +121,6 @@ public class AplicacionUi {
         if (inactividad != null) inactividad.reiniciar();
     }
 
-    /** Cierra la ventana; el ciclo de vida de JavaFX cierra Spring. */
     public void salir() {
         detenerInactividad();
         if (stage != null) stage.close();
@@ -101,19 +128,32 @@ public class AplicacionUi {
     }
 
     public void aplicarTema() {
-        Application.setUserAgentStylesheet(preferencias.oscuro()
-                ? new PrimerDark().getUserAgentStylesheet() : new PrimerLight().getUserAgentStylesheet());
+        Application.setUserAgentStylesheet(
+                preferencias.oscuro()
+                        ? new PrimerDark().getUserAgentStylesheet()
+                        : new PrimerLight().getUserAgentStylesheet());
     }
 
-    public Stage stage() { return stage; }
+    public Stage stage() {
+        return stage;
+    }
 
-    private Parent cargar(String recurso, String titulo, double ancho, double alto, double minimoAncho, double minimoAlto) {
+    private Parent cargar(
+            String recurso,
+            String titulo,
+            double ancho,
+            double alto,
+            double minimoAncho,
+            double minimoAlto) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(recurso));
             loader.setControllerFactory(context::getBean);
             Parent raiz = loader.load();
             Scene escena = new Scene(raiz, ancho, alto);
-            escena.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/app.css")).toExternalForm());
+            escena.getStylesheets()
+                    .add(
+                            Objects.requireNonNull(getClass().getResource("/css/app.css"))
+                                    .toExternalForm());
             if (preferencias.oscuro()) raiz.getStyleClass().add("dark");
             stage.setTitle(titulo);
             stage.setScene(escena);

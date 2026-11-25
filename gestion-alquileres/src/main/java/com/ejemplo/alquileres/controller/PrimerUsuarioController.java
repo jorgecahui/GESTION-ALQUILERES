@@ -3,12 +3,14 @@ package com.ejemplo.alquileres.controller;
 import com.ejemplo.alquileres.service.AutenticacionService;
 import com.ejemplo.alquileres.ui.AplicacionUi;
 import com.ejemplo.alquileres.ui.Tareas;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,29 +24,37 @@ public class PrimerUsuarioController {
     @FXML private Label mensaje;
     @FXML private Button crear;
 
-    public PrimerUsuarioController(AutenticacionService autenticacion, AplicacionUi aplicacion, Tareas tareas) {
+    public PrimerUsuarioController(
+            AutenticacionService autenticacion, AplicacionUi aplicacion, Tareas tareas) {
         this.autenticacion = autenticacion;
         this.aplicacion = aplicacion;
         this.tareas = tareas;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         Platform.runLater(() -> username.requestFocus());
     }
 
-    @FXML private void onCrear() {
+    @FXML
+    private void onCrear() {
         habilitar(false);
         String usuarioTexto = username.getText();
         String nombreTexto = nombre.getText();
         String passwordTexto = password.getText();
         String confirmacionTexto = confirmacion.getText();
-        tareas.ejecutar(() -> autenticacion.crearPrimerAdmin(usuarioTexto, nombreTexto,
-                        passwordTexto, confirmacionTexto),
+        tareas.ejecutar(
+                () ->
+                        autenticacion.crearPrimerAdmin(
+                                usuarioTexto, nombreTexto, passwordTexto, confirmacionTexto),
                 admin -> {
                     mensaje.setText("Administrador creado. Ingresa con tus credenciales.");
                     aplicacion.mostrarLogin();
                 },
-                error -> { habilitar(true); mensaje.setText(mensaje(error)); });
+                error -> {
+                    habilitar(true);
+                    mensaje.setText(mensaje(error));
+                });
     }
 
     private void habilitar(boolean valor) {
@@ -57,6 +67,8 @@ public class PrimerUsuarioController {
 
     private static String mensaje(Throwable error) {
         Throwable causa = error.getCause() == null ? error : error.getCause();
-        return causa.getMessage() == null ? "No se pudo crear el administrador." : causa.getMessage();
+        return causa.getMessage() == null
+                ? "No se pudo crear el administrador."
+                : causa.getMessage();
     }
 }

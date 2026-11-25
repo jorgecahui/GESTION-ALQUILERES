@@ -10,6 +10,12 @@ import com.ejemplo.alquileres.model.TipoRecordatorio;
 import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.CuotaRepository;
 import com.ejemplo.alquileres.repository.RecordatorioRepository;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,11 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-/** Genera mensajes, sugiere cuotas a recordar y registra el historial de envíos. */
 @Service
 @RequiredArgsConstructor
 public class RecordatorioService {
@@ -38,8 +40,11 @@ public class RecordatorioService {
     private final Permisos permisos;
     private final Clock clock;
 
-    public record Propuesta(Long cuotaId, Long contratoId, String telefono, TipoRecordatorio tipo, String mensaje) {
-        public boolean telefonoValido() { return telefono != null && !telefono.isBlank(); }
+    public record Propuesta(
+            Long cuotaId, Long contratoId, String telefono, TipoRecordatorio tipo, String mensaje) {
+        public boolean telefonoValido() {
+            return telefono != null && !telefono.isBlank();
+        }
     }
 
     @Transactional(readOnly = true)
@@ -47,12 +52,14 @@ public class RecordatorioService {
         return sugerencias(LocalDate.now(clock));
     }
 
-    /** Cuotas vencidas o por vencer en 3 días que no tienen recordatorio en los últimos 3 días. */
     @Transactional(readOnly = true)
     public List<Propuesta> sugerencias(LocalDate hoy) {
         LocalDateTime desde = LocalDateTime.now(clock).minusDays(3);
         return cuotas.pendientesConContrato().stream()
-                .filter(cuota -> !cuota.getFechaVencimiento().isAfter(hoy.plusDays(configuracion.diasRecordatorio())))
+                .filter(
+                        cuota ->
+                                !cuota.getFechaVencimiento()
+                                        .isAfter(hoy.plusDays(configuracion.diasRecordatorio())))
                 .filter(cuota -> recordatorios.recientes(cuota.getId(), desde).isEmpty())
                 .map(cuota -> propuesta(cuota, hoy))
                 .toList();
@@ -60,8 +67,9 @@ public class RecordatorioService {
 
     @Transactional(readOnly = true)
     public Propuesta propuestaPorCuota(Long cuotaId) {
-        Cuota cuota = cuotas.findById(cuotaId)
-                .orElseThrow(() -> new NegocioException("La cuota no existe."));
+        Cuota cuota =
+                cuotas.findById(cuotaId)
+                        .orElseThrow(() -> new NegocioException("La cuota no existe."));
         return propuesta(cuota, LocalDate.now(clock));
     }
 
@@ -69,7 +77,8 @@ public class RecordatorioService {
         Contrato contrato = cuota.getContrato();
         String telefono = TelefonoUtil.normalizarPeru(contrato.getArrendatario().getTelefono());
         long diasAtraso = Math.max(0, ChronoUnit.DAYS.between(cuota.getFechaVencimiento(), hoy));
-        TipoRecordatorio tipo = diasAtraso > 0 ? TipoRecordatorio.VENCIDO : TipoRecordatorio.PREVENTIVO;
+        TipoRecordatorio tipo =
+                diasAtraso > 0 ? TipoRecordatorio.VENCIDO : TipoRecordatorio.PREVENTIVO;
         BigDecimal saldo = mora.saldoCapital(cuota);
         BigDecimal moraPendiente = mora.pendiente(cuota, contrato, hoy);
         Map<String, String> datos = datosComunes(contrato);
@@ -84,8 +93,10 @@ public class RecordatorioService {
 
     @Transactional(readOnly = true)
     public Propuesta propuestaFinContrato(Long contratoId) {
-        Contrato contrato = contratos.detalle(contratoId)
-                .orElseThrow(() -> new NegocioException("El contrato no existe."));
+        Contrato contrato =
+                contratos
+                        .detalle(contratoId)
+                        .orElseThrow(() -> new NegocioException("El contrato no existe."));
         return propuestaFinContrato(contrato, LocalDate.now(clock));
     }
 
@@ -94,9 +105,14 @@ public class RecordatorioService {
         Map<String, String> datos = datosComunes(contrato);
         datos.put("contrato", contrato.getCodigo());
         datos.put("fecha_fin", PlantillasMensaje.fecha(contrato.getFechaFin()));
-        datos.put("dias", String.valueOf(Math.max(0, ChronoUnit.DAYS.between(hoy, contrato.getFechaFin()))));
-        String mensaje = PlantillasMensaje.aplicar(configuracion.plantilla(TipoRecordatorio.FIN_CONTRATO), datos);
-        return new Propuesta(null, contrato.getId(), telefono, TipoRecordatorio.FIN_CONTRATO, mensaje);
+        datos.put(
+                "dias",
+                String.valueOf(Math.max(0, ChronoUnit.DAYS.between(hoy, contrato.getFechaFin()))));
+        String mensaje =
+                PlantillasMensaje.aplicar(
+                        configuracion.plantilla(TipoRecordatorio.FIN_CONTRATO), datos);
+        return new Propuesta(
+                null, contrato.getId(), telefono, TipoRecordatorio.FIN_CONTRATO, mensaje);
     }
 
     @Transactional(readOnly = true)
@@ -119,27 +135,43 @@ public class RecordatorioService {
     public Recordatorio registrar(Propuesta propuesta, String mensaje, CanalRecordatorio canal) {
         permisos.exigirGestion();
         if (propuesta == null) throw new NegocioException("No hay un recordatorio para registrar.");
-        if (mensaje == null || mensaje.isBlank()) throw new NegocioException("El mensaje no puede estar vacío.");
+        if (mensaje == null || mensaje.isBlank())
+            throw new NegocioException("El mensaje no puede estar vacío.");
         if (canal == null) throw new NegocioException("Selecciona un canal de envío.");
         String telefono = TelefonoUtil.normalizarPeru(propuesta.telefono());
         if (telefono == null) throw new NegocioException("Teléfono no válido o ausente.");
-        Cuota cuota = propuesta.cuotaId() == null ? null : cuotas.findById(propuesta.cuotaId())
-                .orElseThrow(() -> new NegocioException("La cuota no existe."));
-        Contrato contrato = cuota != null ? cuota.getContrato() : contratos.findById(propuesta.contratoId())
-                .orElseThrow(() -> new NegocioException("El contrato no existe."));
-        return recordatorios.save(Recordatorio.builder()
-                .contrato(contrato).cuota(cuota).tipo(propuesta.tipo()).canal(canal).telefono(telefono)
-                .mensaje(mensaje.trim()).fechaEnvio(LocalDateTime.now(clock)).build());
+        Cuota cuota =
+                propuesta.cuotaId() == null
+                        ? null
+                        : cuotas.findById(propuesta.cuotaId())
+                                .orElseThrow(() -> new NegocioException("La cuota no existe."));
+        Contrato contrato =
+                cuota != null
+                        ? cuota.getContrato()
+                        : contratos
+                                .findById(propuesta.contratoId())
+                                .orElseThrow(() -> new NegocioException("El contrato no existe."));
+        return recordatorios.save(
+                Recordatorio.builder()
+                        .contrato(contrato)
+                        .cuota(cuota)
+                        .tipo(propuesta.tipo())
+                        .canal(canal)
+                        .telefono(telefono)
+                        .mensaje(mensaje.trim())
+                        .fechaEnvio(LocalDateTime.now(clock))
+                        .build());
     }
 
     public String urlWhatsApp(String telefono, String mensaje) {
         String normalizado = TelefonoUtil.normalizarPeru(telefono);
         if (normalizado == null) throw new NegocioException("Teléfono no válido o ausente.");
-        String texto = URLEncoder.encode(mensaje == null ? "" : mensaje, StandardCharsets.UTF_8).replace("+", "%20");
+        String texto =
+                URLEncoder.encode(mensaje == null ? "" : mensaje, StandardCharsets.UTF_8)
+                        .replace("+", "%20");
         return "https://wa.me/" + normalizado + "?text=" + texto;
     }
 
-    /** Texto amigable para la columna de último recordatorio. */
     public String ultimoTexto(LocalDateTime fecha) {
         if (fecha == null) return "—";
         long dias = ChronoUnit.DAYS.between(fecha.toLocalDate(), LocalDate.now(clock));

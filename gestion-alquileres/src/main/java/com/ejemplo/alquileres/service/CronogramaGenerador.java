@@ -1,3 +1,39 @@
 package com.ejemplo.alquileres.service;
-import com.ejemplo.alquileres.model.*; import org.springframework.stereotype.Component; import java.math.*; import java.time.*; import java.util.*;
-@Component public class CronogramaGenerador { public List<Cuota> generar(LocalDate inicio,int meses,int dia,BigDecimal renta,BigDecimal inc){List<Cuota> r=new ArrayList<>();BigDecimal monto=renta.setScale(2,RoundingMode.HALF_UP);for(int n=1;n<=meses;n++){if(n>1&&(n-1)%12==0)monto=monto.multiply(BigDecimal.ONE.add(inc.movePointLeft(2))).setScale(2,RoundingMode.HALF_UP);LocalDate periodo=YearMonth.from(inicio).plusMonths(n-1).atDay(1);LocalDate vence=periodo.withDayOfMonth(Math.min(dia,periodo.lengthOfMonth()));if(n==1&&vence.isBefore(inicio))vence=inicio;r.add(Cuota.builder().numero(n).tipo(TipoCuota.RENTA).periodo(periodo).fechaVencimiento(vence).concepto("Renta "+NombresMes.de(periodo)+" "+periodo.getYear()).montoCuota(monto).moraDesde(vence).estado(EstadoCuota.PENDIENTE).build());}return r;} }
+
+import com.ejemplo.alquileres.model.*;
+
+import org.springframework.stereotype.Component;
+
+import java.math.*;
+import java.time.*;
+import java.util.*;
+
+@Component
+public class CronogramaGenerador {
+    public List<Cuota> generar(
+            LocalDate inicio, int meses, int dia, BigDecimal renta, BigDecimal inc) {
+        List<Cuota> r = new ArrayList<>();
+        BigDecimal monto = renta.setScale(2, RoundingMode.HALF_UP);
+        for (int n = 1; n <= meses; n++) {
+            if (n > 1 && (n - 1) % 12 == 0)
+                monto =
+                        monto.multiply(BigDecimal.ONE.add(inc.movePointLeft(2)))
+                                .setScale(2, RoundingMode.HALF_UP);
+            LocalDate periodo = YearMonth.from(inicio).plusMonths(n - 1).atDay(1);
+            LocalDate vence = periodo.withDayOfMonth(Math.min(dia, periodo.lengthOfMonth()));
+            if (n == 1 && vence.isBefore(inicio)) vence = inicio;
+            r.add(
+                    Cuota.builder()
+                            .numero(n)
+                            .tipo(TipoCuota.RENTA)
+                            .periodo(periodo)
+                            .fechaVencimiento(vence)
+                            .concepto("Renta " + NombresMes.de(periodo) + " " + periodo.getYear())
+                            .montoCuota(monto)
+                            .moraDesde(vence)
+                            .estado(EstadoCuota.PENDIENTE)
+                            .build());
+        }
+        return r;
+    }
+}

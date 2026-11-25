@@ -8,7 +8,16 @@ public enum EstadoInmueble {
 
     private final String etiqueta;
 
-    EstadoInmueble(String etiqueta) { this.etiqueta = etiqueta; }
-    public String getEtiqueta() { return etiqueta; }
-    @Override public String toString() { return etiqueta; }
+    EstadoInmueble(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

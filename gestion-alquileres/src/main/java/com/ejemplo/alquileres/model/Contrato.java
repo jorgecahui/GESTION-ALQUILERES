@@ -1,3 +1,80 @@
 package com.ejemplo.alquileres.model;
-import jakarta.persistence.*; import lombok.*; import java.math.*; import java.time.*; import java.util.*;
-@Entity @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder @Table(indexes={@Index(name="idx_contrato_estado",columnList="estado"),@Index(name="idx_contrato_inmueble",columnList="inmueble_id")}) public class Contrato { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id; @Column(unique=true,nullable=false) String codigo; @ManyToOne(optional=false) @JoinColumn(name="inmueble_id") Inmueble inmueble; @ManyToOne(optional=false) @JoinColumn(name="arrendatario_id") Persona arrendatario; @ManyToOne @JoinColumn(name="garante_id") Persona garante; LocalDate fechaInicio,fechaFin; int diaPago; BigDecimal rentaMensual; @Builder.Default BigDecimal incrementoAnualPct=BigDecimal.ZERO; @Builder.Default BigDecimal garantiaMonto=BigDecimal.ZERO; @Enumerated(EnumType.STRING) GarantiaEstado garantiaEstado; BigDecimal garantiaDevuelta,garantiaDescontada; String garantiaMotivo; int diasGracia; @Enumerated(EnumType.STRING) TipoMora tipoMora; BigDecimal valorMora; @Enumerated(EnumType.STRING) EstadoContrato estado; @ManyToOne @JoinColumn(name="contrato_anterior_id") Contrato contratoAnterior; LocalDate fechaTerminoEfectiva; String motivoTermino,observaciones; LocalDate fechaRegistro; @Version Long version; @OneToMany(mappedBy="contrato",cascade=CascadeType.ALL,orphanRemoval=true) @Builder.Default List<Cuota> cuotas=new ArrayList<>(); public void agregarCuota(Cuota c){c.setContrato(this);cuotas.add(c);} }
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
+import java.math.*;
+import java.time.*;
+import java.util.*;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(
+        indexes = {
+            @Index(name = "idx_contrato_estado", columnList = "estado"),
+            @Index(name = "idx_contrato_inmueble", columnList = "inmueble_id")
+        })
+public class Contrato {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @Column(unique = true, nullable = false)
+    String codigo;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "inmueble_id")
+    Inmueble inmueble;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "arrendatario_id")
+    Persona arrendatario;
+
+    @ManyToOne
+    @JoinColumn(name = "garante_id")
+    Persona garante;
+
+    LocalDate fechaInicio, fechaFin;
+    int diaPago;
+    BigDecimal rentaMensual;
+    @Builder.Default BigDecimal incrementoAnualPct = BigDecimal.ZERO;
+    @Builder.Default BigDecimal garantiaMonto = BigDecimal.ZERO;
+
+    @Enumerated(EnumType.STRING)
+    GarantiaEstado garantiaEstado;
+
+    BigDecimal garantiaDevuelta, garantiaDescontada;
+    String garantiaMotivo;
+    int diasGracia;
+
+    @Enumerated(EnumType.STRING)
+    TipoMora tipoMora;
+
+    BigDecimal valorMora;
+
+    @Enumerated(EnumType.STRING)
+    EstadoContrato estado;
+
+    @ManyToOne
+    @JoinColumn(name = "contrato_anterior_id")
+    Contrato contratoAnterior;
+
+    LocalDate fechaTerminoEfectiva;
+    String motivoTermino, observaciones;
+    LocalDate fechaRegistro;
+    @Version Long version;
+
+    @OneToMany(mappedBy = "contrato", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    List<Cuota> cuotas = new ArrayList<>();
+
+    public void agregarCuota(Cuota c) {
+        c.setContrato(this);
+        cuotas.add(c);
+    }
+}

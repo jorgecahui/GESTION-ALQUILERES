@@ -6,7 +6,16 @@ public enum TipoMora {
 
     private final String etiqueta;
 
-    TipoMora(String etiqueta) { this.etiqueta = etiqueta; }
-    public String getEtiqueta() { return etiqueta; }
-    @Override public String toString() { return etiqueta; }
+    TipoMora(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

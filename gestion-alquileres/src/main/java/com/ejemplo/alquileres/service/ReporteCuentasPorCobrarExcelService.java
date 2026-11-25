@@ -2,18 +2,20 @@ package com.ejemplo.alquileres.service;
 
 import com.ejemplo.alquileres.service.CuentasPorCobrarService.Cuenta;
 import com.ejemplo.alquileres.service.CuentasPorCobrarService.Filtro;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-/** Reporte de cuotas pendientes y morosos. */
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReporteCuentasPorCobrarExcelService {
@@ -33,20 +35,36 @@ public class ReporteCuentasPorCobrarExcelService {
         }
     }
 
-    private void resumen(XSSFWorkbook libro, List<Cuenta> cuentas, Filtro filtro, String texto,
-                         CellStyle moneda, CellStyle fecha) {
+    private void resumen(
+            XSSFWorkbook libro,
+            List<Cuenta> cuentas,
+            Filtro filtro,
+            String texto,
+            CellStyle moneda,
+            CellStyle fecha) {
         Sheet hoja = LibroExcel.hoja(libro, "Resumen", "Concepto", "Valor");
-        BigDecimal total = cuentas.stream().map(Cuenta::total).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal saldo = cuentas.stream().map(Cuenta::saldo).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal mora = cuentas.stream().map(Cuenta::moraEstimada).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal total =
+                cuentas.stream().map(Cuenta::total).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal saldo =
+                cuentas.stream().map(Cuenta::saldo).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal mora =
+                cuentas.stream().map(Cuenta::moraEstimada).reduce(BigDecimal.ZERO, BigDecimal::add);
         long vencidas = cuentas.stream().filter(Cuenta::vencida).count();
-        long morosos = cuentas.stream().filter(c -> c.semaforo() == com.ejemplo.alquileres.model.SemaforoMorosidad.MOROSO).count();
+        long morosos =
+                cuentas.stream()
+                        .filter(
+                                c ->
+                                        c.semaforo()
+                                                == com.ejemplo.alquileres.model.SemaforoMorosidad
+                                                        .MOROSO)
+                        .count();
         LibroExcel.texto(hoja, 1, 0, "Módulo");
         LibroExcel.texto(hoja, 1, 1, "Cuentas por cobrar");
         LibroExcel.texto(hoja, 2, 0, "Filtro");
         LibroExcel.texto(hoja, 2, 1, filtro == null ? "Todas" : filtro.getEtiqueta());
         LibroExcel.texto(hoja, 3, 0, "Búsqueda");
-        LibroExcel.texto(hoja, 3, 1, texto == null || texto.isBlank() ? "Sin filtro de texto" : texto);
+        LibroExcel.texto(
+                hoja, 3, 1, texto == null || texto.isBlank() ? "Sin filtro de texto" : texto);
         LibroExcel.texto(hoja, 4, 0, "Generado");
         LibroExcel.fecha(hoja, 4, 1, LocalDate.now(clock), fecha);
         LibroExcel.texto(hoja, 5, 0, "Cuotas");
@@ -64,9 +82,22 @@ public class ReporteCuentasPorCobrarExcelService {
         LibroExcel.cerrarHoja(hoja, 2);
     }
 
-    private void hojaCuotas(XSSFWorkbook libro, List<Cuenta> cuentas, CellStyle moneda, CellStyle fecha) {
-        Sheet hoja = LibroExcel.hoja(libro, "Cuotas pendientes", "Arrendatario", "Inmueble", "Concepto",
-                "Vencimiento", "Días de atraso", "Saldo", "Mora estimada", "Total", "Vencida", "Semáforo");
+    private void hojaCuotas(
+            XSSFWorkbook libro, List<Cuenta> cuentas, CellStyle moneda, CellStyle fecha) {
+        Sheet hoja =
+                LibroExcel.hoja(
+                        libro,
+                        "Cuotas pendientes",
+                        "Arrendatario",
+                        "Inmueble",
+                        "Concepto",
+                        "Vencimiento",
+                        "Días de atraso",
+                        "Saldo",
+                        "Mora estimada",
+                        "Total",
+                        "Vencida",
+                        "Semáforo");
         int fila = 1;
         for (Cuenta cuenta : cuentas) {
             LibroExcel.texto(hoja, fila, 0, cuenta.arrendatario());
@@ -78,18 +109,35 @@ public class ReporteCuentasPorCobrarExcelService {
             LibroExcel.numero(hoja, fila, 6, cuenta.moraEstimada(), moneda);
             LibroExcel.numero(hoja, fila, 7, cuenta.total(), moneda);
             LibroExcel.texto(hoja, fila, 8, cuenta.vencida() ? "Sí" : "No");
-            LibroExcel.texto(hoja, fila, 9, cuenta.semaforo() == null ? "" : cuenta.semaforo().getEtiqueta());
+            LibroExcel.texto(
+                    hoja,
+                    fila,
+                    9,
+                    cuenta.semaforo() == null ? "" : cuenta.semaforo().getEtiqueta());
             fila++;
         }
         LibroExcel.cerrarHoja(hoja, 10);
     }
 
-    private void hojaMorosos(XSSFWorkbook libro, List<Cuenta> cuentas, CellStyle moneda, CellStyle fecha) {
-        Sheet hoja = LibroExcel.hoja(libro, "Morosos", "Arrendatario", "Inmueble", "Concepto",
-                "Vencimiento", "Días de atraso", "Saldo", "Mora estimada", "Total", "Semáforo");
+    private void hojaMorosos(
+            XSSFWorkbook libro, List<Cuenta> cuentas, CellStyle moneda, CellStyle fecha) {
+        Sheet hoja =
+                LibroExcel.hoja(
+                        libro,
+                        "Morosos",
+                        "Arrendatario",
+                        "Inmueble",
+                        "Concepto",
+                        "Vencimiento",
+                        "Días de atraso",
+                        "Saldo",
+                        "Mora estimada",
+                        "Total",
+                        "Semáforo");
         int fila = 1;
         for (Cuenta cuenta : cuentas) {
-            if (cuenta.semaforo() != com.ejemplo.alquileres.model.SemaforoMorosidad.MOROSO) continue;
+            if (cuenta.semaforo() != com.ejemplo.alquileres.model.SemaforoMorosidad.MOROSO)
+                continue;
             LibroExcel.texto(hoja, fila, 0, cuenta.arrendatario());
             LibroExcel.texto(hoja, fila, 1, cuenta.inmueble());
             LibroExcel.texto(hoja, fila, 2, cuenta.concepto());
@@ -98,7 +146,11 @@ public class ReporteCuentasPorCobrarExcelService {
             LibroExcel.numero(hoja, fila, 5, cuenta.saldo(), moneda);
             LibroExcel.numero(hoja, fila, 6, cuenta.moraEstimada(), moneda);
             LibroExcel.numero(hoja, fila, 7, cuenta.total(), moneda);
-            LibroExcel.texto(hoja, fila, 8, cuenta.semaforo() == null ? "" : cuenta.semaforo().getEtiqueta());
+            LibroExcel.texto(
+                    hoja,
+                    fila,
+                    8,
+                    cuenta.semaforo() == null ? "" : cuenta.semaforo().getEtiqueta());
             fila++;
         }
         LibroExcel.cerrarHoja(hoja, 9);

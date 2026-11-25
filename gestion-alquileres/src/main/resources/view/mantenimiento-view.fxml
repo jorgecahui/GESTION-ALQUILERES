@@ -2,12 +2,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.ejemplo.alquileres.controller.MantenimientoController">
+<StackPane
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.ejemplo.alquileres.controller.MantenimientoController">
     <fx:define>
         <ToggleGroup fx:id="grupoPrioridad"/>
     </fx:define>
-
     <HBox spacing="18" styleClass="pagina">
         <VBox spacing="16" HBox.hgrow="ALWAYS">
             <HBox>
@@ -18,14 +19,24 @@
                 <Button text="Exportar Excel" onAction="#onExportar"/>
                 <Button text="Nuevo mantenimiento" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
-
             <HBox spacing="12" styleClass="tarjeta">
-                <VBox HBox.hgrow="ALWAYS"><Label text="Abiertos"/><Label fx:id="abiertos" styleClass="kpi-valor"/></VBox>
-                <VBox HBox.hgrow="ALWAYS"><Label text="Urgentes"/><Label fx:id="urgentes" styleClass="kpi-valor"/></VBox>
-                <VBox HBox.hgrow="ALWAYS"><Label text="En proceso"/><Label fx:id="enProceso" styleClass="kpi-valor"/></VBox>
-                <VBox HBox.hgrow="ALWAYS"><Label text="Gasto del mes"/><Label fx:id="gastoMes" styleClass="kpi-valor"/></VBox>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="Abiertos"/>
+                    <Label fx:id="abiertos" styleClass="kpi-valor"/>
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="Urgentes"/>
+                    <Label fx:id="urgentes" styleClass="kpi-valor"/>
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="En proceso"/>
+                    <Label fx:id="enProceso" styleClass="kpi-valor"/>
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="Gasto del mes"/>
+                    <Label fx:id="gastoMes" styleClass="kpi-valor"/>
+                </VBox>
             </HBox>
-
             <HBox spacing="8">
                 <TextField fx:id="buscar" promptText="Buscar código, inmueble o título" HBox.hgrow="ALWAYS"/>
                 <ComboBox fx:id="filtroEstado" promptText="Estado"/>
@@ -36,7 +47,6 @@
                 <Button text="Cancelar" onAction="#onCancelar" styleClass="requiere-gestion"/>
                 <Button text="Generar cargo" onAction="#onCargo" styleClass="requiere-gestion"/>
             </HBox>
-
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
                 <columns>
                     <TableColumn fx:id="colCodigo" text="Código" prefWidth="105"/>
@@ -52,27 +62,48 @@
             </TableView>
         </VBox>
     </HBox>
-
-    <Region fx:id="overlay" visible="false" managed="false" pickOnBounds="true" styleClass="overlay" onMouseClicked="#onCerrar"/>
-
-    <VBox fx:id="drawer" visible="false" managed="false" prefWidth="560" minWidth="560" maxWidth="560"
-          maxHeight="Infinity" styleClass="drawer,panel-formulario" StackPane.alignment="TOP_RIGHT">
+    <Region
+        fx:id="overlay"
+        visible="false"
+        managed="false"
+        pickOnBounds="true"
+        styleClass="overlay"
+        onMouseClicked="#onCerrar"/>
+    <VBox
+        fx:id="drawer"
+        visible="false"
+        managed="false"
+        prefWidth="560"
+        minWidth="560"
+        maxWidth="560"
+        maxHeight="Infinity"
+        styleClass="drawer,panel-formulario"
+        StackPane.alignment="TOP_RIGHT">
         <HBox styleClass="drawer-header">
             <VBox spacing="4" HBox.hgrow="ALWAYS">
                 <Label text="Nuevo mantenimiento" styleClass="drawer-titulo"/>
-                <Label text="Registra una incidencia o reparación de un inmueble" styleClass="drawer-subtitulo" wrapText="true"/>
+                <Label
+                    text="Registra una incidencia o reparación de un inmueble"
+                    styleClass="drawer-subtitulo"
+                    wrapText="true"/>
             </VBox>
             <Button onAction="#onCerrar" styleClass="drawer-cerrar" focusTraversable="false">
-                <graphic><FontIcon iconLiteral="fth-x"/></graphic>
-                <tooltip><Tooltip text="Cerrar"/></tooltip>
+                <graphic>
+                    <FontIcon iconLiteral="fth-x"/>
+                </graphic>
+                <tooltip>
+                    <Tooltip text="Cerrar"/>
+                </tooltip>
             </Button>
         </HBox>
-
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS" styleClass="drawer-scroll">
+        <ScrollPane
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            VBox.vgrow="ALWAYS"
+            styleClass="drawer-scroll">
             <VBox styleClass="drawer-body">
-
                 <VBox spacing="14">
-
                     <VBox styleClass="campo">
                         <HBox spacing="3" alignment="CENTER_LEFT">
                             <Label text="Inmueble" styleClass="campo-label"/>
@@ -81,7 +112,6 @@
                         <ComboBox fx:id="inmueble" promptText="Selecciona un inmueble" maxWidth="Infinity"/>
                         <Label fx:id="errorInmueble" styleClass="campo-error" visible="false" managed="false"/>
                     </VBox>
-
                     <VBox styleClass="campo">
                         <HBox spacing="3" alignment="CENTER_LEFT">
                             <Label text="Título" styleClass="campo-label"/>
@@ -90,18 +120,18 @@
                         <TextField fx:id="titulo" promptText="Ej. Fuga de agua en el baño" maxWidth="Infinity"/>
                         <Label fx:id="errorTitulo" styleClass="campo-error" visible="false" managed="false"/>
                     </VBox>
-
                     <VBox styleClass="campo">
                         <Label text="Descripción" styleClass="campo-label"/>
-                        <TextArea fx:id="descripcion" promptText="Detalla el problema, dónde ocurre y desde cuándo…"
-                                  prefRowCount="3" wrapText="true" maxWidth="Infinity"/>
+                        <TextArea
+                            fx:id="descripcion"
+                            promptText="Detalla el problema, dónde ocurre y desde cuándo…"
+                            prefRowCount="3"
+                            wrapText="true"
+                            maxWidth="Infinity"/>
                     </VBox>
                 </VBox>
-
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
-
                 <VBox spacing="14">
-
                     <GridPane hgap="14" vgap="14">
                         <columnConstraints>
                             <ColumnConstraints percentWidth="50"/>
@@ -120,26 +150,46 @@
                             <ComboBox fx:id="responsable" promptText="Responsable de pago" maxWidth="Infinity"/>
                         </VBox>
                     </GridPane>
-
                     <VBox styleClass="campo">
                         <Label text="Prioridad" styleClass="campo-label"/>
                         <HBox spacing="10">
-                            <ToggleButton fx:id="prioridadBaja" text="Baja" toggleGroup="$grupoPrioridad"
-                                          styleClass="prioridad-opcion" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false"/>
-                            <ToggleButton fx:id="prioridadMedia" text="Media" toggleGroup="$grupoPrioridad"
-                                          styleClass="prioridad-opcion" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false"/>
-                            <ToggleButton fx:id="prioridadAlta" text="Alta" toggleGroup="$grupoPrioridad"
-                                          styleClass="prioridad-opcion" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false"/>
-                            <ToggleButton fx:id="prioridadUrgente" text="Urgente" toggleGroup="$grupoPrioridad"
-                                          styleClass="prioridad-opcion" maxWidth="Infinity" HBox.hgrow="ALWAYS" focusTraversable="false"/>
+                            <ToggleButton
+                                fx:id="prioridadBaja"
+                                text="Baja"
+                                toggleGroup="$grupoPrioridad"
+                                styleClass="prioridad-opcion"
+                                maxWidth="Infinity"
+                                HBox.hgrow="ALWAYS"
+                                focusTraversable="false"/>
+                            <ToggleButton
+                                fx:id="prioridadMedia"
+                                text="Media"
+                                toggleGroup="$grupoPrioridad"
+                                styleClass="prioridad-opcion"
+                                maxWidth="Infinity"
+                                HBox.hgrow="ALWAYS"
+                                focusTraversable="false"/>
+                            <ToggleButton
+                                fx:id="prioridadAlta"
+                                text="Alta"
+                                toggleGroup="$grupoPrioridad"
+                                styleClass="prioridad-opcion"
+                                maxWidth="Infinity"
+                                HBox.hgrow="ALWAYS"
+                                focusTraversable="false"/>
+                            <ToggleButton
+                                fx:id="prioridadUrgente"
+                                text="Urgente"
+                                toggleGroup="$grupoPrioridad"
+                                styleClass="prioridad-opcion"
+                                maxWidth="Infinity"
+                                HBox.hgrow="ALWAYS"
+                                focusTraversable="false"/>
                         </HBox>
                     </VBox>
                 </VBox>
-
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
-
                 <VBox spacing="14">
-
                     <GridPane hgap="14" vgap="14">
                         <columnConstraints>
                             <ColumnConstraints percentWidth="50"/>
@@ -154,7 +204,6 @@
                             <DatePicker fx:id="fechaProgramada" maxWidth="Infinity" promptText="dd/mm/aaaa"/>
                         </VBox>
                     </GridPane>
-
                     <VBox styleClass="campo">
                         <Label text="Costo estimado" styleClass="campo-label"/>
                         <HBox fx:id="campoCosto" styleClass="campo-moneda" alignment="CENTER_LEFT" spacing="8">
@@ -162,16 +211,18 @@
                             <TextField fx:id="costo" promptText="0.00" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                         </HBox>
                     </VBox>
-
                     <VBox styleClass="campo">
                         <Label text="Observaciones" styleClass="campo-label"/>
-                        <TextArea fx:id="observaciones" promptText="Notas internas (opcional)"
-                                  prefRowCount="2" wrapText="true" maxWidth="Infinity"/>
+                        <TextArea
+                            fx:id="observaciones"
+                            promptText="Notas internas (opcional)"
+                            prefRowCount="2"
+                            wrapText="true"
+                            maxWidth="Infinity"/>
                     </VBox>
                 </VBox>
             </VBox>
         </ScrollPane>
-
         <HBox styleClass="drawer-footer">
             <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
             <Button text="Guardar mantenimiento" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>

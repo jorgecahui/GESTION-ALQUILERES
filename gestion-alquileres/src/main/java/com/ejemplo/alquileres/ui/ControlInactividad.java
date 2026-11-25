@@ -1,6 +1,7 @@
 package com.ejemplo.alquileres.ui;
 
 import com.ejemplo.alquileres.service.ConfiguracionService;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Scene;
@@ -8,7 +9,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
 
-/** Detecta inactividad de mouse/teclado y solicita el bloqueo de la sesión. */
 public final class ControlInactividad {
     private final Scene escena;
     private final ConfiguracionService configuracion;
@@ -17,7 +17,8 @@ public final class ControlInactividad {
     private long ultimaActividad = System.nanoTime();
     private boolean bloqueando;
 
-    public ControlInactividad(Scene escena, ConfiguracionService configuracion, Runnable alBloquear) {
+    public ControlInactividad(
+            Scene escena, ConfiguracionService configuracion, Runnable alBloquear) {
         this.escena = escena;
         this.configuracion = configuracion;
         this.alBloquear = alBloquear;

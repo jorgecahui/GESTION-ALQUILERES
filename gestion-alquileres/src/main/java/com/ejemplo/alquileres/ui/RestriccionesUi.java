@@ -1,6 +1,7 @@
 package com.ejemplo.alquileres.ui;
 
 import com.ejemplo.alquileres.service.Permisos;
+
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Accordion;
@@ -12,13 +13,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 
-/**
- * Deshabilita únicamente los controles marcados explícitamente con
- * {@code requiere-gestion} o {@code requiere-admin}. No deduce permisos por el
- * texto visible, de modo que los cambios de etiqueta no alteran la seguridad.
- */
 public final class RestriccionesUi {
-    private RestriccionesUi() { }
+    private RestriccionesUi() {}
 
     public static void aplicar(Parent raiz, Permisos permisos) {
         aplicar((Node) raiz, permisos);
@@ -31,8 +27,6 @@ public final class RestriccionesUi {
 
         for (Node hijo : padre.getChildrenUnmodifiable()) aplicar(hijo, permisos);
 
-        // Algunos contenedores guardan su contenido fuera de getChildrenUnmodifiable
-        // antes de que se cree su skin; se recorren explícitamente.
         if (padre instanceof ScrollPane scroll) aplicar(scroll.getContent(), permisos);
         if (padre instanceof TitledPane titled) aplicar(titled.getContent(), permisos);
         if (padre instanceof TabPane tabs) {
@@ -51,9 +45,7 @@ public final class RestriccionesUi {
         boolean requiereGestion = nodo.getStyleClass().contains("requiere-gestion");
         if (!requiereAdmin && !requiereGestion) return;
 
-        boolean bloqueado = requiereAdmin
-                ? !permisos.esAdmin()
-                : !permisos.puedeGestionar();
+        boolean bloqueado = requiereAdmin ? !permisos.esAdmin() : !permisos.puedeGestionar();
         if (!bloqueado) return;
 
         nodo.setDisable(true);

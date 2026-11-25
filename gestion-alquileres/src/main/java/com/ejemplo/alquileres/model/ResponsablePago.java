@@ -6,7 +6,16 @@ public enum ResponsablePago {
 
     private final String etiqueta;
 
-    ResponsablePago(String etiqueta) { this.etiqueta = etiqueta; }
-    public String getEtiqueta() { return etiqueta; }
-    @Override public String toString() { return etiqueta; }
+    ResponsablePago(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

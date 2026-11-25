@@ -7,7 +7,16 @@ public enum TipoRecordatorio {
 
     private final String etiqueta;
 
-    TipoRecordatorio(String etiqueta) { this.etiqueta = etiqueta; }
-    public String getEtiqueta() { return etiqueta; }
-    @Override public String toString() { return etiqueta; }
+    TipoRecordatorio(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

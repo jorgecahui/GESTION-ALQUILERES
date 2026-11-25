@@ -1,5 +1,152 @@
 package com.ejemplo.alquileres.service;
-import com.ejemplo.alquileres.model.*; import com.ejemplo.alquileres.repository.*; import java.math.*; import java.time.*; import java.time.temporal.ChronoUnit; import java.util.*; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional;
-@Service @Transactional(readOnly=true) public class DashboardService {private final ContratoRepository contratos;private final CuotaRepository cuotas;private final InmuebleRepository inmuebles;private final CalculadoraMora calculadora;private final MorosidadService morosidad;private final ConfiguracionService configuracion;private final Clock clock;public DashboardService(ContratoRepository c,CuotaRepository q,InmuebleRepository i,CalculadoraMora m,MorosidadService s,ConfiguracionService p,Clock k){contratos=c;cuotas=q;inmuebles=i;calculadora=m;morosidad=s;configuracion=p;clock=k;}
- public record Cartera(BigDecimal total,long cuotas,long arrendatarios,double porcentaje){} public record Ocupacion(long alquilados,long total,List<Tipo> porTipo){} public record Tipo(String nombre,long cantidad){} public record Mora(String arrendatario,String inmueble,BigDecimal deuda,long dias,SemaforoMorosidad semaforo){} public record Vencimiento(Long id,String codigo,String inmueble,String arrendatario,LocalDate fin,long dias){} public record Resumen(Cartera cartera,Ocupacion ocupacion,List<Mora> morosos,List<Vencimiento> vencimientos){}
- public Resumen resumen(){LocalDate hoy=LocalDate.now(clock);List<Cuota> vencidas=cuotas.pendientesConContrato().stream().filter(q->q.getFechaVencimiento().plusDays(q.getContrato().getDiasGracia()).isBefore(hoy)).toList();Map<Contrato,BigDecimal> deuda=new LinkedHashMap<>();for(Cuota q:vencidas)deuda.merge(q.getContrato(),calculadora.saldoCapital(q).add(calculadora.pendiente(q,q.getContrato(),hoy)),BigDecimal::add);long vigentes=contratos.cobrables().stream().filter(c->c.getEstado()==EstadoContrato.VIGENTE).count();Cartera cartera=new Cartera(dinero(deuda.values().stream().reduce(BigDecimal.ZERO,BigDecimal::add)),vencidas.size(),deuda.size(),vigentes==0?0:100d*deuda.size()/vigentes);List<Inmueble> lista=inmuebles.findAll();List<Inmueble> activos=lista.stream().filter(i->i.getEstado()!=EstadoInmueble.INACTIVO).toList();long alquilados=activos.stream().filter(i->i.getEstado()==EstadoInmueble.ALQUILADO).count();Map<String,Long> tipos=new TreeMap<>();for(Inmueble i:activos)tipos.merge(i.getTipo()==null?"Sin tipo":i.getTipo().getNombre(),1L,Long::sum);Ocupacion ocupacion=new Ocupacion(alquilados,activos.size(),tipos.entrySet().stream().map(e->new Tipo(e.getKey(),e.getValue())).toList());List<Mora> morosos=deuda.entrySet().stream().map(e->new Mora(e.getKey().getArrendatario().getNombreCompleto(),e.getKey().getInmueble().getNombre(),dinero(e.getValue()),maxDias(e.getKey(),hoy),morosidad.semaforo(e.getKey()))).sorted(Comparator.comparing(Mora::deuda).reversed()).limit(5).toList();List<Vencimiento> vencer=contratos.porVencer(hoy,hoy.plusDays(configuracion.diasVencimiento())).stream().map(c->new Vencimiento(c.getId(),c.getCodigo(),c.getInmueble().getNombre(),c.getArrendatario().getNombreCompleto(),c.getFechaFin(),ChronoUnit.DAYS.between(hoy,c.getFechaFin()))).toList();return new Resumen(cartera,ocupacion,morosos,vencer);}private long maxDias(Contrato c,LocalDate h){return c.getCuotas().stream().filter(q->q.getEstado()==EstadoCuota.PENDIENTE||q.getEstado()==EstadoCuota.PARCIAL).mapToLong(q->Math.max(0,ChronoUnit.DAYS.between(q.getFechaVencimiento(),h))).max().orElse(0);}private BigDecimal dinero(BigDecimal v){return v.setScale(2,RoundingMode.HALF_UP);}}
+
+import com.ejemplo.alquileres.model.*;
+import com.ejemplo.alquileres.repository.*;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.*;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+@Service
+@Transactional(readOnly = true)
+public class DashboardService {
+    private final ContratoRepository contratos;
+    private final CuotaRepository cuotas;
+    private final InmuebleRepository inmuebles;
+    private final CalculadoraMora calculadora;
+    private final MorosidadService morosidad;
+    private final ConfiguracionService configuracion;
+    private final Clock clock;
+
+    public DashboardService(
+            ContratoRepository c,
+            CuotaRepository q,
+            InmuebleRepository i,
+            CalculadoraMora m,
+            MorosidadService s,
+            ConfiguracionService p,
+            Clock k) {
+        contratos = c;
+        cuotas = q;
+        inmuebles = i;
+        calculadora = m;
+        morosidad = s;
+        configuracion = p;
+        clock = k;
+    }
+
+    public record Cartera(BigDecimal total, long cuotas, long arrendatarios, double porcentaje) {}
+
+    public record Ocupacion(long alquilados, long total, List<Tipo> porTipo) {}
+
+    public record Tipo(String nombre, long cantidad) {}
+
+    public record Mora(
+            String arrendatario,
+            String inmueble,
+            BigDecimal deuda,
+            long dias,
+            SemaforoMorosidad semaforo) {}
+
+    public record Vencimiento(
+            Long id,
+            String codigo,
+            String inmueble,
+            String arrendatario,
+            LocalDate fin,
+            long dias) {}
+
+    public record Resumen(
+            Cartera cartera,
+            Ocupacion ocupacion,
+            List<Mora> morosos,
+            List<Vencimiento> vencimientos) {}
+
+    public Resumen resumen() {
+        LocalDate hoy = LocalDate.now(clock);
+        List<Cuota> vencidas =
+                cuotas.pendientesConContrato().stream()
+                        .filter(
+                                q ->
+                                        q.getFechaVencimiento()
+                                                .plusDays(q.getContrato().getDiasGracia())
+                                                .isBefore(hoy))
+                        .toList();
+        Map<Contrato, BigDecimal> deuda = new LinkedHashMap<>();
+        for (Cuota q : vencidas)
+            deuda.merge(
+                    q.getContrato(),
+                    calculadora.saldoCapital(q).add(calculadora.pendiente(q, q.getContrato(), hoy)),
+                    BigDecimal::add);
+        long vigentes =
+                contratos.cobrables().stream()
+                        .filter(c -> c.getEstado() == EstadoContrato.VIGENTE)
+                        .count();
+        Cartera cartera =
+                new Cartera(
+                        dinero(deuda.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add)),
+                        vencidas.size(),
+                        deuda.size(),
+                        vigentes == 0 ? 0 : 100d * deuda.size() / vigentes);
+        List<Inmueble> lista = inmuebles.findAll();
+        List<Inmueble> activos =
+                lista.stream().filter(i -> i.getEstado() != EstadoInmueble.INACTIVO).toList();
+        long alquilados =
+                activos.stream().filter(i -> i.getEstado() == EstadoInmueble.ALQUILADO).count();
+        Map<String, Long> tipos = new TreeMap<>();
+        for (Inmueble i : activos)
+            tipos.merge(i.getTipo() == null ? "Sin tipo" : i.getTipo().getNombre(), 1L, Long::sum);
+        Ocupacion ocupacion =
+                new Ocupacion(
+                        alquilados,
+                        activos.size(),
+                        tipos.entrySet().stream()
+                                .map(e -> new Tipo(e.getKey(), e.getValue()))
+                                .toList());
+        List<Mora> morosos =
+                deuda.entrySet().stream()
+                        .map(
+                                e ->
+                                        new Mora(
+                                                e.getKey().getArrendatario().getNombreCompleto(),
+                                                e.getKey().getInmueble().getNombre(),
+                                                dinero(e.getValue()),
+                                                maxDias(e.getKey(), hoy),
+                                                morosidad.semaforo(e.getKey())))
+                        .sorted(Comparator.comparing(Mora::deuda).reversed())
+                        .limit(5)
+                        .toList();
+        List<Vencimiento> vencer =
+                contratos.porVencer(hoy, hoy.plusDays(configuracion.diasVencimiento())).stream()
+                        .map(
+                                c ->
+                                        new Vencimiento(
+                                                c.getId(),
+                                                c.getCodigo(),
+                                                c.getInmueble().getNombre(),
+                                                c.getArrendatario().getNombreCompleto(),
+                                                c.getFechaFin(),
+                                                ChronoUnit.DAYS.between(hoy, c.getFechaFin())))
+                        .toList();
+        return new Resumen(cartera, ocupacion, morosos, vencer);
+    }
+
+    private long maxDias(Contrato c, LocalDate h) {
+        return c.getCuotas().stream()
+                .filter(
+                        q ->
+                                q.getEstado() == EstadoCuota.PENDIENTE
+                                        || q.getEstado() == EstadoCuota.PARCIAL)
+                .mapToLong(q -> Math.max(0, ChronoUnit.DAYS.between(q.getFechaVencimiento(), h)))
+                .max()
+                .orElse(0);
+    }
+
+    private BigDecimal dinero(BigDecimal v) {
+        return v.setScale(2, RoundingMode.HALF_UP);
+    }
+}

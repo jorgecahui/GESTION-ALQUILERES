@@ -18,7 +18,16 @@ public enum AccionAuditoria {
 
     private final String etiqueta;
 
-    AccionAuditoria(String etiqueta) { this.etiqueta = etiqueta; }
-    public String getEtiqueta() { return etiqueta; }
-    @Override public String toString() { return etiqueta; }
+    AccionAuditoria(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

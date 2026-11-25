@@ -2,13 +2,22 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fitToWidth="true" styleClass="pagina-scroll" fx:controller="com.ejemplo.alquileres.controller.PlaceholderController">
-    <content><VBox styleClass="pagina" alignment="CENTER">
-        <VBox styleClass="tarjeta placeholder" alignment="CENTER" maxWidth="560.0" spacing="14.0">
-            <StackPane styleClass="kpi-icono"><FontIcon fx:id="icono"/></StackPane>
-            <Label fx:id="titulo" styleClass="pagina-titulo"/>
-            <Label fx:id="descripcion" styleClass="pagina-subtitulo" wrapText="true"/>
-            <Label fx:id="fase" styleClass="chip chip-aviso"/>
+<ScrollPane
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fitToWidth="true"
+    styleClass="pagina-scroll"
+    fx:controller="com.ejemplo.alquileres.controller.PlaceholderController">
+    <content>
+        <VBox styleClass="pagina" alignment="CENTER">
+            <VBox styleClass="tarjeta placeholder" alignment="CENTER" maxWidth="560.0" spacing="14.0">
+                <StackPane styleClass="kpi-icono">
+                    <FontIcon fx:id="icono"/>
+                </StackPane>
+                <Label fx:id="titulo" styleClass="pagina-titulo"/>
+                <Label fx:id="descripcion" styleClass="pagina-subtitulo" wrapText="true"/>
+                <Label fx:id="fase" styleClass="chip chip-aviso"/>
+            </VBox>
         </VBox>
-    </VBox></content>
+    </content>
 </ScrollPane>

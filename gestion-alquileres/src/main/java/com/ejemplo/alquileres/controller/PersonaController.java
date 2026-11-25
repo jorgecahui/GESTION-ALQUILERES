@@ -4,6 +4,7 @@ import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.service.PersonaService;
 import com.ejemplo.alquileres.service.TelefonoUtil;
 import com.ejemplo.alquileres.ui.*;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +13,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
+
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -26,21 +28,39 @@ public class PersonaController implements Refrescable {
     private Long id;
     private boolean activo = true;
 
-    @FXML private TextField buscar, documento, nombres, apellidos, email, telefono,
-            telefonoSecundario, direccion, ocupacion;
+    @FXML
+    private TextField buscar,
+            documento,
+            nombres,
+            apellidos,
+            email,
+            telefono,
+            telefonoSecundario,
+            direccion,
+            ocupacion;
     @FXML private TextArea observaciones;
     @FXML private ComboBox<TipoDocumento> tipo;
     @FXML private CheckBox activos;
     @FXML private Button btnDesactivar, btnReactivar;
     @FXML private TableView<Persona> tabla;
-    @FXML private TableColumn<Persona, String> colNombre, colDocumento, colTelefono, colEmail, colEstado;
+    @FXML
+    private TableColumn<Persona, String> colNombre, colDocumento, colTelefono, colEmail, colEstado;
     @FXML private VBox drawer;
     @FXML private Region overlay;
-    @FXML private Label titulo, errorTipo, errorDocumento, errorNombres, errorTelefono,
+    @FXML
+    private Label titulo,
+            errorTipo,
+            errorDocumento,
+            errorNombres,
+            errorTelefono,
             errorTelefonoSecundario;
 
-    public PersonaController(PersonaService s, Tareas t, Notificador a, Exportador x,
-                             com.ejemplo.alquileres.config.DatosArrendador d) {
+    public PersonaController(
+            PersonaService s,
+            Tareas t,
+            Notificador a,
+            Exportador x,
+            com.ejemplo.alquileres.config.DatosArrendador d) {
         service = s;
         tareas = t;
         aviso = a;
@@ -48,7 +68,8 @@ public class PersonaController implements Refrescable {
         arrendador = d;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         tipo.setItems(FXCollections.observableArrayList(TipoDocumento.values()));
         tipo.setValue(TipoDocumento.DNI);
         activos.setSelected(true);
@@ -61,37 +82,54 @@ public class PersonaController implements Refrescable {
         limitar(direccion, 250);
         limitar(ocupacion, 120);
         limitar(observaciones, 1000);
-        colNombre.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNombreCompleto()));
-        colDocumento.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getTipoDocumento() + " " + c.getValue().getNumeroDocumento()));
+        colNombre.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getNombreCompleto()));
+        colDocumento.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getTipoDocumento()
+                                        + " "
+                                        + c.getValue().getNumeroDocumento()));
         colTelefono.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTelefono()));
         colEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
-        colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
+        colEstado.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
         tabla.setItems(datos);
-        tabla.getSelectionModel().selectedItemProperty().addListener(
-                (o, a, b) -> actualizarAcciones(b));
+        tabla.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((o, a, b) -> actualizarAcciones(b));
         actualizarAcciones(null);
         buscar.textProperty().addListener((o, a, b) -> refrescar());
         activos.selectedProperty().addListener((o, a, b) -> refrescar());
-        tabla.setOnMouseClicked(e -> { if (e.getClickCount() == 2) editar(tabla.getSelectionModel().getSelectedItem()); });
+        tabla.setOnMouseClicked(
+                e -> {
+                    if (e.getClickCount() == 2) editar(tabla.getSelectionModel().getSelectedItem());
+                });
         tipo.valueProperty().addListener((o, a, b) -> ocultarError(errorTipo));
         documento.textProperty().addListener((o, a, b) -> ocultarError(errorDocumento));
         nombres.textProperty().addListener((o, a, b) -> ocultarError(errorNombres));
         telefono.textProperty().addListener((o, a, b) -> ocultarError(errorTelefono));
-        telefonoSecundario.textProperty().addListener(
-                (o, a, b) -> ocultarError(errorTelefonoSecundario));
+        telefonoSecundario
+                .textProperty()
+                .addListener((o, a, b) -> ocultarError(errorTelefonoSecundario));
     }
 
-    @Override public void refrescar() {
+    @Override
+    public void refrescar() {
         String texto = buscar.getText();
         Boolean soloActivos = activos.isSelected() ? true : null;
-        tareas.ejecutar(() -> service.listar(texto, null, soloActivos, 0, 100),
-                this::mostrar, e -> aviso.error(msg(e)));
+        tareas.ejecutar(
+                () -> service.listar(texto, null, soloActivos, 0, 100),
+                this::mostrar,
+                e -> aviso.error(msg(e)));
     }
 
-    private void mostrar(Page<Persona> p) { datos.setAll(p.getContent()); }
+    private void mostrar(Page<Persona> p) {
+        datos.setAll(p.getContent());
+    }
 
-    @FXML private void onNuevo() {
+    @FXML
+    private void onNuevo() {
         id = null;
         activo = true;
         limpiarErrores();
@@ -109,7 +147,8 @@ public class PersonaController implements Refrescable {
         abrir();
     }
 
-    @FXML private void onEditar() {
+    @FXML
+    private void onEditar() {
         Persona p = tabla.getSelectionModel().getSelectedItem();
         if (p == null) {
             aviso.error("Selecciona una persona.");
@@ -137,20 +176,33 @@ public class PersonaController implements Refrescable {
         abrir();
     }
 
-    @FXML private void onGuardar() {
+    @FXML
+    private void onGuardar() {
         limpiarErrores();
         if (!validarFormulario()) return;
-        Persona p = Persona.builder().id(id).tipoDocumento(tipo.getValue())
-                .numeroDocumento(documento.getText()).nombres(nombres.getText())
-                .apellidos(apellidos.getText()).email(email.getText()).telefono(telefono.getText())
-                .telefonoSecundario(telefonoSecundario.getText()).direccion(direccion.getText())
-                .ocupacion(ocupacion.getText()).observaciones(observaciones.getText())
-                .activo(activo).build();
-        tareas.ejecutar(() -> service.guardar(p), x -> {
-            cerrar();
-            aviso.info("Persona guardada.");
-            refrescar();
-        }, e -> aviso.error(msg(e)));
+        Persona p =
+                Persona.builder()
+                        .id(id)
+                        .tipoDocumento(tipo.getValue())
+                        .numeroDocumento(documento.getText())
+                        .nombres(nombres.getText())
+                        .apellidos(apellidos.getText())
+                        .email(email.getText())
+                        .telefono(telefono.getText())
+                        .telefonoSecundario(telefonoSecundario.getText())
+                        .direccion(direccion.getText())
+                        .ocupacion(ocupacion.getText())
+                        .observaciones(observaciones.getText())
+                        .activo(activo)
+                        .build();
+        tareas.ejecutar(
+                () -> service.guardar(p),
+                x -> {
+                    cerrar();
+                    aviso.info("Persona guardada.");
+                    refrescar();
+                },
+                e -> aviso.error(msg(e)));
     }
 
     private boolean validarFormulario() {
@@ -207,30 +259,48 @@ public class PersonaController implements Refrescable {
         ocultarError(errorTelefonoSecundario);
     }
 
-    @FXML private void onDesactivar() {
+    @FXML
+    private void onDesactivar() {
         Persona p = tabla.getSelectionModel().getSelectedItem();
         if (p == null) {
             aviso.error("Selecciona una persona.");
             return;
         }
-        if (!DialogoConfirmacion.mostrar(ventana(), "Desactivar persona",
+        if (!DialogoConfirmacion.mostrar(
+                ventana(),
+                "Desactivar persona",
                 "Se desactivará «" + p.getNombreCompleto() + "». Podrás reactivarla después.",
                 "Desactivar")) {
             return;
         }
-        tareas.ejecutar(() -> { service.desactivar(p.getId()); return null; },
-                x -> { aviso.info("Persona desactivada."); refrescar(); },
+        tareas.ejecutar(
+                () -> {
+                    service.desactivar(p.getId());
+                    return null;
+                },
+                x -> {
+                    aviso.info("Persona desactivada.");
+                    refrescar();
+                },
                 e -> aviso.error(msg(e)));
     }
 
-    @FXML private void onReactivar() {
+    @FXML
+    private void onReactivar() {
         Persona p = tabla.getSelectionModel().getSelectedItem();
         if (p == null) {
             aviso.error("Selecciona una persona.");
             return;
         }
-        tareas.ejecutar(() -> { service.reactivar(p.getId()); return null; },
-                x -> { aviso.info("Persona reactivada."); refrescar(); },
+        tareas.ejecutar(
+                () -> {
+                    service.reactivar(p.getId());
+                    return null;
+                },
+                x -> {
+                    aviso.info("Persona reactivada.");
+                    refrescar();
+                },
                 e -> aviso.error(msg(e)));
     }
 
@@ -245,19 +315,33 @@ public class PersonaController implements Refrescable {
         boton.setManaged(visible);
     }
 
-    @FXML private void onWhatsApp() {
+    @FXML
+    private void onWhatsApp() {
         Persona p = tabla.getSelectionModel().getSelectedItem();
         if (p == null) {
             aviso.error("Selecciona una persona.");
             return;
         }
-        String mensaje = "Hola " + p.getNombreCompleto() + ", le escribimos de " + arrendador.razonSocial()
-                + " para coordinar un tema relacionado con su alquiler. Quedamos atentos a su respuesta.";
-        DialogoRecordatorio.contactoLibre(tabla.getScene() == null ? null : tabla.getScene().getWindow(),
-                p.getNombreCompleto(), p.getTelefono(), mensaje, exportador, aviso);
+        String mensaje =
+                "Hola "
+                        + p.getNombreCompleto()
+                        + ", le escribimos de "
+                        + arrendador.razonSocial()
+                        + " para coordinar un tema relacionado con su alquiler. Quedamos atentos a"
+                        + " su respuesta.";
+        DialogoRecordatorio.contactoLibre(
+                tabla.getScene() == null ? null : tabla.getScene().getWindow(),
+                p.getNombreCompleto(),
+                p.getTelefono(),
+                mensaje,
+                exportador,
+                aviso);
     }
 
-    @FXML private void onCerrar() { cerrar(); }
+    @FXML
+    private void onCerrar() {
+        cerrar();
+    }
 
     private void abrir() {
         drawer.setVisible(true);
@@ -274,15 +358,17 @@ public class PersonaController implements Refrescable {
         limpiarErrores();
     }
 
-    private String n(String v) { return v == null ? "" : v; }
+    private String n(String v) {
+        return v == null ? "" : v;
+    }
 
     private Window ventana() {
         return tabla.getScene() == null ? null : tabla.getScene().getWindow();
     }
 
     private void limitar(TextInputControl campo, int maximo) {
-        campo.setTextFormatter(new TextFormatter<>(c ->
-                c.getControlNewText().length() <= maximo ? c : null));
+        campo.setTextFormatter(
+                new TextFormatter<>(c -> c.getControlNewText().length() <= maximo ? c : null));
     }
 
     private String msg(Throwable e) {

@@ -3,11 +3,13 @@ package com.ejemplo.alquileres.controller;
 import com.ejemplo.alquileres.service.AutenticacionService;
 import com.ejemplo.alquileres.ui.AplicacionUi;
 import com.ejemplo.alquileres.ui.Tareas;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,7 +27,8 @@ public class BloqueoController {
         this.tareas = tareas;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         usuario.setText(autenticacion.nombreUsuarioActual());
         rol.setText(autenticacion.rolActual());
     }
@@ -39,14 +42,17 @@ public class BloqueoController {
         Platform.runLater(() -> password.requestFocus());
     }
 
-    @FXML private void onDesbloquear() {
+    @FXML
+    private void onDesbloquear() {
         if (password.getText() == null || password.getText().isBlank()) {
             mensaje.setText("Ingresa tu contraseña.");
             return;
         }
         String passwordTexto = password.getText();
-        tareas.ejecutar(() -> autenticacion.verificarPassword(passwordTexto),
-                correcta -> {                    if (correcta) {
+        tareas.ejecutar(
+                () -> autenticacion.verificarPassword(passwordTexto),
+                correcta -> {
+                    if (correcta) {
                         ventana.close();
                         aplicacion.desbloquear();
                     } else {
@@ -58,7 +64,8 @@ public class BloqueoController {
                 error -> mensaje.setText("No se pudo verificar la contraseña."));
     }
 
-    @FXML private void onCerrarSesion() {
+    @FXML
+    private void onCerrarSesion() {
         ventana.close();
         aplicacion.cerrarSesion();
     }

@@ -1,9 +1,7 @@
 package com.ejemplo.alquileres.ui;
 
 import com.ejemplo.alquileres.exception.NegocioException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Optional;
+
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
@@ -11,25 +9,29 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
-/** Registra errores no controlados y muestra un diálogo amigable con opción de copiar detalles. */
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Optional;
+
 @Component
 public class ManejadorErrores {
     private static final Logger log = LoggerFactory.getLogger(ManejadorErrores.class);
 
     public void instalarGlobal() {
-        Thread.setDefaultUncaughtExceptionHandler((hilo, error) -> {
-            registrar(error);
-            try {
-                Platform.runLater(() -> mostrar(error));
-            } catch (IllegalStateException ignorada) {
-                // El toolkit aún no está listo; el error ya quedó en el log.
-            }
-        });
+        Thread.setDefaultUncaughtExceptionHandler(
+                (hilo, error) -> {
+                    registrar(error);
+                    try {
+                        Platform.runLater(() -> mostrar(error));
+                    } catch (IllegalStateException ignorada) {
+                    }
+                });
     }
 
     public void registrar(Throwable error) {
@@ -44,7 +46,8 @@ public class ManejadorErrores {
             return "El registro fue modificado por otra operación. Actualice e intente de nuevo.";
         }
         if (causa instanceof NegocioException negocio) return negocio.getMessage();
-        if (causa.getMessage() != null && !causa.getMessage().isBlank()
+        if (causa.getMessage() != null
+                && !causa.getMessage().isBlank()
                 && !causa.getClass().getName().startsWith("java.")) {
             return causa.getMessage();
         }

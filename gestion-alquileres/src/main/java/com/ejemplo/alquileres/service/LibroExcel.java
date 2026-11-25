@@ -1,10 +1,5 @@
 package com.ejemplo.alquileres.service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -18,9 +13,14 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-/** Punto único de creación y formato de los libros XLSX de la aplicación. */
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Date;
+
 public final class LibroExcel {
-    private LibroExcel() { }
+    private LibroExcel() {}
 
     public static byte[] bytes(XSSFWorkbook libro) {
         try (ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
@@ -87,7 +87,8 @@ public final class LibroExcel {
         row.createCell(columna).setCellValue(valor == null ? "" : valor);
     }
 
-    public static void numero(Sheet hoja, int fila, int columna, BigDecimal valor, CellStyle estilo) {
+    public static void numero(
+            Sheet hoja, int fila, int columna, BigDecimal valor, CellStyle estilo) {
         Row row = fila(hoja, fila);
         Cell celda = row.createCell(columna);
         celda.setCellValue(valor == null ? 0d : valor.doubleValue());
@@ -106,7 +107,8 @@ public final class LibroExcel {
             celda.setCellValue("");
             return;
         }
-        celda.setCellValue(Date.from(valor.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()));
+        celda.setCellValue(
+                Date.from(valor.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()));
         if (estilo != null) celda.setCellStyle(estilo);
     }
 

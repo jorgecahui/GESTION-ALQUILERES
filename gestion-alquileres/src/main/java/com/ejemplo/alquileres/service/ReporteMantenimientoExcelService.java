@@ -1,25 +1,30 @@
 package com.ejemplo.alquileres.service;
 
 import com.ejemplo.alquileres.model.Mantenimiento;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-/** Reporte conjunto de mantenimientos y rentabilidad por inmueble. */
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReporteMantenimientoExcelService {
     private final Clock clock;
 
-    public byte[] generar(List<Mantenimiento> mantenimientos, RentabilidadService.Resumen rentabilidad,
-                          LocalDate desde, LocalDate hasta) {
+    public byte[] generar(
+            List<Mantenimiento> mantenimientos,
+            RentabilidadService.Resumen rentabilidad,
+            LocalDate desde,
+            LocalDate hasta) {
         XSSFWorkbook libro = new XSSFWorkbook();
         try {
             CellStyle moneda = LibroExcel.moneda(libro);
@@ -34,16 +39,29 @@ public class ReporteMantenimientoExcelService {
         }
     }
 
-    private void resumen(XSSFWorkbook libro, List<Mantenimiento> mantenimientos,
-                         RentabilidadService.Resumen rentabilidad, LocalDate desde, LocalDate hasta,
-                         CellStyle moneda, CellStyle fecha) {
+    private void resumen(
+            XSSFWorkbook libro,
+            List<Mantenimiento> mantenimientos,
+            RentabilidadService.Resumen rentabilidad,
+            LocalDate desde,
+            LocalDate hasta,
+            CellStyle moneda,
+            CellStyle fecha) {
         Sheet hoja = LibroExcel.hoja(libro, "Resumen", "Concepto", "Valor");
-        BigDecimal costo = mantenimientos.stream().map(m -> m.getCostoReal() == null ? BigDecimal.ZERO : m.getCostoReal())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal costo =
+                mantenimientos.stream()
+                        .map(m -> m.getCostoReal() == null ? BigDecimal.ZERO : m.getCostoReal())
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
         LibroExcel.texto(hoja, 1, 0, "Módulo");
         LibroExcel.texto(hoja, 1, 1, "Mantenimiento y rentabilidad");
         LibroExcel.texto(hoja, 2, 0, "Periodo");
-        LibroExcel.texto(hoja, 2, 1, (desde == null ? "Sin desde" : desde.toString()) + " al " + (hasta == null ? "Sin hasta" : hasta.toString()));
+        LibroExcel.texto(
+                hoja,
+                2,
+                1,
+                (desde == null ? "Sin desde" : desde.toString())
+                        + " al "
+                        + (hasta == null ? "Sin hasta" : hasta.toString()));
         LibroExcel.texto(hoja, 3, 0, "Generado");
         LibroExcel.fecha(hoja, 3, 1, LocalDate.now(clock), fecha);
         LibroExcel.texto(hoja, 4, 0, "Mantenimientos");
@@ -63,20 +81,44 @@ public class ReporteMantenimientoExcelService {
         LibroExcel.cerrarHoja(hoja, 2);
     }
 
-    private void hojaMantenimientos(XSSFWorkbook libro, List<Mantenimiento> mantenimientos,
-                                    CellStyle moneda, CellStyle fecha) {
-        Sheet hoja = LibroExcel.hoja(libro, "Mantenimientos", "Código", "Inmueble", "Título", "Categoría",
-                "Prioridad", "Estado", "Responsable", "Fecha reporte", "Fecha resolución", "Costo estimado",
-                "Costo real", "Técnico");
+    private void hojaMantenimientos(
+            XSSFWorkbook libro,
+            List<Mantenimiento> mantenimientos,
+            CellStyle moneda,
+            CellStyle fecha) {
+        Sheet hoja =
+                LibroExcel.hoja(
+                        libro,
+                        "Mantenimientos",
+                        "Código",
+                        "Inmueble",
+                        "Título",
+                        "Categoría",
+                        "Prioridad",
+                        "Estado",
+                        "Responsable",
+                        "Fecha reporte",
+                        "Fecha resolución",
+                        "Costo estimado",
+                        "Costo real",
+                        "Técnico");
         int fila = 1;
         for (Mantenimiento m : mantenimientos) {
             LibroExcel.texto(hoja, fila, 0, m.getCodigo());
-            LibroExcel.texto(hoja, fila, 1, m.getInmueble() == null ? "" : m.getInmueble().getNombre());
+            LibroExcel.texto(
+                    hoja, fila, 1, m.getInmueble() == null ? "" : m.getInmueble().getNombre());
             LibroExcel.texto(hoja, fila, 2, m.getTitulo());
-            LibroExcel.texto(hoja, fila, 3, m.getCategoria() == null ? "" : m.getCategoria().getEtiqueta());
-            LibroExcel.texto(hoja, fila, 4, m.getPrioridad() == null ? "" : m.getPrioridad().getEtiqueta());
-            LibroExcel.texto(hoja, fila, 5, m.getEstado() == null ? "" : m.getEstado().getEtiqueta());
-            LibroExcel.texto(hoja, fila, 6, m.getResponsablePago() == null ? "" : m.getResponsablePago().getEtiqueta());
+            LibroExcel.texto(
+                    hoja, fila, 3, m.getCategoria() == null ? "" : m.getCategoria().getEtiqueta());
+            LibroExcel.texto(
+                    hoja, fila, 4, m.getPrioridad() == null ? "" : m.getPrioridad().getEtiqueta());
+            LibroExcel.texto(
+                    hoja, fila, 5, m.getEstado() == null ? "" : m.getEstado().getEtiqueta());
+            LibroExcel.texto(
+                    hoja,
+                    fila,
+                    6,
+                    m.getResponsablePago() == null ? "" : m.getResponsablePago().getEtiqueta());
             LibroExcel.fecha(hoja, fila, 7, m.getFechaReporte(), fecha);
             LibroExcel.fecha(hoja, fila, 8, m.getFechaResolucion(), fecha);
             LibroExcel.numero(hoja, fila, 9, m.getCostoEstimado(), moneda);
@@ -87,10 +129,25 @@ public class ReporteMantenimientoExcelService {
         LibroExcel.cerrarHoja(hoja, 12);
     }
 
-    private void hojaRentabilidad(XSSFWorkbook libro, RentabilidadService.Resumen rentabilidad,
-                                  CellStyle moneda, CellStyle porcentaje) {
-        Sheet hoja = LibroExcel.hoja(libro, "Rentabilidad por inmueble", "Código", "Inmueble", "Capital cobrado",
-                "Mora cobrada", "Ingresos", "Gastos", "Neto", "Margen", "Días ocupado", "Ocupación");
+    private void hojaRentabilidad(
+            XSSFWorkbook libro,
+            RentabilidadService.Resumen rentabilidad,
+            CellStyle moneda,
+            CellStyle porcentaje) {
+        Sheet hoja =
+                LibroExcel.hoja(
+                        libro,
+                        "Rentabilidad por inmueble",
+                        "Código",
+                        "Inmueble",
+                        "Capital cobrado",
+                        "Mora cobrada",
+                        "Ingresos",
+                        "Gastos",
+                        "Neto",
+                        "Margen",
+                        "Días ocupado",
+                        "Ocupación");
         int fila = 1;
         if (rentabilidad != null) {
             for (RentabilidadService.Fila f : rentabilidad.filas()) {

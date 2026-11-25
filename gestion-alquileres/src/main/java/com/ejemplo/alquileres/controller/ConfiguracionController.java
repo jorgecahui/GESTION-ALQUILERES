@@ -19,17 +19,11 @@ import com.ejemplo.alquileres.ui.Formularios;
 import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
 import com.ejemplo.alquileres.ui.Tareas;
-import java.io.File;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
@@ -48,9 +42,15 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+
 import org.springframework.stereotype.Component;
 
-/** Parámetros editables de la aplicación, agrupados en pestañas. */
+import java.io.File;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 @Component
 public class ConfiguracionController implements Refrescable {
     private final ConfiguracionService configuracion;
@@ -64,7 +64,14 @@ public class ConfiguracionController implements Refrescable {
     private final Notificador aviso;
     private final Exportador exportador;
 
-    @FXML private TextField razonSocial, tipoDocumento, documento, direccion, telefono, email, logoArchivo;
+    @FXML
+    private TextField razonSocial,
+            tipoDocumento,
+            documento,
+            direccion,
+            telefono,
+            email,
+            logoArchivo;
     @FXML private ImageView logoVista;
     @FXML private TextField reciboSerie;
     @FXML private TextArea reciboLeyenda;
@@ -76,27 +83,50 @@ public class ConfiguracionController implements Refrescable {
     @FXML private TextField inactividad;
     @FXML private Label estado;
     @FXML private TableView<Usuario> tablaUsuarios;
-    @FXML private TableColumn<Usuario, String> colUsuario, colNombreUsuario, colRolUsuario, colEstadoUsuario, colUltimoAcceso;
+    @FXML
+    private TableColumn<Usuario, String> colUsuario,
+            colNombreUsuario,
+            colRolUsuario,
+            colEstadoUsuario,
+            colUltimoAcceso;
     @FXML private TableView<AuditoriaEvento> tablaAuditoria;
-    @FXML private TableColumn<AuditoriaEvento, String> colAudFecha, colAudUsuario, colAudAccion, colAudEntidad, colAudDetalle;
+    @FXML
+    private TableColumn<AuditoriaEvento, String> colAudFecha,
+            colAudUsuario,
+            colAudAccion,
+            colAudEntidad,
+            colAudDetalle;
     @FXML private DatePicker audDesde, audHasta;
     @FXML private TextField audUsuario;
     @FXML private ComboBox<AccionAuditoria> audAccion;
     @FXML private TableView<RespaldoService.Respaldo> tablaRespaldos;
-    @FXML private TableColumn<RespaldoService.Respaldo, String> colRespNombre, colRespFecha, colRespTamano;
+    @FXML
+    private TableColumn<RespaldoService.Respaldo, String> colRespNombre,
+            colRespFecha,
+            colRespTamano;
     @FXML private Label rutaDatos;
 
     private final ObservableList<Usuario> listaUsuarios = FXCollections.observableArrayList();
-    private final ObservableList<AuditoriaEvento> listaAuditoria = FXCollections.observableArrayList();
-    private final ObservableList<RespaldoService.Respaldo> listaRespaldos = FXCollections.observableArrayList();
-    private static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private final ObservableList<AuditoriaEvento> listaAuditoria =
+            FXCollections.observableArrayList();
+    private final ObservableList<RespaldoService.Respaldo> listaRespaldos =
+            FXCollections.observableArrayList();
+    private static final DateTimeFormatter FECHA_HORA =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private Long version;
 
-    public ConfiguracionController(ConfiguracionService configuracion, UsuarioService usuariosServicio,
-                                   AuditoriaService auditoria, ReporteAuditoriaExcelService reporteAuditoria,
-                                   RespaldoService respaldos, AplicacionUi aplicacion, Permisos permisos,
-                                   Tareas tareas, Notificador aviso, Exportador exportador) {
+    public ConfiguracionController(
+            ConfiguracionService configuracion,
+            UsuarioService usuariosServicio,
+            AuditoriaService auditoria,
+            ReporteAuditoriaExcelService reporteAuditoria,
+            RespaldoService respaldos,
+            AplicacionUi aplicacion,
+            Permisos permisos,
+            Tareas tareas,
+            Notificador aviso,
+            Exportador exportador) {
         this.configuracion = configuracion;
         this.usuariosServicio = usuariosServicio;
         this.auditoria = auditoria;
@@ -109,7 +139,8 @@ public class ConfiguracionController implements Refrescable {
         this.exportador = exportador;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         moraTipo.setItems(FXCollections.observableArrayList(TipoMora.values()));
         audAccion.setItems(FXCollections.observableArrayList(AccionAuditoria.values()));
         Formularios.soloDigitos(moraDiasGracia, 3);
@@ -126,7 +157,8 @@ public class ConfiguracionController implements Refrescable {
         refrescar();
     }
 
-    @Override public void refrescar() {
+    @Override
+    public void refrescar() {
         tareas.ejecutar(configuracion::actual, this::cargar, e -> aviso.error(mensaje(e)));
         if (permisos.esAdmin()) {
             cargarUsuarios();
@@ -137,20 +169,35 @@ public class ConfiguracionController implements Refrescable {
 
     private void prepararTablaUsuarios() {
         colUsuario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getUsername()));
-        colNombreUsuario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNombre()));
-        colRolUsuario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getRolEtiqueta()));
-        colEstadoUsuario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
-        colUltimoAcceso.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getUltimoAcceso() == null
-                ? "—" : c.getValue().getUltimoAcceso().format(FECHA_HORA)));
+        colNombreUsuario.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getNombre()));
+        colRolUsuario.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getRolEtiqueta()));
+        colEstadoUsuario.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
+        colUltimoAcceso.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getUltimoAcceso() == null
+                                        ? "—"
+                                        : c.getValue().getUltimoAcceso().format(FECHA_HORA)));
         tablaUsuarios.setItems(listaUsuarios);
     }
 
     private void prepararTablaAuditoria() {
-        colAudFecha.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFecha() == null
-                ? "" : c.getValue().getFecha().format(FECHA_HORA)));
+        colAudFecha.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getFecha() == null
+                                        ? ""
+                                        : c.getValue().getFecha().format(FECHA_HORA)));
         colAudUsuario.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getUsuario()));
-        colAudAccion.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getAccion() == null
-                ? "" : c.getValue().getAccion().getEtiqueta()));
+        colAudAccion.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getAccion() == null
+                                        ? ""
+                                        : c.getValue().getAccion().getEtiqueta()));
         colAudEntidad.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEntidad()));
         colAudDetalle.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDetalle()));
         tablaAuditoria.setItems(listaAuditoria);
@@ -158,49 +205,67 @@ public class ConfiguracionController implements Refrescable {
 
     private void prepararTablaRespaldos() {
         colRespNombre.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().nombre()));
-        colRespFecha.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().fecha().format(FECHA_HORA)));
-        colRespTamano.setCellValueFactory(c -> new SimpleStringProperty(tamano(c.getValue().bytes())));
+        colRespFecha.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().fecha().format(FECHA_HORA)));
+        colRespTamano.setCellValueFactory(
+                c -> new SimpleStringProperty(tamano(c.getValue().bytes())));
         tablaRespaldos.setItems(listaRespaldos);
     }
 
     private void cargarRespaldos() {
-        tareas.ejecutar(respaldos::listarAutomaticos, lista -> listaRespaldos.setAll(lista), e -> aviso.error(mensaje(e)));
+        tareas.ejecutar(
+                respaldos::listarAutomaticos,
+                lista -> listaRespaldos.setAll(lista),
+                e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onCrearRespaldo() {
+    @FXML
+    private void onCrearRespaldo() {
         DirectoryChooser selector = new DirectoryChooser();
         selector.setTitle("Carpeta para el respaldo");
         File carpeta = selector.showDialog(ventana());
         if (carpeta == null) return;
-        tareas.ejecutar(() -> respaldos.crearRespaldo(carpeta.toPath()),
-                ruta -> { aviso.info("Respaldo creado: " + ruta.getFileName()); cargarRespaldos(); },
+        tareas.ejecutar(
+                () -> respaldos.crearRespaldo(carpeta.toPath()),
+                ruta -> {
+                    aviso.info("Respaldo creado: " + ruta.getFileName());
+                    cargarRespaldos();
+                },
                 e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onRestaurarRespaldo() {
+    @FXML
+    private void onRestaurarRespaldo() {
         FileChooser selector = new FileChooser();
         selector.setTitle("Elegir respaldo para restaurar");
-        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter("Base de datos SQLite", "*.db"));
+        selector.getExtensionFilters()
+                .add(new FileChooser.ExtensionFilter("Base de datos SQLite", "*.db"));
         File inicial = respaldos.rutaRespaldos().toFile();
         if (inicial.isDirectory()) selector.setInitialDirectory(inicial);
         File archivo = selector.showOpenDialog(ventana());
         if (archivo == null) return;
-        javafx.scene.control.Alert confirmacion = new javafx.scene.control.Alert(
-                javafx.scene.control.Alert.AlertType.CONFIRMATION,
-                "Se sustituirá la base de datos actual por el respaldo elegido.\n"
-                        + "Antes se guardará una copia de seguridad. La aplicación se cerrará al terminar.\n\n"
-                        + "¿Deseas continuar?",
-                ButtonType.YES, ButtonType.NO);
+        javafx.scene.control.Alert confirmacion =
+                new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.CONFIRMATION,
+                        "Se sustituirá la base de datos actual por el respaldo elegido.\n"
+                            + "Antes se guardará una copia de seguridad. La aplicación se cerrará"
+                            + " al terminar.\n\n"
+                            + "¿Deseas continuar?",
+                        ButtonType.YES,
+                        ButtonType.NO);
         confirmacion.setHeaderText("Restaurar respaldo");
         confirmacion.setTitle("Confirmar restauración");
         if (confirmacion.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) return;
-        tareas.ejecutar(() -> respaldos.restaurar(archivo.toPath()),
+        tareas.ejecutar(
+                () -> respaldos.restaurar(archivo.toPath()),
                 resultado -> {
-                    javafx.scene.control.Alert fin = new javafx.scene.control.Alert(
-                            javafx.scene.control.Alert.AlertType.INFORMATION,
-                            "Respaldo restaurado correctamente.\n\nLa aplicación se cerrará. "
-                                    + "Vuelve a abrirla para trabajar con los datos restaurados.",
-                            ButtonType.OK);
+                    javafx.scene.control.Alert fin =
+                            new javafx.scene.control.Alert(
+                                    javafx.scene.control.Alert.AlertType.INFORMATION,
+                                    "Respaldo restaurado correctamente.\n\n"
+                                        + "La aplicación se cerrará. Vuelve a abrirla para trabajar"
+                                        + " con los datos restaurados.",
+                                    ButtonType.OK);
                     fin.setHeaderText("Restauración completada");
                     fin.setTitle("Respaldo restaurado");
                     fin.showAndWait();
@@ -216,21 +281,32 @@ public class ConfiguracionController implements Refrescable {
     }
 
     private void cargarUsuarios() {
-        tareas.ejecutar(usuariosServicio::listar, lista -> listaUsuarios.setAll(lista), e -> aviso.error(mensaje(e)));
+        tareas.ejecutar(
+                usuariosServicio::listar,
+                lista -> listaUsuarios.setAll(lista),
+                e -> aviso.error(mensaje(e)));
     }
 
     private void cargarAuditoria() {
-        LocalDateTime desde = audDesde.getValue() == null ? null : audDesde.getValue().atStartOfDay();
-        LocalDateTime hasta = audHasta.getValue() == null ? null : audHasta.getValue().atTime(23, 59, 59);
+        LocalDateTime desde =
+                audDesde.getValue() == null ? null : audDesde.getValue().atStartOfDay();
+        LocalDateTime hasta =
+                audHasta.getValue() == null ? null : audHasta.getValue().atTime(23, 59, 59);
         String usuario = audUsuario.getText();
         AccionAuditoria accion = audAccion.getValue();
-        tareas.ejecutar(() -> auditoria.listar(desde, hasta, usuario, accion),
-                lista -> listaAuditoria.setAll(lista), e -> aviso.error(mensaje(e)));
+        tareas.ejecutar(
+                () -> auditoria.listar(desde, hasta, usuario, accion),
+                lista -> listaAuditoria.setAll(lista),
+                e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onBuscarAuditoria() { cargarAuditoria(); }
+    @FXML
+    private void onBuscarAuditoria() {
+        cargarAuditoria();
+    }
 
-    @FXML private void onLimpiarAuditoria() {
+    @FXML
+    private void onLimpiarAuditoria() {
         audDesde.setValue(null);
         audHasta.setValue(null);
         audUsuario.clear();
@@ -238,21 +314,36 @@ public class ConfiguracionController implements Refrescable {
         cargarAuditoria();
     }
 
-    @FXML private void onExportarAuditoria() {
-        if (listaAuditoria.isEmpty()) { aviso.info("No hay eventos para exportar."); return; }
-        File destino = exportador.elegirDestino(ventana(), "auditoria-" + java.time.LocalDate.now() + ".xlsx", "Excel", "xlsx");
+    @FXML
+    private void onExportarAuditoria() {
+        if (listaAuditoria.isEmpty()) {
+            aviso.info("No hay eventos para exportar.");
+            return;
+        }
+        File destino =
+                exportador.elegirDestino(
+                        ventana(),
+                        "auditoria-" + java.time.LocalDate.now() + ".xlsx",
+                        "Excel",
+                        "xlsx");
         if (destino == null) return;
-        tareas.ejecutar(() -> reporteAuditoria.generar(List.copyOf(listaAuditoria)),
-                bytes -> { exportador.escribir(destino, bytes); aviso.info("Auditoría exportada."); },
+        tareas.ejecutar(
+                () -> reporteAuditoria.generar(List.copyOf(listaAuditoria)),
+                bytes -> {
+                    exportador.escribir(destino, bytes);
+                    aviso.info("Auditoría exportada.");
+                },
                 e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onNuevoUsuario() {
+    @FXML
+    private void onNuevoUsuario() {
         TextField usuario = new TextField();
         TextField nombre = new TextField();
         PasswordField password = new PasswordField();
         PasswordField confirmacion = new PasswordField();
-        ComboBox<RolUsuario> rol = new ComboBox<>(FXCollections.observableArrayList(RolUsuario.values()));
+        ComboBox<RolUsuario> rol =
+                new ComboBox<>(FXCollections.observableArrayList(RolUsuario.values()));
         rol.setValue(RolUsuario.OPERADOR);
         CheckBox activo = new CheckBox("Activo");
         activo.setSelected(true);
@@ -272,19 +363,34 @@ public class ConfiguracionController implements Refrescable {
         String confirmacionTexto = confirmacion.getText();
         RolUsuario rolSeleccionado = rol.getValue();
         boolean activoSeleccionado = activo.isSelected();
-        tareas.ejecutar(() -> usuariosServicio.crear(usuarioTexto, nombreTexto, passwordTexto,
-                        confirmacionTexto, rolSeleccionado, activoSeleccionado),
-                creado -> { aviso.info("Usuario creado."); cargarUsuarios(); },
+        tareas.ejecutar(
+                () ->
+                        usuariosServicio.crear(
+                                usuarioTexto,
+                                nombreTexto,
+                                passwordTexto,
+                                confirmacionTexto,
+                                rolSeleccionado,
+                                activoSeleccionado),
+                creado -> {
+                    aviso.info("Usuario creado.");
+                    cargarUsuarios();
+                },
                 e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onEditarUsuario() {
+    @FXML
+    private void onEditarUsuario() {
         Usuario seleccionado = tablaUsuarios.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) { aviso.info("Selecciona un usuario."); return; }
+        if (seleccionado == null) {
+            aviso.info("Selecciona un usuario.");
+            return;
+        }
         TextField usuario = new TextField(seleccionado.getUsername());
         usuario.setDisable(true);
         TextField nombre = new TextField(seleccionado.getNombre());
-        ComboBox<RolUsuario> rol = new ComboBox<>(FXCollections.observableArrayList(RolUsuario.values()));
+        ComboBox<RolUsuario> rol =
+                new ComboBox<>(FXCollections.observableArrayList(RolUsuario.values()));
         rol.setValue(seleccionado.getRol());
         CheckBox activo = new CheckBox("Activo");
         activo.setSelected(seleccionado.isActivo());
@@ -299,34 +405,66 @@ public class ConfiguracionController implements Refrescable {
         String nombreTexto = nombre.getText();
         RolUsuario rolSeleccionado = rol.getValue();
         boolean activoSeleccionado = activo.isSelected();
-        tareas.ejecutar(() -> usuariosServicio.actualizar(seleccionado.getId(), nombreTexto, rolSeleccionado, activoSeleccionado),
-                actualizado -> { aviso.info("Usuario actualizado."); cargarUsuarios(); },
+        tareas.ejecutar(
+                () ->
+                        usuariosServicio.actualizar(
+                                seleccionado.getId(),
+                                nombreTexto,
+                                rolSeleccionado,
+                                activoSeleccionado),
+                actualizado -> {
+                    aviso.info("Usuario actualizado.");
+                    cargarUsuarios();
+                },
                 e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onDesactivarUsuario() {
+    @FXML
+    private void onDesactivarUsuario() {
         Usuario seleccionado = tablaUsuarios.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) { aviso.info("Selecciona un usuario."); return; }
-        tareas.ejecutar(() -> usuariosServicio.actualizar(seleccionado.getId(), seleccionado.getNombre(),
-                        seleccionado.getRol(), !seleccionado.isActivo()),
-                actualizado -> { aviso.info(actualizado.isActivo() ? "Usuario activado." : "Usuario desactivado."); cargarUsuarios(); },
+        if (seleccionado == null) {
+            aviso.info("Selecciona un usuario.");
+            return;
+        }
+        tareas.ejecutar(
+                () ->
+                        usuariosServicio.actualizar(
+                                seleccionado.getId(),
+                                seleccionado.getNombre(),
+                                seleccionado.getRol(),
+                                !seleccionado.isActivo()),
+                actualizado -> {
+                    aviso.info(
+                            actualizado.isActivo() ? "Usuario activado." : "Usuario desactivado.");
+                    cargarUsuarios();
+                },
                 e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onRestablecerPassword() {
+    @FXML
+    private void onRestablecerPassword() {
         Usuario seleccionado = tablaUsuarios.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) { aviso.info("Selecciona un usuario."); return; }
+        if (seleccionado == null) {
+            aviso.info("Selecciona un usuario.");
+            return;
+        }
         PasswordField password = new PasswordField();
         PasswordField confirmacion = new PasswordField();
         GridPane formulario = formulario();
         fila(formulario, 0, "Nueva contraseña", password);
         fila(formulario, 1, "Confirmar contraseña", confirmacion);
-        Dialog<ButtonType> dialogo = dialogo("Restablecer contraseña de " + seleccionado.getUsername());
+        Dialog<ButtonType> dialogo =
+                dialogo("Restablecer contraseña de " + seleccionado.getUsername());
         dialogo.getDialogPane().setContent(formulario);
         if (dialogo.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.CANCEL) return;
         String passwordTexto = password.getText();
         String confirmacionTexto = confirmacion.getText();
-        tareas.ejecutar(() -> { usuariosServicio.restablecerPassword(seleccionado.getId(), passwordTexto, confirmacionTexto); return null; },
+        tareas.ejecutar(
+                () -> {
+                    usuariosServicio.restablecerPassword(
+                            seleccionado.getId(), passwordTexto, confirmacionTexto);
+                    return null;
+                },
                 ignorado -> aviso.info("Contraseña restablecida."),
                 e -> aviso.error(mensaje(e)));
     }
@@ -339,7 +477,8 @@ public class ConfiguracionController implements Refrescable {
         return formulario;
     }
 
-    private void fila(GridPane formulario, int fila, String etiqueta, javafx.scene.control.Control control) {
+    private void fila(
+            GridPane formulario, int fila, String etiqueta, javafx.scene.control.Control control) {
         Label label = new Label(etiqueta);
         label.getStyleClass().add("campo-label");
         formulario.add(label, 0, fila);
@@ -352,8 +491,9 @@ public class ConfiguracionController implements Refrescable {
         dialogo.setTitle(titulo);
         dialogo.setHeaderText(null);
         dialogo.getDialogPane().getStyleClass().add("dialogo");
-        dialogo.getDialogPane().getButtonTypes().addAll(
-                new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE), ButtonType.CANCEL);
+        dialogo.getDialogPane()
+                .getButtonTypes()
+                .addAll(new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE), ButtonType.CANCEL);
         if (ventana() != null) dialogo.initOwner(ventana());
         return dialogo;
     }
@@ -384,17 +524,21 @@ public class ConfiguracionController implements Refrescable {
         estado.setText("Configuración cargada.");
     }
 
-    @FXML private void onGuardar() {
+    @FXML
+    private void onGuardar() {
         try {
             Configuracion datos = leerFormulario();
-            tareas.ejecutar(() -> configuracion.guardar(datos), guardada -> {
-                version = guardada.getVersion();
-                estado.setText("Guardado correctamente.");
-                aviso.info("Configuración guardada.");
-            }, e -> {
-                estado.setText("No se pudo guardar.");
-                aviso.error(mensaje(e));
-            });
+            tareas.ejecutar(
+                    () -> configuracion.guardar(datos),
+                    guardada -> {
+                        version = guardada.getVersion();
+                        estado.setText("Guardado correctamente.");
+                        aviso.info("Configuración guardada.");
+                    },
+                    e -> {
+                        estado.setText("No se pudo guardar.");
+                        aviso.error(mensaje(e));
+                    });
         } catch (RuntimeException e) {
             estado.setText("No se pudo guardar.");
             aviso.error(e.getMessage() == null ? "Revisa los valores ingresados." : e.getMessage());
@@ -402,54 +546,69 @@ public class ConfiguracionController implements Refrescable {
     }
 
     private Configuracion leerFormulario() {
-        Configuracion c = Configuracion.builder()
-                .id(Configuracion.FILA_UNICA)
-                .arrendadorRazonSocial(razonSocial.getText())
-                .arrendadorTipoDocumento(tipoDocumento.getText())
-                .arrendadorDocumento(documento.getText())
-                .arrendadorDireccion(direccion.getText())
-                .arrendadorTelefono(telefono.getText())
-                .arrendadorEmail(email.getText())
-                .logoArchivo(vacio(logoArchivo.getText()) ? null : logoArchivo.getText().trim())
-                .reciboSerie(reciboSerie.getText())
-                .reciboLeyenda(reciboLeyenda.getText())
-                .moraTipo(moraTipo.getValue())
-                .moraValor(decimal(moraValor.getText(), "El valor de la mora"))
-                .moraDiasGracia(entero(moraDiasGracia.getText(), "Los días de gracia"))
-                .alertasDiasVencimiento(entero(diasVencimiento.getText(), "Los días para por vencer"))
-                .alertaRecordatorioDias(entero(diasRecordatorio.getText(), "Los días del recordatorio"))
-                .semaforoUmbralLeveDias(entero(umbralLeve.getText(), "El umbral de atraso leve"))
-                .semaforoCuotasRojo(entero(cuotasRojo.getText(), "Las cuotas para rojo"))
-                .plantillaPreventivo(plantillaPreventivo.getText())
-                .plantillaVencido(plantillaVencido.getText())
-                .plantillaFinContrato(plantillaFinContrato.getText())
-                .inactividadMinutos(entero(inactividad.getText(), "Los minutos de inactividad"))
-                .version(version)
-                .build();
+        Configuracion c =
+                Configuracion.builder()
+                        .id(Configuracion.FILA_UNICA)
+                        .arrendadorRazonSocial(razonSocial.getText())
+                        .arrendadorTipoDocumento(tipoDocumento.getText())
+                        .arrendadorDocumento(documento.getText())
+                        .arrendadorDireccion(direccion.getText())
+                        .arrendadorTelefono(telefono.getText())
+                        .arrendadorEmail(email.getText())
+                        .logoArchivo(
+                                vacio(logoArchivo.getText()) ? null : logoArchivo.getText().trim())
+                        .reciboSerie(reciboSerie.getText())
+                        .reciboLeyenda(reciboLeyenda.getText())
+                        .moraTipo(moraTipo.getValue())
+                        .moraValor(decimal(moraValor.getText(), "El valor de la mora"))
+                        .moraDiasGracia(entero(moraDiasGracia.getText(), "Los días de gracia"))
+                        .alertasDiasVencimiento(
+                                entero(diasVencimiento.getText(), "Los días para por vencer"))
+                        .alertaRecordatorioDias(
+                                entero(diasRecordatorio.getText(), "Los días del recordatorio"))
+                        .semaforoUmbralLeveDias(
+                                entero(umbralLeve.getText(), "El umbral de atraso leve"))
+                        .semaforoCuotasRojo(entero(cuotasRojo.getText(), "Las cuotas para rojo"))
+                        .plantillaPreventivo(plantillaPreventivo.getText())
+                        .plantillaVencido(plantillaVencido.getText())
+                        .plantillaFinContrato(plantillaFinContrato.getText())
+                        .inactividadMinutos(
+                                entero(inactividad.getText(), "Los minutos de inactividad"))
+                        .version(version)
+                        .build();
         return c;
     }
 
-    @FXML private void onElegirLogo() {
+    @FXML
+    private void onElegirLogo() {
         FileChooser selector = new FileChooser();
         selector.setTitle("Elegir logo del arrendador");
-        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter("Imágenes PNG o JPG", "*.png", "*.jpg", "*.jpeg"));
+        selector.getExtensionFilters()
+                .add(
+                        new FileChooser.ExtensionFilter(
+                                "Imágenes PNG o JPG", "*.png", "*.jpg", "*.jpeg"));
         File archivo = selector.showOpenDialog(ventana());
         if (archivo == null) return;
-        tareas.ejecutar(() -> configuracion.copiarLogo(archivo.toPath()), nombre -> {
-            logoArchivo.setText(nombre);
-            actualizarVistaLogo(nombre);
-            aviso.info("Logo listo. Guarda la configuración para aplicarlo.");
-        }, e -> aviso.error(mensaje(e)));
+        tareas.ejecutar(
+                () -> configuracion.copiarLogo(archivo.toPath()),
+                nombre -> {
+                    logoArchivo.setText(nombre);
+                    actualizarVistaLogo(nombre);
+                    aviso.info("Logo listo. Guarda la configuración para aplicarlo.");
+                },
+                e -> aviso.error(mensaje(e)));
     }
 
-    @FXML private void onQuitarLogo() {
+    @FXML
+    private void onQuitarLogo() {
         logoArchivo.clear();
         logoVista.setImage(null);
         logoVista.setVisible(false);
         logoVista.setManaged(false);
     }
 
-    @FXML private void onRestaurarPlantillas() {
+    @FXML
+    private void onRestaurarPlantillas() {
         plantillaPreventivo.setText(PlantillasMensaje.PREVENTIVO);
         plantillaVencido.setText(PlantillasMensaje.VENCIDO);
         plantillaFinContrato.setText(PlantillasMensaje.FIN_CONTRATO);
@@ -457,7 +616,10 @@ public class ConfiguracionController implements Refrescable {
     }
 
     private void actualizarVistaLogo(String archivo) {
-        Path ruta = archivo == null || archivo.isBlank() ? null : configuracion.rutaDatos().resolve(archivo);
+        Path ruta =
+                archivo == null || archivo.isBlank()
+                        ? null
+                        : configuracion.rutaDatos().resolve(archivo);
         if (ruta != null && java.nio.file.Files.isRegularFile(ruta)) {
             logoVista.setImage(new Image(ruta.toUri().toString(), 160, 70, true, true));
             logoVista.setVisible(true);
@@ -469,9 +631,17 @@ public class ConfiguracionController implements Refrescable {
         }
     }
 
-    private Window ventana() { return razonSocial.getScene() == null ? null : razonSocial.getScene().getWindow(); }
-    private static String texto(String valor) { return valor == null ? "" : valor; }
-    private static boolean vacio(String valor) { return valor == null || valor.isBlank(); }
+    private Window ventana() {
+        return razonSocial.getScene() == null ? null : razonSocial.getScene().getWindow();
+    }
+
+    private static String texto(String valor) {
+        return valor == null ? "" : valor;
+    }
+
+    private static boolean vacio(String valor) {
+        return valor == null || valor.isBlank();
+    }
 
     private static int entero(String valor, String campo) {
         try {
@@ -490,6 +660,8 @@ public class ConfiguracionController implements Refrescable {
     }
 
     private static String mensaje(Throwable e) {
-        return e.getCause() != null && e.getCause().getMessage() != null ? e.getCause().getMessage() : e.getMessage();
+        return e.getCause() != null && e.getCause().getMessage() != null
+                ? e.getCause().getMessage()
+                : e.getMessage();
     }
 }

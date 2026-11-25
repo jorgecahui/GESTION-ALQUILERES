@@ -7,6 +7,10 @@ import com.ejemplo.alquileres.repository.PagoRepository;
 import com.ejemplo.alquileres.repository.PersonaRepository;
 import com.ejemplo.alquileres.service.ConfiguracionService;
 import com.ejemplo.alquileres.service.NombresMes;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -16,23 +20,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-/** Datos idempotentes del perfil dev: 10 contratos con vencimientos distribuidos y su historial de cobros. */
 @Component
 public class HistoriaDashboardSeeder {
     private static final int CONTRATOS = 10;
     private static final int PLAZO_MESES = 12;
     private static final int DIA_PAGO = 5;
 
-    /**
-     * Días entre hoy y el fin de cada contrato demo. Los índices 0-5 quedan AL_DIA,
-     * 6-7 ATRASO_LEVE y 8-9 MOROSO, igual que el reparto de mora del seeder.
-     * Los valores se interpretan siempre desde LocalDate.now(clock), nunca como
-     * fechas fijas: 2 contratos a 0-30 días, 2 a 31-90, 5 a más de 90 (distintos)
-     * y 1 vencido.
-     */
     private static final int[] DIAS_HASTA_FIN = {10, 25, 45, 100, 130, 160, 75, 200, -10, 240};
 
     private final ContratoRepository contratos;
@@ -42,9 +36,13 @@ public class HistoriaDashboardSeeder {
     private final ConfiguracionService configuracion;
     private final Clock clock;
 
-    public HistoriaDashboardSeeder(ContratoRepository contratos, PagoRepository pagos,
-                                   InmuebleRepository inmuebles, PersonaRepository personas,
-                                   ConfiguracionService configuracion, Clock clock) {
+    public HistoriaDashboardSeeder(
+            ContratoRepository contratos,
+            PagoRepository pagos,
+            InmuebleRepository inmuebles,
+            PersonaRepository personas,
+            ConfiguracionService configuracion,
+            Clock clock) {
         this.contratos = contratos;
         this.pagos = pagos;
         this.inmuebles = inmuebles;
@@ -62,49 +60,58 @@ public class HistoriaDashboardSeeder {
         }
 
         LocalDate hoy = LocalDate.now(clock);
-        List<Inmueble> alquilados = inmuebles.findAll().stream()
-                .filter(i -> i.getEstado() == EstadoInmueble.ALQUILADO)
-                .sorted(Comparator.comparing(Inmueble::getNivel,
-                                Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(Inmueble::getOrden, Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(Inmueble::getCodigo, Comparator.nullsLast(String::compareTo)))
-                .limit(CONTRATOS)
-                .toList();
-        List<Persona> activas = personas.findAll().stream()
-                .filter(Persona::isActivo)
-                .limit(CONTRATOS)
-                .toList();
+        List<Inmueble> alquilados =
+                inmuebles.findAll().stream()
+                        .filter(i -> i.getEstado() == EstadoInmueble.ALQUILADO)
+                        .sorted(
+                                Comparator.comparing(
+                                                Inmueble::getNivel,
+                                                Comparator.nullsLast(Integer::compareTo))
+                                        .thenComparing(
+                                                Inmueble::getOrden,
+                                                Comparator.nullsLast(Integer::compareTo))
+                                        .thenComparing(
+                                                Inmueble::getCodigo,
+                                                Comparator.nullsLast(String::compareTo)))
+                        .limit(CONTRATOS)
+                        .toList();
+        List<Persona> activas =
+                personas.findAll().stream().filter(Persona::isActivo).limit(CONTRATOS).toList();
 
         int cantidad = Math.min(alquilados.size(), activas.size());
         int numeroPago = 1;
         for (int n = 0; n < cantidad; n++) {
             Inmueble inmueble = alquilados.get(n);
             Persona arrendatario = activas.get(n);
-            BigDecimal renta = dinero(inmueble.getRentaReferencial() == null
-                    ? BigDecimal.valueOf(1000) : inmueble.getRentaReferencial());
+            BigDecimal renta =
+                    dinero(
+                            inmueble.getRentaReferencial() == null
+                                    ? BigDecimal.valueOf(1000)
+                                    : inmueble.getRentaReferencial());
             int gracia = Math.max(0, configuracion.moraDiasGracia());
 
             LocalDate finObjetivo = hoy.plusDays(DIAS_HASTA_FIN[n]);
             LocalDate inicio = finObjetivo.plusDays(1).minusMonths(PLAZO_MESES);
             LocalDate fin = inicio.plusMonths(PLAZO_MESES).minusDays(1);
 
-            Contrato contrato = Contrato.builder()
-                    .codigo("CTR-DEV-" + (n + 1))
-                    .inmueble(inmueble)
-                    .arrendatario(arrendatario)
-                    .fechaInicio(inicio)
-                    .fechaFin(fin)
-                    .diaPago(DIA_PAGO)
-                    .rentaMensual(renta)
-                    .incrementoAnualPct(BigDecimal.ZERO)
-                    .garantiaMonto(renta)
-                    .garantiaEstado(GarantiaEstado.RECIBIDA)
-                    .diasGracia(gracia)
-                    .tipoMora(TipoMora.PORCENTAJE_DIARIO)
-                    .valorMora(new BigDecimal("0.10"))
-                    .estado(EstadoContrato.VIGENTE)
-                    .fechaRegistro(inicio)
-                    .build();
+            Contrato contrato =
+                    Contrato.builder()
+                            .codigo("CTR-DEV-" + (n + 1))
+                            .inmueble(inmueble)
+                            .arrendatario(arrendatario)
+                            .fechaInicio(inicio)
+                            .fechaFin(fin)
+                            .diaPago(DIA_PAGO)
+                            .rentaMensual(renta)
+                            .incrementoAnualPct(BigDecimal.ZERO)
+                            .garantiaMonto(renta)
+                            .garantiaEstado(GarantiaEstado.RECIBIDA)
+                            .diasGracia(gracia)
+                            .tipoMora(TipoMora.PORCENTAJE_DIARIO)
+                            .valorMora(new BigDecimal("0.10"))
+                            .estado(EstadoContrato.VIGENTE)
+                            .fechaRegistro(inicio)
+                            .build();
 
             List<Cuota> cuotas = crearCuotas(contrato, renta);
             prepararEstados(cuotas, n, hoy, gracia);
@@ -123,39 +130,41 @@ public class HistoriaDashboardSeeder {
     }
 
     private List<Cuota> crearCuotas(Contrato contrato, BigDecimal renta) {
-        int meses = Math.max(1, (int) ChronoUnit.MONTHS.between(
-                contrato.getFechaInicio(), contrato.getFechaFin().plusDays(1)));
+        int meses =
+                Math.max(
+                        1,
+                        (int)
+                                ChronoUnit.MONTHS.between(
+                                        contrato.getFechaInicio(),
+                                        contrato.getFechaFin().plusDays(1)));
         List<Cuota> cuotas = new ArrayList<>(meses);
         for (int mes = 0; mes < meses; mes++) {
             LocalDate periodo = contrato.getFechaInicio().plusMonths(mes).withDayOfMonth(1);
-            LocalDate vencimiento = periodo.withDayOfMonth(
-                    Math.min(DIA_PAGO, periodo.lengthOfMonth()));
+            LocalDate vencimiento =
+                    periodo.withDayOfMonth(Math.min(DIA_PAGO, periodo.lengthOfMonth()));
             if (mes == 0 && vencimiento.isBefore(contrato.getFechaInicio())) {
                 vencimiento = contrato.getFechaInicio();
             }
-            Cuota cuota = Cuota.builder()
-                    .numero(mes + 1)
-                    .tipo(TipoCuota.RENTA)
-                    .concepto("Renta " + NombresMes.de(periodo) + " " + periodo.getYear())
-                    .periodo(periodo)
-                    .fechaVencimiento(vencimiento)
-                    .montoCuota(renta)
-                    .montoPagado(BigDecimal.ZERO)
-                    .estado(EstadoCuota.PENDIENTE)
-                    .moraDesde(vencimiento)
-                    .build();
+            Cuota cuota =
+                    Cuota.builder()
+                            .numero(mes + 1)
+                            .tipo(TipoCuota.RENTA)
+                            .concepto("Renta " + NombresMes.de(periodo) + " " + periodo.getYear())
+                            .periodo(periodo)
+                            .fechaVencimiento(vencimiento)
+                            .montoCuota(renta)
+                            .montoPagado(BigDecimal.ZERO)
+                            .estado(EstadoCuota.PENDIENTE)
+                            .moraDesde(vencimiento)
+                            .build();
             contrato.agregarCuota(cuota);
             cuotas.add(cuota);
         }
         return cuotas;
     }
 
-    /**
-     * Los seis primeros contratos quedan al día. Los dos siguientes tienen una
-     * cuota vencida dentro del umbral y los dos últimos son morosos por cantidad
-     * de cuotas y por días, usando los parámetros reales de configuración.
-     */
-    private void prepararEstados(List<Cuota> cuotas, int indiceContrato, LocalDate hoy, int gracia) {
+    private void prepararEstados(
+            List<Cuota> cuotas, int indiceContrato, LocalDate hoy, int gracia) {
         if (indiceContrato < 6) {
             for (Cuota cuota : cuotas) {
                 if (cuota.getFechaVencimiento().isBefore(hoy)) pagar(cuota);
@@ -217,82 +226,100 @@ public class HistoriaDashboardSeeder {
 
     private Pago crearPago(Contrato contrato, Cuota cuota, BigDecimal renta, int numero) {
         LocalDate fechaPago = cuota.getFechaVencimiento().plusDays(1);
-        Pago pago = Pago.builder()
-                .serie("R001")
-                .numero(numero)
-                .recibo("R001-DEV-" + contrato.getCodigo().substring("CTR-DEV-".length()) + "-" + cuota.getNumero())
-                .contrato(contrato)
-                .fechaPago(fechaPago)
-                .fechaRegistro(fechaPago.atTime(10, 0))
-                .medioPago(MedioPago.EFECTIVO)
-                .montoCapital(renta)
-                .montoMora(BigDecimal.ZERO)
-                .montoTotal(renta)
-                .estado(EstadoPago.EMITIDO)
-                .arrendatarioNombre(contrato.getArrendatario().getNombreCompleto())
-                .arrendatarioDocumento(contrato.getArrendatario().getNumeroDocumento())
-                .inmuebleCodigo(contrato.getInmueble().getCodigo())
-                .inmuebleNombre(contrato.getInmueble().getNombre())
-                .build();
+        Pago pago =
+                Pago.builder()
+                        .serie("R001")
+                        .numero(numero)
+                        .recibo(
+                                "R001-DEV-"
+                                        + contrato.getCodigo().substring("CTR-DEV-".length())
+                                        + "-"
+                                        + cuota.getNumero())
+                        .contrato(contrato)
+                        .fechaPago(fechaPago)
+                        .fechaRegistro(fechaPago.atTime(10, 0))
+                        .medioPago(MedioPago.EFECTIVO)
+                        .montoCapital(renta)
+                        .montoMora(BigDecimal.ZERO)
+                        .montoTotal(renta)
+                        .estado(EstadoPago.EMITIDO)
+                        .arrendatarioNombre(contrato.getArrendatario().getNombreCompleto())
+                        .arrendatarioDocumento(contrato.getArrendatario().getNumeroDocumento())
+                        .inmuebleCodigo(contrato.getInmueble().getCodigo())
+                        .inmuebleNombre(contrato.getInmueble().getNombre())
+                        .build();
         pago.agregarDetalle(detalle(pago, cuota, renta, BigDecimal.ZERO));
         return pago;
     }
 
-    /**
-     * Los respaldos creados antes de esta corrección no tenían detalle de pago.
-     * Solo se reparan los recibos demo, nunca los pagos reales del usuario.
-     */
     private void repararDetallesDemo() {
         for (Pago pago : pagos.findAll()) {
-            if (pago.getRecibo() == null || !pago.getRecibo().startsWith("R001-DEV-")
+            if (pago.getRecibo() == null
+                    || !pago.getRecibo().startsWith("R001-DEV-")
                     || !pago.getDetalles().isEmpty()) {
                 continue;
             }
-            Cuota cuota = pago.getContrato().getCuotas().stream()
-                    .filter(q -> q.getTipo() == TipoCuota.RENTA && q.getPeriodo() != null)
-                    .filter(q -> YearMonth.from(q.getPeriodo()).equals(YearMonth.from(pago.getFechaPago())))
-                    .findFirst().orElse(null);
+            Cuota cuota =
+                    pago.getContrato().getCuotas().stream()
+                            .filter(q -> q.getTipo() == TipoCuota.RENTA && q.getPeriodo() != null)
+                            .filter(
+                                    q ->
+                                            YearMonth.from(q.getPeriodo())
+                                                    .equals(YearMonth.from(pago.getFechaPago())))
+                            .findFirst()
+                            .orElse(null);
             if (cuota == null) continue;
-            pago.agregarDetalle(detalle(pago, cuota, nvl(pago.getMontoCapital()), nvl(pago.getMontoMora())));
+            pago.agregarDetalle(
+                    detalle(pago, cuota, nvl(pago.getMontoCapital()), nvl(pago.getMontoMora())));
             pagos.save(pago);
         }
     }
 
-    /** Completa el cronograma de los contratos demo creados con la versión anterior del seeder. */
     private void repararCronogramasDemo() {
         for (Contrato contrato : contratos.findAll()) {
-            if (contrato.getCodigo() == null || !contrato.getCodigo().startsWith("CTR-DEV-")) continue;
-            int meses = (int) ChronoUnit.MONTHS.between(contrato.getFechaInicio(),
-                    contrato.getFechaFin().plusDays(1));
+            if (contrato.getCodigo() == null || !contrato.getCodigo().startsWith("CTR-DEV-"))
+                continue;
+            int meses =
+                    (int)
+                            ChronoUnit.MONTHS.between(
+                                    contrato.getFechaInicio(), contrato.getFechaFin().plusDays(1));
             if (meses < 1) continue;
             for (int m = 0; m < meses; m++) {
                 int numero = m + 1;
                 LocalDate periodo = contrato.getFechaInicio().plusMonths(m).withDayOfMonth(1);
                 String concepto = "Renta " + NombresMes.de(periodo) + " " + periodo.getYear();
-                Cuota cuota = contrato.getCuotas().stream()
-                        .filter(q -> q.getTipo() == TipoCuota.RENTA && q.getNumero() == numero)
-                        .findFirst().orElse(null);
+                Cuota cuota =
+                        contrato.getCuotas().stream()
+                                .filter(
+                                        q ->
+                                                q.getTipo() == TipoCuota.RENTA
+                                                        && q.getNumero() == numero)
+                                .findFirst()
+                                .orElse(null);
                 if (cuota == null) {
-                    LocalDate vencimiento = periodo.withDayOfMonth(
-                            Math.min(contrato.getDiaPago(), periodo.lengthOfMonth()));
+                    LocalDate vencimiento =
+                            periodo.withDayOfMonth(
+                                    Math.min(contrato.getDiaPago(), periodo.lengthOfMonth()));
                     if (m == 0 && vencimiento.isBefore(contrato.getFechaInicio())) {
                         vencimiento = contrato.getFechaInicio();
                     }
-                    cuota = Cuota.builder()
-                            .numero(m + 1)
-                            .tipo(TipoCuota.RENTA)
-                            .concepto(concepto)
-                            .periodo(periodo)
-                            .fechaVencimiento(vencimiento)
-                            .montoCuota(contrato.getRentaMensual())
-                            .montoPagado(BigDecimal.ZERO)
-                            .estado(EstadoCuota.PENDIENTE)
-                            .moraDesde(vencimiento)
-                            .build();
+                    cuota =
+                            Cuota.builder()
+                                    .numero(m + 1)
+                                    .tipo(TipoCuota.RENTA)
+                                    .concepto(concepto)
+                                    .periodo(periodo)
+                                    .fechaVencimiento(vencimiento)
+                                    .montoCuota(contrato.getRentaMensual())
+                                    .montoPagado(BigDecimal.ZERO)
+                                    .estado(EstadoCuota.PENDIENTE)
+                                    .moraDesde(vencimiento)
+                                    .build();
                     contrato.agregarCuota(cuota);
                 } else {
                     cuota.setConcepto(concepto);
-                    if (cuota.getMoraDesde() == null) cuota.setMoraDesde(cuota.getFechaVencimiento());
+                    if (cuota.getMoraDesde() == null)
+                        cuota.setMoraDesde(cuota.getFechaVencimiento());
                 }
             }
             contratos.save(contrato);

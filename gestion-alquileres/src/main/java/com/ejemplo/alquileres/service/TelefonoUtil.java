@@ -1,13 +1,8 @@
 package com.ejemplo.alquileres.service;
 
-/** Normaliza teléfonos peruanos al formato internacional usado por wa.me. */
 public final class TelefonoUtil {
-    private TelefonoUtil() { }
+    private TelefonoUtil() {}
 
-    /**
-     * Acepta 987654321, +51987654321, 51987654321, 0051 987 654 321 y variantes
-     * con espacios, guiones o paréntesis. Devuelve 51987654321 o null si no es válido.
-     */
     public static String normalizarPeru(String valor) {
         if (valor == null || valor.isBlank()) return null;
         String limpio = valor.trim().replaceAll("[\\s()\\-.]", "");
@@ -18,11 +13,15 @@ public final class TelefonoUtil {
         return null;
     }
 
-    /** Formato legible para la interfaz: +51 987 654 321. */
     public static String legible(String valor) {
         String normalizado = normalizarPeru(valor);
         if (normalizado == null) return valor == null ? "" : valor;
         String numero = normalizado.substring(2);
-        return "+51 " + numero.substring(0, 3) + " " + numero.substring(3, 6) + " " + numero.substring(6);
+        return "+51 "
+                + numero.substring(0, 3)
+                + " "
+                + numero.substring(3, 6)
+                + " "
+                + numero.substring(6);
     }
 }

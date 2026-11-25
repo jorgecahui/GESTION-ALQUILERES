@@ -7,10 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ejemplo.alquileres.model.EstadoInmueble;
 import com.ejemplo.alquileres.ui.BloqueMaqueta;
+
+import javafx.geometry.Point3D;
+
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import javafx.geometry.Point3D;
-import org.junit.jupiter.api.Test;
 
 class MaquetaControllerEncuadreTest {
 
@@ -20,7 +23,8 @@ class MaquetaControllerEncuadreTest {
     private static final double NEAR = 0.1;
     private static final double RELLENO = 0.88;
 
-    @Test void elEncuadreDelPisoSoloTomaLosPuntosDeEsePiso() {
+    @Test
+    void elEncuadreDelPisoSoloTomaLosPuntosDeEsePiso() {
         MaquetaController.Geometria geometria = geometriaDeTresPisos();
 
         List<Point3D> piso1 = MaquetaController.puntosPiso(geometria, 1);
@@ -28,13 +32,15 @@ class MaquetaControllerEncuadreTest {
 
         assertEquals(8 + 5 * 8, piso1.size(), "losa + 5 bloques");
         assertEquals(8 + 5 * 8, piso2.size(), "losa + 5 bloques");
-        assertTrue(minY(piso1) > maxY(piso2),
+        assertTrue(
+                minY(piso1) > maxY(piso2),
                 "los puntos del piso 1 deben quedar por encima de los del piso 2");
         assertTrue(MaquetaController.puntosPiso(geometria, 99).isEmpty());
         assertTrue(MaquetaController.puntosPiso(null, 1).isEmpty());
     }
 
-    @Test void elEncuadreCentraElPisoYLoDejaDentroDeLaVista() {
+    @Test
+    void elEncuadreCentraElPisoYLoDejaDentroDeLaVista() {
         MaquetaController.Geometria geometria = geometriaDeTresPisos();
         List<Point3D> puntos = MaquetaController.puntosPiso(geometria, 2);
 
@@ -42,8 +48,9 @@ class MaquetaControllerEncuadreTest {
         double centroY = (minY(puntos) + maxY(puntos)) / 2;
         double centroZ = (min(puntos, Point3D::getZ) + max(puntos, Point3D::getZ)) / 2;
 
-        MaquetaController.Encuadre encuadre = MaquetaController.calcularEncuadre(
-                puntos, ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO);
+        MaquetaController.Encuadre encuadre =
+                MaquetaController.calcularEncuadre(
+                        puntos, ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO);
 
         assertNotNull(encuadre);
         assertEquals(centroX, encuadre.ojoX(), 0.5);
@@ -63,27 +70,32 @@ class MaquetaControllerEncuadreTest {
         }
     }
 
-    @Test void unaVistaMasPequenaNecesitaMasDistancia() {
+    @Test
+    void unaVistaMasPequenaNecesitaMasDistancia() {
         MaquetaController.Geometria geometria = geometriaDeTresPisos();
         List<Point3D> puntos = MaquetaController.puntosPiso(geometria, 2);
 
-        MaquetaController.Encuadre grande = MaquetaController.calcularEncuadre(
-                puntos, 1600, 1000, FOV, NEAR, RELLENO);
-        MaquetaController.Encuadre pequeno = MaquetaController.calcularEncuadre(
-                puntos, 600, 400, FOV, NEAR, RELLENO);
+        MaquetaController.Encuadre grande =
+                MaquetaController.calcularEncuadre(puntos, 1600, 1000, FOV, NEAR, RELLENO);
+        MaquetaController.Encuadre pequeno =
+                MaquetaController.calcularEncuadre(puntos, 600, 400, FOV, NEAR, RELLENO);
 
         assertNotNull(grande);
         assertNotNull(pequeno);
         assertTrue(pequeno.distancia() > grande.distancia());
     }
 
-    @Test void sinPuntosNoHayEncuadre() {
-        assertNull(MaquetaController.calcularEncuadre(
-                List.of(), ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO));
-        assertNull(MaquetaController.calcularEncuadre(
-                List.of(new Point3D(0, 0, 0)), 0, ALTO_VISTA, FOV, NEAR, RELLENO));
-        assertNull(MaquetaController.calcularEncuadre(
-                null, ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO));
+    @Test
+    void sinPuntosNoHayEncuadre() {
+        assertNull(
+                MaquetaController.calcularEncuadre(
+                        List.of(), ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO));
+        assertNull(
+                MaquetaController.calcularEncuadre(
+                        List.of(new Point3D(0, 0, 0)), 0, ALTO_VISTA, FOV, NEAR, RELLENO));
+        assertNull(
+                MaquetaController.calcularEncuadre(
+                        null, ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO));
     }
 
     private MaquetaController.Geometria geometriaDeTresPisos() {
@@ -91,8 +103,9 @@ class MaquetaControllerEncuadreTest {
         for (int nivel = 1; nivel <= 3; nivel++) {
             for (int orden = 1; orden <= 5; orden++) {
                 long id = nivel * 100L + orden;
-                bloques.add(new BloqueMaqueta(id, "Unidad " + id, nivel, orden,
-                        EstadoInmueble.DISPONIBLE, null));
+                bloques.add(
+                        new BloqueMaqueta(
+                                id, "Unidad " + id, nivel, orden, EstadoInmueble.DISPONIBLE, null));
             }
         }
         return MaquetaController.calcularGeometria(bloques);
@@ -114,13 +127,13 @@ class MaquetaControllerEncuadreTest {
         return max(puntos, Point3D::getY);
     }
 
-    private static double min(List<Point3D> puntos,
-                              java.util.function.ToDoubleFunction<Point3D> valor) {
+    private static double min(
+            List<Point3D> puntos, java.util.function.ToDoubleFunction<Point3D> valor) {
         return puntos.stream().mapToDouble(valor).min().orElseThrow();
     }
 
-    private static double max(List<Point3D> puntos,
-                              java.util.function.ToDoubleFunction<Point3D> valor) {
+    private static double max(
+            List<Point3D> puntos, java.util.function.ToDoubleFunction<Point3D> valor) {
         return puntos.stream().mapToDouble(valor).max().orElseThrow();
     }
 }

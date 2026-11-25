@@ -2,8 +2,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.ejemplo.alquileres.controller.ContratoController" spacing="16" styleClass="pagina">
+<VBox
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.ejemplo.alquileres.controller.ContratoController"
+    spacing="16"
+    styleClass="pagina">
     <HBox>
         <VBox HBox.hgrow="ALWAYS">
             <Label text="Contratos" styleClass="pagina-titulo"/>
@@ -12,20 +16,29 @@
         <Button text="Exportar Excel" onAction="#onExportar"/>
         <Button text="Nuevo contrato" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
     </HBox>
-
     <HBox spacing="12">
         <TextField fx:id="buscar" promptText="Buscar código, inmueble o arrendatario" HBox.hgrow="ALWAYS"/>
         <ComboBox fx:id="filtroEstado" promptText="Estado" prefWidth="150"/>
         <CheckBox fx:id="porVencer" text="Por vencer"/>
     </HBox>
-
     <HBox spacing="12">
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Vigentes"/><Label fx:id="vigentes" text="0" styleClass="kpi-valor"/></VBox>
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Por vencer"/><Label fx:id="kpiPorVencer" text="0" styleClass="kpi-valor"/></VBox>
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Vencidos"/><Label fx:id="vencidos" text="0" styleClass="kpi-valor"/></VBox>
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Renta mensual"/><Label fx:id="rentaMensual" text="S/ 0.00" styleClass="kpi-valor"/></VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Vigentes"/>
+            <Label fx:id="vigentes" text="0" styleClass="kpi-valor"/>
+        </VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Por vencer"/>
+            <Label fx:id="kpiPorVencer" text="0" styleClass="kpi-valor"/>
+        </VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Vencidos"/>
+            <Label fx:id="vencidos" text="0" styleClass="kpi-valor"/>
+        </VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Renta mensual"/>
+            <Label fx:id="rentaMensual" text="S/ 0.00" styleClass="kpi-valor"/>
+        </VBox>
     </HBox>
-
     <HBox spacing="14" VBox.vgrow="ALWAYS">
         <VBox styleClass="tarjeta" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
@@ -37,12 +50,21 @@
                     <TableColumn fx:id="colRenta" text="Renta" prefWidth="110"/>
                     <TableColumn fx:id="colEstado" text="Estado" prefWidth="120"/>
                 </columns>
-                <placeholder><Label text="Sin contratos registrados."/></placeholder>
+                <placeholder>
+                    <Label text="Sin contratos registrados."/>
+                </placeholder>
             </TableView>
         </VBox>
-
-        <VBox fx:id="detalle" visible="false" managed="false" prefWidth="450" minWidth="420" maxWidth="470"
-              maxHeight="Infinity" spacing="14" styleClass="tarjeta,detalle-contrato">
+        <VBox
+            fx:id="detalle"
+            visible="false"
+            managed="false"
+            prefWidth="450"
+            minWidth="420"
+            maxWidth="470"
+            maxHeight="Infinity"
+            spacing="14"
+            styleClass="tarjeta,detalle-contrato">
             <HBox alignment="TOP_LEFT" spacing="8">
                 <VBox spacing="3" HBox.hgrow="ALWAYS">
                     <Label fx:id="detalleTitulo" styleClass="drawer-titulo"/>
@@ -50,84 +72,124 @@
                 </VBox>
                 <Label fx:id="detalleEstado" styleClass="chip,neutro"/>
                 <Button onAction="#onCerrarDetalle" styleClass="drawer-cerrar" focusTraversable="false">
-                    <graphic><FontIcon iconLiteral="fth-x"/></graphic>
-                    <tooltip><Tooltip text="Cerrar detalle"/></tooltip>
+                    <graphic>
+                        <FontIcon iconLiteral="fth-x"/>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="Cerrar detalle"/>
+                    </tooltip>
                 </Button>
             </HBox>
-
-            <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                        VBox.vgrow="ALWAYS" styleClass="detalle-scroll">
+            <ScrollPane
+                fitToWidth="true"
+                fitToHeight="true"
+                hbarPolicy="NEVER"
+                vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS"
+                styleClass="detalle-scroll">
                 <VBox spacing="14">
-
                     <GridPane hgap="16" vgap="12">
-                <columnConstraints>
-                    <ColumnConstraints percentWidth="50"/>
-                    <ColumnConstraints percentWidth="50"/>
-                </columnConstraints>
-
-                <VBox styleClass="detalle-campo" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0">
-                    <Label text="Inmueble" styleClass="detalle-etiqueta"/>
-                    <Label fx:id="detalleInmueble" styleClass="detalle-valor" wrapText="true"/>
-                </VBox>
-                <VBox styleClass="detalle-campo" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                    <Label text="Vigencia" styleClass="detalle-etiqueta"/>
-                    <Label fx:id="detalleVigencia" styleClass="detalle-valor" wrapText="true"/>
-                </VBox>
-                <VBox styleClass="detalle-campo" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                    <Label text="Renta mensual" styleClass="detalle-etiqueta"/>
-                    <Label fx:id="detalleRenta" styleClass="detalle-valor"/>
-                </VBox>
-                <VBox styleClass="detalle-campo" GridPane.columnIndex="0" GridPane.rowIndex="2">
-                    <Label text="Día de pago" styleClass="detalle-etiqueta"/>
-                    <Label fx:id="detalleDiaPago" styleClass="detalle-valor"/>
-                </VBox>
-                <VBox styleClass="detalle-campo" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                    <Label text="Garantía" styleClass="detalle-etiqueta"/>
-                    <Label fx:id="detalleGarantia" styleClass="detalle-valor"/>
-                </VBox>
-            </GridPane>
-
-            <HBox spacing="8">
-                <Button text="Estado de cuenta" onAction="#onEstadoCuenta" styleClass="button-outlined"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button text="Hoja de contrato" onAction="#onHojaContrato" styleClass="button-outlined"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-            </HBox>
-
-            <HBox spacing="8">
-                <Button text="Renovar" onAction="#onRenovar" styleClass="button-outlined,requiere-gestion"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button text="Avisar fin" onAction="#onAvisarFin" styleClass="button-outlined,requiere-gestion"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button text="Finalizar" onAction="#onFinalizar" styleClass="button-outlined,requiere-admin"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                <Button text="Rescindir" onAction="#onRescindir" styleClass="button-outlined,requiere-admin"
-                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-            </HBox>
-
-            <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" prefHeight="320" minHeight="280" styleClass="detalle-tabs">
-                <Tab text="Cuotas">
-                    <TableView fx:id="tablaCuotas" VBox.vgrow="ALWAYS" styleClass="tabla">
-                        <columns>
-                            <TableColumn fx:id="colCuotaConcepto" text="Concepto" prefWidth="165"/>
-                            <TableColumn fx:id="colCuotaVencimiento" text="Vence" prefWidth="80"/>
-                            <TableColumn fx:id="colCuotaMonto" text="Monto" prefWidth="90"/>
-                            <TableColumn fx:id="colCuotaEstado" text="Estado" prefWidth="90"/>
-                        </columns>
-                        <placeholder><Label text="Sin cuotas registradas."/></placeholder>
-                    </TableView>
-                </Tab>
-                <Tab text="Recordatorios">
-                    <TableView fx:id="tablaRecordatorios" VBox.vgrow="ALWAYS" styleClass="tabla">
-                        <columns>
-                            <TableColumn fx:id="colRecFecha" text="Fecha" prefWidth="115"/>
-                            <TableColumn fx:id="colRecTipo" text="Tipo / canal" prefWidth="130"/>
-                            <TableColumn fx:id="colRecMensaje" text="Mensaje" prefWidth="160"/>
-                        </columns>
-                        <placeholder><Label text="Sin recordatorios enviados."/></placeholder>
-                    </TableView>
-                </Tab>
-            </TabPane>
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="50"/>
+                            <ColumnConstraints percentWidth="50"/>
+                        </columnConstraints>
+                        <VBox
+                            styleClass="detalle-campo"
+                            GridPane.columnIndex="0"
+                            GridPane.columnSpan="2"
+                            GridPane.rowIndex="0">
+                            <Label text="Inmueble" styleClass="detalle-etiqueta"/>
+                            <Label fx:id="detalleInmueble" styleClass="detalle-valor" wrapText="true"/>
+                        </VBox>
+                        <VBox styleClass="detalle-campo" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                            <Label text="Vigencia" styleClass="detalle-etiqueta"/>
+                            <Label fx:id="detalleVigencia" styleClass="detalle-valor" wrapText="true"/>
+                        </VBox>
+                        <VBox styleClass="detalle-campo" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <Label text="Renta mensual" styleClass="detalle-etiqueta"/>
+                            <Label fx:id="detalleRenta" styleClass="detalle-valor"/>
+                        </VBox>
+                        <VBox styleClass="detalle-campo" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                            <Label text="Día de pago" styleClass="detalle-etiqueta"/>
+                            <Label fx:id="detalleDiaPago" styleClass="detalle-valor"/>
+                        </VBox>
+                        <VBox styleClass="detalle-campo" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                            <Label text="Garantía" styleClass="detalle-etiqueta"/>
+                            <Label fx:id="detalleGarantia" styleClass="detalle-valor"/>
+                        </VBox>
+                    </GridPane>
+                    <HBox spacing="8">
+                        <Button
+                            text="Estado de cuenta"
+                            onAction="#onEstadoCuenta"
+                            styleClass="button-outlined"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"/>
+                        <Button
+                            text="Hoja de contrato"
+                            onAction="#onHojaContrato"
+                            styleClass="button-outlined"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <HBox spacing="8">
+                        <Button
+                            text="Renovar"
+                            onAction="#onRenovar"
+                            styleClass="button-outlined,requiere-gestion"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"/>
+                        <Button
+                            text="Avisar fin"
+                            onAction="#onAvisarFin"
+                            styleClass="button-outlined,requiere-gestion"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"/>
+                        <Button
+                            text="Finalizar"
+                            onAction="#onFinalizar"
+                            styleClass="button-outlined,requiere-admin"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"/>
+                        <Button
+                            text="Rescindir"
+                            onAction="#onRescindir"
+                            styleClass="button-outlined,requiere-admin"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <TabPane
+                        tabClosingPolicy="UNAVAILABLE"
+                        VBox.vgrow="ALWAYS"
+                        prefHeight="320"
+                        minHeight="280"
+                        styleClass="detalle-tabs">
+                        <Tab text="Cuotas">
+                            <TableView fx:id="tablaCuotas" VBox.vgrow="ALWAYS" styleClass="tabla">
+                                <columns>
+                                    <TableColumn fx:id="colCuotaConcepto" text="Concepto" prefWidth="165"/>
+                                    <TableColumn fx:id="colCuotaVencimiento" text="Vence" prefWidth="80"/>
+                                    <TableColumn fx:id="colCuotaMonto" text="Monto" prefWidth="90"/>
+                                    <TableColumn fx:id="colCuotaEstado" text="Estado" prefWidth="90"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="Sin cuotas registradas."/>
+                                </placeholder>
+                            </TableView>
+                        </Tab>
+                        <Tab text="Recordatorios">
+                            <TableView fx:id="tablaRecordatorios" VBox.vgrow="ALWAYS" styleClass="tabla">
+                                <columns>
+                                    <TableColumn fx:id="colRecFecha" text="Fecha" prefWidth="115"/>
+                                    <TableColumn fx:id="colRecTipo" text="Tipo / canal" prefWidth="130"/>
+                                    <TableColumn fx:id="colRecMensaje" text="Mensaje" prefWidth="160"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="Sin recordatorios enviados."/>
+                                </placeholder>
+                            </TableView>
+                        </Tab>
+                    </TabPane>
                 </VBox>
             </ScrollPane>
         </VBox>

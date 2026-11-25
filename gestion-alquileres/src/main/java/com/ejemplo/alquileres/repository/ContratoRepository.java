@@ -1,2 +1,59 @@
-package com.ejemplo.alquileres.repository; import com.ejemplo.alquileres.model.*; import org.springframework.data.jpa.repository.*; import org.springframework.data.repository.query.Param; import java.time.*; import java.util.*;
-public interface ContratoRepository extends JpaRepository<Contrato,Long>{@Query("select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left join fetch c.cuotas order by c.fechaInicio desc,c.id desc") List<Contrato> listarTodos();@Query("select count(c)>0 from Contrato c where c.inmueble.id=:inmueble and c.estado=:estado and c.fechaInicio<=:fin and c.fechaFin>=:inicio") boolean existeTraslape(@Param("inmueble")Long inmueble,@Param("estado")EstadoContrato estado,@Param("inicio")LocalDate inicio,@Param("fin")LocalDate fin);@Query("select distinct c from Contrato c left join fetch c.cuotas where c.id=:id") Optional<Contrato> detalle(@Param("id")Long id);@Query("select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left join fetch c.cuotas where c.estado in ('VIGENTE','FINALIZADO','RESCINDIDO') order by c.fechaInicio desc") List<Contrato> cobrables();@Query("select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left join fetch c.cuotas where c.estado='VIGENTE' order by c.id") List<Contrato> vigentesConDetalle();@Query("select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left join fetch c.cuotas where c.estado='VIGENTE' and c.inmueble.id=:id order by c.id") List<Contrato> vigentesPorInmuebleConDetalle(@Param("id") Long id);@Query("select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left join fetch c.cuotas where c.estado='VIGENTE' and c.fechaFin between :desde and :hasta order by c.fechaFin") List<Contrato> porVencer(@Param("desde")LocalDate desde,@Param("hasta")LocalDate hasta);@Query("select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left join fetch c.cuotas where c.inmueble.id=:id order by c.fechaInicio desc,c.id desc") List<Contrato> listarPorInmueble(@Param("id")Long id);List<Contrato> findByInmuebleIdOrderByFechaInicioDesc(Long id);}
+package com.ejemplo.alquileres.repository;
+
+import com.ejemplo.alquileres.model.*;
+
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
+
+import java.time.*;
+import java.util.*;
+
+public interface ContratoRepository extends JpaRepository<Contrato, Long> {
+    @Query(
+            "select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left"
+                + " join fetch c.cuotas order by c.fechaInicio desc,c.id desc")
+    List<Contrato> listarTodos();
+
+    @Query(
+            "select count(c)>0 from Contrato c where c.inmueble.id=:inmueble and c.estado=:estado"
+                + " and c.fechaInicio<=:fin and c.fechaFin>=:inicio")
+    boolean existeTraslape(
+            @Param("inmueble") Long inmueble,
+            @Param("estado") EstadoContrato estado,
+            @Param("inicio") LocalDate inicio,
+            @Param("fin") LocalDate fin);
+
+    @Query("select distinct c from Contrato c left join fetch c.cuotas where c.id=:id")
+    Optional<Contrato> detalle(@Param("id") Long id);
+
+    @Query(
+            "select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left"
+                + " join fetch c.cuotas where c.estado in ('VIGENTE','FINALIZADO','RESCINDIDO')"
+                + " order by c.fechaInicio desc")
+    List<Contrato> cobrables();
+
+    @Query(
+            "select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left"
+                + " join fetch c.cuotas where c.estado='VIGENTE' order by c.id")
+    List<Contrato> vigentesConDetalle();
+
+    @Query(
+            "select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left"
+                + " join fetch c.cuotas where c.estado='VIGENTE' and c.inmueble.id=:id order by"
+                + " c.id")
+    List<Contrato> vigentesPorInmuebleConDetalle(@Param("id") Long id);
+
+    @Query(
+            "select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left"
+                + " join fetch c.cuotas where c.estado='VIGENTE' and c.fechaFin between :desde and"
+                + " :hasta order by c.fechaFin")
+    List<Contrato> porVencer(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
+
+    @Query(
+            "select distinct c from Contrato c join fetch c.arrendatario join fetch c.inmueble left"
+                + " join fetch c.cuotas where c.inmueble.id=:id order by c.fechaInicio desc,c.id"
+                + " desc")
+    List<Contrato> listarPorInmueble(@Param("id") Long id);
+
+    List<Contrato> findByInmuebleIdOrderByFechaInicioDesc(Long id);
+}

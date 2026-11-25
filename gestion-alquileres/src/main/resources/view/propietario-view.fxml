@@ -2,9 +2,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.ejemplo.alquileres.controller.PropietarioController">
-
+<StackPane
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.ejemplo.alquileres.controller.PropietarioController">
     <HBox spacing="18" styleClass="pagina">
         <VBox spacing="16" HBox.hgrow="ALWAYS">
             <HBox>
@@ -14,17 +15,25 @@
                 </VBox>
                 <Button text="Nuevo propietario" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
-
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar nombre o documento" HBox.hgrow="ALWAYS"/>
                 <CheckBox fx:id="activos" text="Solo activos"/>
                 <Button text="Editar" onAction="#onEditar" styleClass="requiere-gestion"/>
-                <Button fx:id="btnEliminarDesactivar" text="Eliminar / desactivar" onAction="#onEliminar"
-                        styleClass="requiere-gestion" visible="false" managed="false"/>
-                <Button fx:id="btnReactivar" text="Reactivar" onAction="#onReactivar"
-                        styleClass="requiere-gestion" visible="false" managed="false"/>
+                <Button
+                    fx:id="btnEliminarDesactivar"
+                    text="Eliminar / desactivar"
+                    onAction="#onEliminar"
+                    styleClass="requiere-gestion"
+                    visible="false"
+                    managed="false"/>
+                <Button
+                    fx:id="btnReactivar"
+                    text="Reactivar"
+                    onAction="#onReactivar"
+                    styleClass="requiere-gestion"
+                    visible="false"
+                    managed="false"/>
             </HBox>
-
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
                 <columns>
                     <TableColumn fx:id="colNombre" text="Propietario" prefWidth="220"/>
@@ -36,25 +45,44 @@
             </TableView>
         </VBox>
     </HBox>
-
-    <Region fx:id="overlay" visible="false" managed="false" pickOnBounds="true" styleClass="overlay" onMouseClicked="#onCerrar"/>
-
-    <VBox fx:id="drawer" visible="false" managed="false" prefWidth="560" minWidth="560" maxWidth="560"
-          maxHeight="Infinity" styleClass="drawer,panel-formulario" StackPane.alignment="TOP_RIGHT">
+    <Region
+        fx:id="overlay"
+        visible="false"
+        managed="false"
+        pickOnBounds="true"
+        styleClass="overlay"
+        onMouseClicked="#onCerrar"/>
+    <VBox
+        fx:id="drawer"
+        visible="false"
+        managed="false"
+        prefWidth="560"
+        minWidth="560"
+        maxWidth="560"
+        maxHeight="Infinity"
+        styleClass="drawer,panel-formulario"
+        StackPane.alignment="TOP_RIGHT">
         <HBox styleClass="drawer-header">
             <VBox spacing="4" HBox.hgrow="ALWAYS">
                 <Label fx:id="titulo" styleClass="drawer-titulo"/>
                 <Label text="Datos del propietario" styleClass="drawer-subtitulo"/>
             </VBox>
             <Button onAction="#onCerrar" styleClass="drawer-cerrar" focusTraversable="false">
-                <graphic><FontIcon iconLiteral="fth-x"/></graphic>
-                <tooltip><Tooltip text="Cerrar"/></tooltip>
+                <graphic>
+                    <FontIcon iconLiteral="fth-x"/>
+                </graphic>
+                <tooltip>
+                    <Tooltip text="Cerrar"/>
+                </tooltip>
             </Button>
         </HBox>
-
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS" styleClass="drawer-scroll">
+        <ScrollPane
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            VBox.vgrow="ALWAYS"
+            styleClass="drawer-scroll">
             <VBox styleClass="drawer-body">
-
                 <GridPane hgap="14" vgap="14">
                     <columnConstraints>
                         <ColumnConstraints percentWidth="40"/>
@@ -77,7 +105,6 @@
                         <Label fx:id="errorDocumento" styleClass="campo-error" visible="false" managed="false"/>
                     </VBox>
                 </GridPane>
-
                 <VBox styleClass="campo">
                     <HBox spacing="3" alignment="CENTER_LEFT">
                         <Label text="Nombre o razón social" styleClass="campo-label"/>
@@ -86,7 +113,6 @@
                     <TextField fx:id="nombre" promptText="Ej. Juan Pérez / Inmobiliaria SAC" maxWidth="Infinity"/>
                     <Label fx:id="errorNombre" styleClass="campo-error" visible="false" managed="false"/>
                 </VBox>
-
                 <GridPane hgap="14" vgap="14">
                     <columnConstraints>
                         <ColumnConstraints percentWidth="50"/>
@@ -101,7 +127,6 @@
                         <TextField fx:id="email" promptText="correo@ejemplo.com" maxWidth="Infinity"/>
                     </VBox>
                 </GridPane>
-
                 <GridPane hgap="14" vgap="14">
                     <columnConstraints>
                         <ColumnConstraints percentWidth="50"/>
@@ -118,7 +143,6 @@
                 </GridPane>
             </VBox>
         </ScrollPane>
-
         <HBox styleClass="drawer-footer">
             <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
             <Button text="Guardar propietario" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>

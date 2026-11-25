@@ -7,29 +7,44 @@ import com.ejemplo.alquileres.model.Contrato;
 import com.ejemplo.alquileres.model.Cuota;
 import com.ejemplo.alquileres.model.EstadoCuota;
 import com.ejemplo.alquileres.model.SemaforoMorosidad;
+
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
-import org.junit.jupiter.api.Test;
 
 class MorosidadServiceTest {
     private final MorosidadService servicio = servicio();
 
-    @Test void quedaAlDiaSinCuotasVencidas() {
-        assertEquals(SemaforoMorosidad.AL_DIA, servicio.semaforo(contrato(cuota(LocalDate.of(2026, 1, 19)))));
+    @Test
+    void quedaAlDiaSinCuotasVencidas() {
+        assertEquals(
+                SemaforoMorosidad.AL_DIA,
+                servicio.semaforo(contrato(cuota(LocalDate.of(2026, 1, 19)))));
     }
 
-    @Test void marcaAtrasoLeveDentroDelUmbral() {
-        assertEquals(SemaforoMorosidad.ATRASO_LEVE, servicio.semaforo(contrato(cuota(LocalDate.of(2026, 1, 10)))));
+    @Test
+    void marcaAtrasoLeveDentroDelUmbral() {
+        assertEquals(
+                SemaforoMorosidad.ATRASO_LEVE,
+                servicio.semaforo(contrato(cuota(LocalDate.of(2026, 1, 10)))));
     }
 
-    @Test void marcaMorosoPorDiasOPorCantidadDeCuotas() {
-        assertEquals(SemaforoMorosidad.MOROSO, servicio.semaforo(contrato(cuota(LocalDate.of(2025, 12, 20)))));
-        assertEquals(SemaforoMorosidad.MOROSO, servicio.semaforo(contrato(
-                cuota(LocalDate.of(2026, 1, 10)), cuota(LocalDate.of(2026, 1, 11)))));
+    @Test
+    void marcaMorosoPorDiasOPorCantidadDeCuotas() {
+        assertEquals(
+                SemaforoMorosidad.MOROSO,
+                servicio.semaforo(contrato(cuota(LocalDate.of(2025, 12, 20)))));
+        assertEquals(
+                SemaforoMorosidad.MOROSO,
+                servicio.semaforo(
+                        contrato(
+                                cuota(LocalDate.of(2026, 1, 10)),
+                                cuota(LocalDate.of(2026, 1, 11)))));
     }
 
     private MorosidadService servicio() {
@@ -47,7 +62,11 @@ class MorosidadServiceTest {
     }
 
     private Cuota cuota(LocalDate vencimiento) {
-        return Cuota.builder().fechaVencimiento(vencimiento).montoCuota(BigDecimal.TEN)
-                .montoPagado(BigDecimal.ZERO).estado(EstadoCuota.PENDIENTE).build();
+        return Cuota.builder()
+                .fechaVencimiento(vencimiento)
+                .montoCuota(BigDecimal.TEN)
+                .montoPagado(BigDecimal.ZERO)
+                .estado(EstadoCuota.PENDIENTE)
+                .build();
     }
 }

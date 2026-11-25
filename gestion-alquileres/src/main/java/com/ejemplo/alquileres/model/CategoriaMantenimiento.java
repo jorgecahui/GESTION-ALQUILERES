@@ -11,7 +11,16 @@ public enum CategoriaMantenimiento {
 
     private final String etiqueta;
 
-    CategoriaMantenimiento(String etiqueta) { this.etiqueta = etiqueta; }
-    public String getEtiqueta() { return etiqueta; }
-    @Override public String toString() { return etiqueta; }
+    CategoriaMantenimiento(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

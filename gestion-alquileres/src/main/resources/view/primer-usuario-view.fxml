@@ -2,27 +2,50 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.ejemplo.alquileres.controller.PrimerUsuarioController" styleClass="app login">
+<StackPane
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.ejemplo.alquileres.controller.PrimerUsuarioController"
+    styleClass="app login">
     <VBox spacing="12" styleClass="tarjeta login-tarjeta" maxWidth="430" maxHeight="-Infinity">
         <HBox spacing="12" alignment="CENTER_LEFT">
-            <StackPane styleClass="marca-logo"><FontIcon iconLiteral="fth-shield"/></StackPane>
-            <VBox spacing="1"><Label text="Primer administrador" styleClass="marca-titulo"/><Label text="Configuración inicial" styleClass="marca-subtitulo"/></VBox>
+            <StackPane styleClass="marca-logo">
+                <FontIcon iconLiteral="fth-shield"/>
+            </StackPane>
+            <VBox spacing="1">
+                <Label text="Primer administrador" styleClass="marca-titulo"/>
+                <Label text="Configuración inicial" styleClass="marca-subtitulo"/>
+            </VBox>
         </HBox>
         <VBox spacing="3">
             <Label text="Crea la cuenta de administrador" styleClass="pagina-titulo"/>
-            <Label text="Solo se muestra la primera vez. Con esta cuenta podrás gestionar usuarios, configuración y respaldos."
-                   styleClass="pagina-subtitulo" wrapText="true"/>
+            <Label
+                text="Solo se muestra la primera vez. Con esta cuenta podrás gestionar usuarios, configuración y respaldos."
+                styleClass="pagina-subtitulo"
+                wrapText="true"/>
         </VBox>
-        <VBox spacing="5" styleClass="campo"><Label text="Usuario" styleClass="campo-label"/>
-            <TextField fx:id="username" promptText="admin"/></VBox>
-        <VBox spacing="5" styleClass="campo"><Label text="Nombre completo" styleClass="campo-label"/>
-            <TextField fx:id="nombre" promptText="Nombre y apellidos"/></VBox>
-        <VBox spacing="5" styleClass="campo"><Label text="Contraseña" styleClass="campo-label"/>
-            <PasswordField fx:id="password" promptText="Mínimo 8 caracteres con letras y números"/></VBox>
-        <VBox spacing="5" styleClass="campo"><Label text="Confirmar contraseña" styleClass="campo-label"/>
-            <PasswordField fx:id="confirmacion" promptText="Repite la contraseña"/></VBox>
+        <VBox spacing="5" styleClass="campo">
+            <Label text="Usuario" styleClass="campo-label"/>
+            <TextField fx:id="username" promptText="admin"/>
+        </VBox>
+        <VBox spacing="5" styleClass="campo">
+            <Label text="Nombre completo" styleClass="campo-label"/>
+            <TextField fx:id="nombre" promptText="Nombre y apellidos"/>
+        </VBox>
+        <VBox spacing="5" styleClass="campo">
+            <Label text="Contraseña" styleClass="campo-label"/>
+            <PasswordField fx:id="password" promptText="Mínimo 8 caracteres con letras y números"/>
+        </VBox>
+        <VBox spacing="5" styleClass="campo">
+            <Label text="Confirmar contraseña" styleClass="campo-label"/>
+            <PasswordField fx:id="confirmacion" promptText="Repite la contraseña"/>
+        </VBox>
         <Label fx:id="mensaje" styleClass="campo-error" wrapText="true"/>
-        <Button fx:id="crear" text="Crear administrador" onAction="#onCrear" styleClass="boton-primario" maxWidth="Infinity"/>
+        <Button
+            fx:id="crear"
+            text="Crear administrador"
+            onAction="#onCrear"
+            styleClass="boton-primario"
+            maxWidth="Infinity"/>
     </VBox>
 </StackPane>

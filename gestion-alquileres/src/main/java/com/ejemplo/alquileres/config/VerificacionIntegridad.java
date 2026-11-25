@@ -1,17 +1,19 @@
 package com.ejemplo.alquileres.config;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import lombok.RequiredArgsConstructor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-/** Ejecuta PRAGMA integrity_check al arrancar y deja el resultado disponible para la UI. */
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import javax.sql.DataSource;
+
 @Component
 @RequiredArgsConstructor
 public class VerificacionIntegridad implements ApplicationRunner {
@@ -20,12 +22,15 @@ public class VerificacionIntegridad implements ApplicationRunner {
     private volatile boolean correcta = true;
     private volatile String detalle = "ok";
 
-    @Override public void run(ApplicationArguments args) { verificar(); }
+    @Override
+    public void run(ApplicationArguments args) {
+        verificar();
+    }
 
     public void verificar() {
         try (Connection conexion = dataSource.getConnection();
-             Statement sentencia = conexion.createStatement();
-             ResultSet filas = sentencia.executeQuery("pragma integrity_check")) {
+                Statement sentencia = conexion.createStatement();
+                ResultSet filas = sentencia.executeQuery("pragma integrity_check")) {
             if (filas.next()) {
                 detalle = filas.getString(1);
                 correcta = "ok".equalsIgnoreCase(detalle);
@@ -38,6 +43,11 @@ public class VerificacionIntegridad implements ApplicationRunner {
         }
     }
 
-    public boolean correcta() { return correcta; }
-    public String detalle() { return detalle; }
+    public boolean correcta() {
+        return correcta;
+    }
+
+    public String detalle() {
+        return detalle;
+    }
 }

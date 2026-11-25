@@ -8,7 +8,16 @@ public enum PrioridadMantenimiento {
 
     private final String etiqueta;
 
-    PrioridadMantenimiento(String etiqueta) { this.etiqueta = etiqueta; }
-    public String getEtiqueta() { return etiqueta; }
-    @Override public String toString() { return etiqueta; }
+    PrioridadMantenimiento(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    @Override
+    public String toString() {
+        return etiqueta;
+    }
 }

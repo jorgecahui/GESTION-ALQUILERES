@@ -1,3 +1,50 @@
 package com.ejemplo.alquileres.model;
-import jakarta.persistence.*; import lombok.*; import java.math.*; import java.time.*;
-@Entity @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder @Table(uniqueConstraints=@UniqueConstraint(name="uk_cuota_contrato_numero_tipo",columnNames={"contrato_id","numero","tipo"})) public class Cuota { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) Long id; @ManyToOne(optional=false) @JoinColumn(name="contrato_id") Contrato contrato; int numero; @Enumerated(EnumType.STRING) TipoCuota tipo; String concepto; LocalDate periodo,fechaVencimiento; BigDecimal montoCuota; @Builder.Default BigDecimal montoPagado=BigDecimal.ZERO,moraAcumulada=BigDecimal.ZERO,moraCobrada=BigDecimal.ZERO,moraCondonada=BigDecimal.ZERO; LocalDate moraDesde; @Enumerated(EnumType.STRING) @Builder.Default EstadoCuota estado=EstadoCuota.PENDIENTE; @Version Long version; }
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
+import java.math.*;
+import java.time.*;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_cuota_contrato_numero_tipo",
+                        columnNames = {"contrato_id", "numero", "tipo"}))
+public class Cuota {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "contrato_id")
+    Contrato contrato;
+
+    int numero;
+
+    @Enumerated(EnumType.STRING)
+    TipoCuota tipo;
+
+    String concepto;
+    LocalDate periodo, fechaVencimiento;
+    BigDecimal montoCuota;
+    @Builder.Default
+    BigDecimal montoPagado = BigDecimal.ZERO,
+            moraAcumulada = BigDecimal.ZERO,
+            moraCobrada = BigDecimal.ZERO,
+            moraCondonada = BigDecimal.ZERO;
+    LocalDate moraDesde;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    EstadoCuota estado = EstadoCuota.PENDIENTE;
+
+    @Version Long version;
+}

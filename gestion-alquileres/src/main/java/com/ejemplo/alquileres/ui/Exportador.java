@@ -1,22 +1,28 @@
 package com.ejemplo.alquileres.ui;
 
+import javafx.application.HostServices;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
+
+import org.springframework.stereotype.Component;
+
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import javafx.application.HostServices;
-import javafx.stage.FileChooser;
-import javafx.stage.Window;
-import org.springframework.stereotype.Component;
 
-/** Abre enlaces, guarda archivos y muestra documentos generados por la aplicación. */
 @Component
 public class Exportador {
     private HostServices hostServices;
 
-    public void setHostServices(HostServices hostServices) { this.hostServices = hostServices; }
-    public HostServices getHostServices() { return hostServices; }
+    public void setHostServices(HostServices hostServices) {
+        this.hostServices = hostServices;
+    }
+
+    public HostServices getHostServices() {
+        return hostServices;
+    }
 
     public void abrirEnlace(String url) {
         if (hostServices != null) {
@@ -30,10 +36,12 @@ public class Exportador {
         }
     }
 
-    public File elegirDestino(Window propietario, String nombre, String descripcion, String extension) {
+    public File elegirDestino(
+            Window propietario, String nombre, String descripcion, String extension) {
         FileChooser selector = new FileChooser();
         selector.setInitialFileName(nombre);
-        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter(descripcion, "*." + extension));
+        selector.getExtensionFilters()
+                .add(new FileChooser.ExtensionFilter(descripcion, "*." + extension));
         return selector.showSaveDialog(propietario);
     }
 

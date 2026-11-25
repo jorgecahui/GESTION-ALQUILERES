@@ -2,9 +2,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.ejemplo.alquileres.controller.InmuebleController">
-
+<StackPane
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.ejemplo.alquileres.controller.InmuebleController">
     <HBox spacing="18" styleClass="pagina">
         <VBox spacing="16" HBox.hgrow="ALWAYS">
             <HBox>
@@ -14,7 +15,6 @@
                 </VBox>
                 <Button text="Nuevo inmueble" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
-
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar código, nombre o dirección" HBox.hgrow="ALWAYS"/>
                 <ComboBox fx:id="filtroEstado" promptText="Estado"/>
@@ -23,7 +23,6 @@
                 <Button text="Ver ficha" onAction="#onFicha"/>
                 <Button text="Exportar Excel" onAction="#onExportar"/>
             </HBox>
-
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
                 <columns>
                     <TableColumn fx:id="colCodigo" text="Código" prefWidth="110"/>
@@ -36,11 +35,23 @@
             </TableView>
         </VBox>
     </HBox>
-
-    <Region fx:id="overlay" visible="false" managed="false" pickOnBounds="true" styleClass="overlay" onMouseClicked="#onCerrar"/>
-
-    <VBox fx:id="ficha" visible="false" managed="false" prefWidth="470" minWidth="470" maxWidth="470"
-          maxHeight="Infinity" styleClass="drawer,ficha-inmueble" StackPane.alignment="TOP_RIGHT">
+    <Region
+        fx:id="overlay"
+        visible="false"
+        managed="false"
+        pickOnBounds="true"
+        styleClass="overlay"
+        onMouseClicked="#onCerrar"/>
+    <VBox
+        fx:id="ficha"
+        visible="false"
+        managed="false"
+        prefWidth="470"
+        minWidth="470"
+        maxWidth="470"
+        maxHeight="Infinity"
+        styleClass="drawer,ficha-inmueble"
+        StackPane.alignment="TOP_RIGHT">
         <Label fx:id="fichaTitulo" text="Ficha del inmueble" styleClass="drawer-titulo"/>
         <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
             <Tab text="Datos">
@@ -59,7 +70,9 @@
                         <TableColumn fx:id="colFichaContratoEstado" text="Estado" prefWidth="90"/>
                         <TableColumn fx:id="colFichaContratoRenta" text="Renta" prefWidth="80"/>
                     </columns>
-                    <placeholder><Label text="Sin contratos registrados."/></placeholder>
+                    <placeholder>
+                        <Label text="Sin contratos registrados."/>
+                    </placeholder>
                 </TableView>
             </Tab>
             <Tab text="Mantenimiento">
@@ -71,7 +84,9 @@
                         <TableColumn fx:id="colFichaMantPrioridad" text="Prioridad" prefWidth="85"/>
                         <TableColumn fx:id="colFichaMantCosto" text="Costo" prefWidth="80"/>
                     </columns>
-                    <placeholder><Label text="Sin incidencias registradas."/></placeholder>
+                    <placeholder>
+                        <Label text="Sin incidencias registradas."/>
+                    </placeholder>
                 </TableView>
             </Tab>
             <Tab text="Ingresos y gastos">
@@ -84,23 +99,37 @@
         </TabPane>
         <Button text="Cerrar" onAction="#onCerrarFicha"/>
     </VBox>
-
-    <VBox fx:id="drawer" visible="false" managed="false" prefWidth="560" minWidth="560" maxWidth="560"
-          maxHeight="Infinity" styleClass="drawer,panel-formulario" StackPane.alignment="TOP_RIGHT">
+    <VBox
+        fx:id="drawer"
+        visible="false"
+        managed="false"
+        prefWidth="560"
+        minWidth="560"
+        maxWidth="560"
+        maxHeight="Infinity"
+        styleClass="drawer,panel-formulario"
+        StackPane.alignment="TOP_RIGHT">
         <HBox styleClass="drawer-header">
             <VBox spacing="4" HBox.hgrow="ALWAYS">
                 <Label fx:id="titulo" styleClass="drawer-titulo"/>
                 <Label text="Datos principales del inmueble" styleClass="drawer-subtitulo"/>
             </VBox>
             <Button onAction="#onCerrar" styleClass="drawer-cerrar" focusTraversable="false">
-                <graphic><FontIcon iconLiteral="fth-x"/></graphic>
-                <tooltip><Tooltip text="Cerrar"/></tooltip>
+                <graphic>
+                    <FontIcon iconLiteral="fth-x"/>
+                </graphic>
+                <tooltip>
+                    <Tooltip text="Cerrar"/>
+                </tooltip>
             </Button>
         </HBox>
-
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS" styleClass="drawer-scroll">
+        <ScrollPane
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            VBox.vgrow="ALWAYS"
+            styleClass="drawer-scroll">
             <VBox styleClass="drawer-body">
-
                 <VBox spacing="14">
                     <VBox styleClass="campo">
                         <HBox spacing="3" alignment="CENTER_LEFT">
@@ -110,7 +139,6 @@
                         <TextField fx:id="codigo" promptText="INM-0001" maxWidth="Infinity"/>
                         <Label fx:id="errorCodigo" styleClass="campo-error" visible="false" managed="false"/>
                     </VBox>
-
                     <VBox styleClass="campo">
                         <HBox spacing="3" alignment="CENTER_LEFT">
                             <Label text="Nombre o alias" styleClass="campo-label"/>
@@ -120,9 +148,7 @@
                         <Label fx:id="errorNombre" styleClass="campo-error" visible="false" managed="false"/>
                     </VBox>
                 </VBox>
-
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
-
                 <VBox spacing="14">
                     <GridPane hgap="14" vgap="14">
                         <columnConstraints>
@@ -138,15 +164,12 @@
                             <ComboBox fx:id="propietario" promptText="Selecciona un propietario" maxWidth="Infinity"/>
                         </VBox>
                     </GridPane>
-
                     <VBox styleClass="campo">
                         <Label text="Dirección" styleClass="campo-label"/>
                         <TextField fx:id="direccion" promptText="Av. / Calle, número, referencia" maxWidth="Infinity"/>
                     </VBox>
                 </VBox>
-
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
-
                 <VBox spacing="10">
                     <Label text="UBICACIÓN" styleClass="seccion-form"/>
                     <VBox styleClass="campo">
@@ -183,12 +206,12 @@
                             <TextField fx:id="orden" promptText="Desde 1" maxWidth="Infinity"/>
                         </VBox>
                     </GridPane>
-                    <Label text="Nivel 0 = planta baja; los negativos son subsuelo. El orden va de izquierda a derecha."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <Label
+                        text="Nivel 0 = planta baja; los negativos son subsuelo. El orden va de izquierda a derecha."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
-
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
-
                 <VBox spacing="10">
                     <Label text="CARACTERÍSTICAS" styleClass="seccion-form"/>
                     <GridPane hgap="14" vgap="14">
@@ -214,25 +237,27 @@
                         </VBox>
                     </GridPane>
                 </VBox>
-
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
-
                 <VBox spacing="10">
                     <Label text="DETALLES" styleClass="seccion-form"/>
                     <VBox styleClass="campo">
                         <Label text="Servicios incluidos" styleClass="campo-label"/>
-                        <TextArea fx:id="serviciosIncluidos" promptText="Ej. Agua, luz, internet, mantenimiento"
-                                  prefRowCount="2" wrapText="true"/>
+                        <TextArea
+                            fx:id="serviciosIncluidos"
+                            promptText="Ej. Agua, luz, internet, mantenimiento"
+                            prefRowCount="2"
+                            wrapText="true"/>
                     </VBox>
                     <VBox styleClass="campo">
                         <Label text="Descripción" styleClass="campo-label"/>
-                        <TextArea fx:id="descripcion" promptText="Observaciones generales del inmueble"
-                                  prefRowCount="3" wrapText="true"/>
+                        <TextArea
+                            fx:id="descripcion"
+                            promptText="Observaciones generales del inmueble"
+                            prefRowCount="3"
+                            wrapText="true"/>
                     </VBox>
                 </VBox>
-
                 <Region styleClass="divisor-form" maxWidth="Infinity" prefHeight="1" minHeight="1" maxHeight="1"/>
-
                 <VBox spacing="14">
                     <GridPane hgap="14" vgap="14">
                         <columnConstraints>
@@ -251,7 +276,6 @@
                             </HBox>
                         </VBox>
                     </GridPane>
-
                     <VBox styleClass="campo">
                         <Label text="Estado" styleClass="campo-label"/>
                         <ComboBox fx:id="estado" promptText="Estado" maxWidth="Infinity"/>
@@ -259,7 +283,6 @@
                 </VBox>
             </VBox>
         </ScrollPane>
-
         <HBox styleClass="drawer-footer">
             <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
             <Button text="Guardar inmueble" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>

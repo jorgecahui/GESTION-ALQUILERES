@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ejemplo.alquileres.controller.CuentasPorCobrarController" spacing="16" styleClass="pagina">
+<VBox
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.ejemplo.alquileres.controller.CuentasPorCobrarController"
+    spacing="16"
+    styleClass="pagina">
     <HBox>
         <VBox HBox.hgrow="ALWAYS">
             <Label text="Cuentas por cobrar" styleClass="pagina-titulo"/>
@@ -11,10 +16,22 @@
         <Button text="Recordar a todos los vencidos" onAction="#onRecordarTodos" styleClass="requiere-gestion"/>
     </HBox>
     <HBox spacing="12">
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Total por cobrar"/><Label fx:id="totalCobrar" text="S/ 0.00" styleClass="kpi-valor"/></VBox>
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Vencido"/><Label fx:id="totalVencido" text="S/ 0.00" styleClass="kpi-valor"/></VBox>
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Vence en 7 días"/><Label fx:id="porVencer" text="S/ 0.00" styleClass="kpi-valor"/></VBox>
-        <VBox styleClass="kpi" HBox.hgrow="ALWAYS"><Label text="Contratos morosos"/><Label fx:id="contratosMorosos" text="0" styleClass="kpi-valor"/></VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Total por cobrar"/>
+            <Label fx:id="totalCobrar" text="S/ 0.00" styleClass="kpi-valor"/>
+        </VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Vencido"/>
+            <Label fx:id="totalVencido" text="S/ 0.00" styleClass="kpi-valor"/>
+        </VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Vence en 7 días"/>
+            <Label fx:id="porVencer" text="S/ 0.00" styleClass="kpi-valor"/>
+        </VBox>
+        <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
+            <Label text="Contratos morosos"/>
+            <Label fx:id="contratosMorosos" text="0" styleClass="kpi-valor"/>
+        </VBox>
     </HBox>
     <VBox spacing="10" styleClass="tarjeta" VBox.vgrow="ALWAYS">
         <HBox spacing="8">
@@ -37,7 +54,9 @@
                 <TableColumn fx:id="colSemaforo" text="Semáforo" prefWidth="110"/>
                 <TableColumn fx:id="colUltimoRecordatorio" text="Último recordatorio" prefWidth="140"/>
             </columns>
-            <placeholder><Label text="Sin cuotas pendientes."/></placeholder>
+            <placeholder>
+                <Label text="Sin cuotas pendientes."/>
+            </placeholder>
         </TableView>
     </VBox>
 </VBox>

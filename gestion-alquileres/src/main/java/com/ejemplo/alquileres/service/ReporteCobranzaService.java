@@ -1,9 +1,108 @@
 package com.ejemplo.alquileres.service;
-import com.ejemplo.alquileres.model.*; import com.ejemplo.alquileres.repository.PagoRepository; import java.math.*; import java.time.*; import java.time.temporal.ChronoUnit; import java.util.*; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional;
-@Service @Transactional(readOnly=true) public class ReporteCobranzaService {
- private final PagoRepository pagos; public ReporteCobranzaService(PagoRepository p){pagos=p;}
- public record PuntoSerie(LocalDate fecha,BigDecimal total,long pagos){} public record IngresoInmueble(String nombre,BigDecimal importe){} public record Resumen(LocalDate desde,LocalDate hasta,BigDecimal total,BigDecimal anterior,Double variacion,boolean porMes,List<PuntoSerie> serie,List<IngresoInmueble> top,List<Pago> ultimos,List<Pago> cobros){}
- public Resumen resumen(Periodo.Rango rango){List<Pago> todos=pagos.listarPeriodo(rango.desde(),rango.hasta()), emitidos=todos.stream().filter(p->p.getEstado()==EstadoPago.EMITIDO).toList();Periodo.Rango anterior=rango.anterior();BigDecimal antes=sumar(pagos.listarPeriodo(anterior.desde(),anterior.hasta()).stream().filter(p->p.getEstado()==EstadoPago.EMITIDO).toList());BigDecimal total=sumar(emitidos);Double variacion=antes.signum()==0?null:total.subtract(antes).multiply(BigDecimal.valueOf(100)).divide(antes,2,RoundingMode.HALF_UP).doubleValue();boolean porMes=rango.dias()>90;return new Resumen(rango.desde(),rango.hasta(),total,antes,variacion,porMes,serie(emitidos,rango,porMes),top(emitidos),emitidos.stream().limit(8).toList(),todos);}
- private List<PuntoSerie> serie(List<Pago> lista,Periodo.Rango r,boolean mes){Map<LocalDate,BigDecimal> montos=new TreeMap<>();Map<LocalDate,Long> cantidad=new TreeMap<>();for(Pago p:lista){LocalDate k=mes?YearMonth.from(p.getFechaPago()).atDay(1):p.getFechaPago();montos.merge(k,p.getMontoTotal(),BigDecimal::add);cantidad.merge(k,1L,Long::sum);}List<PuntoSerie> salida=new ArrayList<>();for(LocalDate d=mes?YearMonth.from(r.desde()).atDay(1):r.desde();!d.isAfter(r.hasta());d=mes?d.plusMonths(1):d.plusDays(1))salida.add(new PuntoSerie(d,montos.getOrDefault(d,cero()),cantidad.getOrDefault(d,0L)));return salida;}
- private List<IngresoInmueble> top(List<Pago> lista){Map<String,BigDecimal> m=new HashMap<>();for(Pago p:lista)m.merge(p.getInmuebleNombre(),p.getMontoTotal(),BigDecimal::add);return m.entrySet().stream().map(e->new IngresoInmueble(e.getKey(),dinero(e.getValue()))).sorted(Comparator.comparing(IngresoInmueble::importe).reversed()).limit(5).toList();} private BigDecimal sumar(List<Pago> p){return dinero(p.stream().map(Pago::getMontoTotal).reduce(BigDecimal.ZERO,BigDecimal::add));}private static BigDecimal cero(){return new BigDecimal("0.00");}private static BigDecimal dinero(BigDecimal v){return v.setScale(2,RoundingMode.HALF_UP);}
+
+import com.ejemplo.alquileres.model.*;
+import com.ejemplo.alquileres.repository.PagoRepository;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.*;
+import java.time.*;
+import java.util.*;
+
+@Service
+@Transactional(readOnly = true)
+public class ReporteCobranzaService {
+    private final PagoRepository pagos;
+
+    public ReporteCobranzaService(PagoRepository p) {
+        pagos = p;
+    }
+
+    public record PuntoSerie(LocalDate fecha, BigDecimal total, long pagos) {}
+
+    public record IngresoInmueble(String nombre, BigDecimal importe) {}
+
+    public record Resumen(
+            LocalDate desde,
+            LocalDate hasta,
+            BigDecimal total,
+            BigDecimal anterior,
+            Double variacion,
+            boolean porMes,
+            List<PuntoSerie> serie,
+            List<IngresoInmueble> top,
+            List<Pago> ultimos,
+            List<Pago> cobros) {}
+
+    public Resumen resumen(Periodo.Rango rango) {
+        List<Pago> todos = pagos.listarPeriodo(rango.desde(), rango.hasta()),
+                emitidos = todos.stream().filter(p -> p.getEstado() == EstadoPago.EMITIDO).toList();
+        Periodo.Rango anterior = rango.anterior();
+        BigDecimal antes =
+                sumar(
+                        pagos.listarPeriodo(anterior.desde(), anterior.hasta()).stream()
+                                .filter(p -> p.getEstado() == EstadoPago.EMITIDO)
+                                .toList());
+        BigDecimal total = sumar(emitidos);
+        Double variacion =
+                antes.signum() == 0
+                        ? null
+                        : total.subtract(antes)
+                                .multiply(BigDecimal.valueOf(100))
+                                .divide(antes, 2, RoundingMode.HALF_UP)
+                                .doubleValue();
+        boolean porMes = rango.dias() > 90;
+        return new Resumen(
+                rango.desde(),
+                rango.hasta(),
+                total,
+                antes,
+                variacion,
+                porMes,
+                serie(emitidos, rango, porMes),
+                top(emitidos),
+                emitidos.stream().limit(8).toList(),
+                todos);
+    }
+
+    private List<PuntoSerie> serie(List<Pago> lista, Periodo.Rango r, boolean mes) {
+        Map<LocalDate, BigDecimal> montos = new TreeMap<>();
+        Map<LocalDate, Long> cantidad = new TreeMap<>();
+        for (Pago p : lista) {
+            LocalDate k = mes ? YearMonth.from(p.getFechaPago()).atDay(1) : p.getFechaPago();
+            montos.merge(k, p.getMontoTotal(), BigDecimal::add);
+            cantidad.merge(k, 1L, Long::sum);
+        }
+        List<PuntoSerie> salida = new ArrayList<>();
+        for (LocalDate d = mes ? YearMonth.from(r.desde()).atDay(1) : r.desde();
+                !d.isAfter(r.hasta());
+                d = mes ? d.plusMonths(1) : d.plusDays(1))
+            salida.add(
+                    new PuntoSerie(
+                            d, montos.getOrDefault(d, cero()), cantidad.getOrDefault(d, 0L)));
+        return salida;
+    }
+
+    private List<IngresoInmueble> top(List<Pago> lista) {
+        Map<String, BigDecimal> m = new HashMap<>();
+        for (Pago p : lista) m.merge(p.getInmuebleNombre(), p.getMontoTotal(), BigDecimal::add);
+        return m.entrySet().stream()
+                .map(e -> new IngresoInmueble(e.getKey(), dinero(e.getValue())))
+                .sorted(Comparator.comparing(IngresoInmueble::importe).reversed())
+                .limit(5)
+                .toList();
+    }
+
+    private BigDecimal sumar(List<Pago> p) {
+        return dinero(p.stream().map(Pago::getMontoTotal).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+
+    private static BigDecimal cero() {
+        return new BigDecimal("0.00");
+    }
+
+    private static BigDecimal dinero(BigDecimal v) {
+        return v.setScale(2, RoundingMode.HALF_UP);
+    }
 }

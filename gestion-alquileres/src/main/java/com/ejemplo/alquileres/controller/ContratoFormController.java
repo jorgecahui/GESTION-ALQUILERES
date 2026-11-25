@@ -17,14 +17,7 @@ import com.ejemplo.alquileres.ui.Notificador;
 import com.ejemplo.alquileres.ui.Refrescable;
 import com.ejemplo.alquileres.ui.Tablas;
 import com.ejemplo.alquileres.ui.Tareas;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -41,13 +34,23 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
+
 import org.springframework.stereotype.Component;
 
-/** Alta y renovación de contratos con vista previa del cronograma. */
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 @Component
 public class ContratoFormController implements Refrescable {
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter MES = DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es", "PE"));
+    private static final DateTimeFormatter MES =
+            DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es", "PE"));
 
     private final ContratoService contratos;
     private final InmuebleService inmuebles;
@@ -80,9 +83,15 @@ public class ContratoFormController implements Refrescable {
     @FXML private Label resumenRenta, resumenGarantia, resumenCuotas, resumenTotal, resumenFin;
     @FXML private Button btnRegistrar;
 
-    public ContratoFormController(ContratoService contratos, InmuebleService inmuebles, PersonaService personas,
-                                  CronogramaGenerador generador, ConfiguracionService configuracion,
-                                  Tareas tareas, Notificador aviso, MainController principal) {
+    public ContratoFormController(
+            ContratoService contratos,
+            InmuebleService inmuebles,
+            PersonaService personas,
+            CronogramaGenerador generador,
+            ConfiguracionService configuracion,
+            Tareas tareas,
+            Notificador aviso,
+            MainController principal) {
         this.contratos = contratos;
         this.inmuebles = inmuebles;
         this.personas = personas;
@@ -93,28 +102,55 @@ public class ContratoFormController implements Refrescable {
         this.principal = principal;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         tipoMora.setItems(FXCollections.observableArrayList(TipoMora.values()));
-        tipoMora.setConverter(new StringConverter<>() {
-            public String toString(TipoMora valor) {
-                return valor == null ? "" : (valor == TipoMora.PORCENTAJE_DIARIO ? "Porcentaje diario" : "Monto diario");
-            }
-            public TipoMora fromString(String texto) { return null; }
-        });
-        inmueble.setConverter(new StringConverter<>() {
-            public String toString(Inmueble valor) {
-                return valor == null ? "" : valor.getCodigo() + " · " + valor.getNombre()
-                        + " · " + Tablas.moneda(valor.getRentaReferencial());
-            }
-            public Inmueble fromString(String texto) { return null; }
-        });
-        StringConverter<Persona> personasTexto = new StringConverter<>() {
-            public String toString(Persona valor) {
-                return valor == null ? "" : valor.getNombreCompleto() + " · "
-                        + valor.getTipoDocumento() + " " + valor.getNumeroDocumento();
-            }
-            public Persona fromString(String texto) { return null; }
-        };
+        tipoMora.setConverter(
+                new StringConverter<>() {
+                    public String toString(TipoMora valor) {
+                        return valor == null
+                                ? ""
+                                : (valor == TipoMora.PORCENTAJE_DIARIO
+                                        ? "Porcentaje diario"
+                                        : "Monto diario");
+                    }
+
+                    public TipoMora fromString(String texto) {
+                        return null;
+                    }
+                });
+        inmueble.setConverter(
+                new StringConverter<>() {
+                    public String toString(Inmueble valor) {
+                        return valor == null
+                                ? ""
+                                : valor.getCodigo()
+                                        + " · "
+                                        + valor.getNombre()
+                                        + " · "
+                                        + Tablas.moneda(valor.getRentaReferencial());
+                    }
+
+                    public Inmueble fromString(String texto) {
+                        return null;
+                    }
+                });
+        StringConverter<Persona> personasTexto =
+                new StringConverter<>() {
+                    public String toString(Persona valor) {
+                        return valor == null
+                                ? ""
+                                : valor.getNombreCompleto()
+                                        + " · "
+                                        + valor.getTipoDocumento()
+                                        + " "
+                                        + valor.getNumeroDocumento();
+                    }
+
+                    public Persona fromString(String texto) {
+                        return null;
+                    }
+                };
         arrendatario.setConverter(personasTexto);
         garante.setConverter(personasTexto);
 
@@ -126,17 +162,27 @@ public class ContratoFormController implements Refrescable {
         Formularios.soloDecimal(garantia, 2);
         Formularios.soloDecimal(valorMora, 4);
 
-        colPeriodo.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getPeriodo() == null ? "" : c.getValue().getPeriodo().format(MES)));
-        colVencimiento.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getFechaVencimiento() == null ? "" : c.getValue().getFechaVencimiento().format(FECHA)));
+        colPeriodo.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getPeriodo() == null
+                                        ? ""
+                                        : c.getValue().getPeriodo().format(MES)));
+        colVencimiento.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getFechaVencimiento() == null
+                                        ? ""
+                                        : c.getValue().getFechaVencimiento().format(FECHA)));
         colMonto.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getMontoCuota()));
-        colMonto.setCellFactory(c -> new TableCell<>() {
-            protected void updateItem(BigDecimal valor, boolean vacio) {
-                super.updateItem(valor, vacio);
-                setText(vacio || valor == null ? null : Tablas.moneda(valor));
-            }
-        });
+        colMonto.setCellFactory(
+                c ->
+                        new TableCell<>() {
+                            protected void updateItem(BigDecimal valor, boolean vacio) {
+                                super.updateItem(valor, vacio);
+                                setText(vacio || valor == null ? null : Tablas.moneda(valor));
+                            }
+                        });
         tablaCronograma.setItems(cronograma);
 
         inicio.valueProperty().addListener((o, a, b) -> actualizarVistaPrevia());
@@ -146,34 +192,48 @@ public class ContratoFormController implements Refrescable {
         incremento.textProperty().addListener((o, a, b) -> actualizarVistaPrevia());
         garantia.textProperty().addListener((o, a, b) -> actualizarResumenGarantia());
         garantiaRecibida.selectedProperty().addListener((o, a, b) -> actualizarResumenGarantia());
-        inmueble.valueProperty().addListener((o, a, b) -> {
-            if (b != null && (renta.getText() == null || renta.getText().isBlank())
-                    && b.getRentaReferencial() != null) {
-                renta.setText(b.getRentaReferencial().toPlainString());
-            }
-            actualizarVistaPrevia();
-        });
+        inmueble.valueProperty()
+                .addListener(
+                        (o, a, b) -> {
+                            if (b != null
+                                    && (renta.getText() == null || renta.getText().isBlank())
+                                    && b.getRentaReferencial() != null) {
+                                renta.setText(b.getRentaReferencial().toPlainString());
+                            }
+                            actualizarVistaPrevia();
+                        });
     }
 
-    public void preseleccionarRenovacion(Long contratoId) { renovacionPendiente = contratoId; }
+    public void preseleccionarRenovacion(Long contratoId) {
+        renovacionPendiente = contratoId;
+    }
 
-    public boolean tieneRenovacionPendiente() { return renovacionPendiente != null; }
+    public boolean tieneRenovacionPendiente() {
+        return renovacionPendiente != null;
+    }
 
-    /** Deja el formulario listo para un contrato nuevo, incluso si antes se abrió una renovación. */
     public void prepararNuevo() {
         if (titulo == null || renovacionPendiente != null) return;
         limpiar();
     }
 
-    @Override public void refrescar() {
+    @Override
+    public void refrescar() {
         Long renovar = renovacionPendiente;
         renovacionPendiente = null;
-        tareas.ejecutar(() -> new Carga(
-                        inmuebles.listar("", EstadoInmueble.DISPONIBLE, null, 0, 300).getContent(),
-                        personas.listar("", null, true, 0, 300).getContent(),
-                        renovar == null ? null : contratos.obtener(renovar),
-                        configuracion.moraTipo(), configuracion.moraValor(), configuracion.moraDiasGracia()),
-                datos -> aplicar(datos, renovar != null), e -> aviso.error(mensaje(e)));
+        tareas.ejecutar(
+                () ->
+                        new Carga(
+                                inmuebles
+                                        .listar("", EstadoInmueble.DISPONIBLE, null, 0, 300)
+                                        .getContent(),
+                                personas.listar("", null, true, 0, 300).getContent(),
+                                renovar == null ? null : contratos.obtener(renovar),
+                                configuracion.moraTipo(),
+                                configuracion.moraValor(),
+                                configuracion.moraDiasGracia()),
+                datos -> aplicar(datos, renovar != null),
+                e -> aviso.error(mensaje(e)));
     }
 
     private void aplicar(Carga datos, boolean renovar) {
@@ -192,7 +252,8 @@ public class ContratoFormController implements Refrescable {
             if (diaPago.getText() == null || diaPago.getText().isBlank()) {
                 diaPago.setText(String.valueOf(Math.min(LocalDate.now().getDayOfMonth(), 28)));
             }
-            if (incremento.getText() == null || incremento.getText().isBlank()) incremento.setText("0");
+            if (incremento.getText() == null || incremento.getText().isBlank())
+                incremento.setText("0");
             if (garantia.getText() == null || garantia.getText().isBlank()) garantia.setText("0");
             if (tipoMora.getValue() == null) tipoMora.setValue(tipoMoraDefecto);
             if (valorMora.getText() == null || valorMora.getText().isBlank()) {
@@ -209,7 +270,11 @@ public class ContratoFormController implements Refrescable {
         modoRenovacion = true;
         contratoAnteriorId = anterior.getId();
         titulo.setText("Renovar contrato");
-        subtitulo.setText("Renovación de " + anterior.getCodigo() + " · " + anterior.getArrendatario().getNombreCompleto());
+        subtitulo.setText(
+                "Renovación de "
+                        + anterior.getCodigo()
+                        + " · "
+                        + anterior.getArrendatario().getNombreCompleto());
         btnRegistrar.setText("Renovar contrato");
         inmueble.setDisable(true);
         arrendatario.setDisable(true);
@@ -226,20 +291,28 @@ public class ContratoFormController implements Refrescable {
         arrendatario.setValue(anterior.getArrendatario());
         garante.setValue(anterior.getGarante());
         inicio.setValue(anterior.getFechaFin().plusDays(1));
-        long duracion = Math.max(1, ChronoUnit.MONTHS.between(anterior.getFechaInicio(), anterior.getFechaFin().plusDays(1)));
+        long duracion =
+                Math.max(
+                        1,
+                        ChronoUnit.MONTHS.between(
+                                anterior.getFechaInicio(), anterior.getFechaFin().plusDays(1)));
         meses.setText(String.valueOf(duracion));
         diaPago.setText(String.valueOf(anterior.getDiaPago()));
         BigDecimal inc = nvl(anterior.getIncrementoAnualPct());
         incremento.setText(inc.toPlainString());
-        BigDecimal rentaPropuesta = nvl(anterior.getRentaMensual())
-                .multiply(BigDecimal.ONE.add(inc.movePointLeft(2))).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal rentaPropuesta =
+                nvl(anterior.getRentaMensual())
+                        .multiply(BigDecimal.ONE.add(inc.movePointLeft(2)))
+                        .setScale(2, RoundingMode.HALF_UP);
         renta.setText(rentaPropuesta.toPlainString());
         garantia.setText(nvl(anterior.getGarantiaMonto()).toPlainString());
         garantiaRecibida.setSelected(anterior.getGarantiaEstado() == GarantiaEstado.RECIBIDA);
-        tipoMora.setValue(anterior.getTipoMora() == null ? tipoMoraDefecto : anterior.getTipoMora());
+        tipoMora.setValue(
+                anterior.getTipoMora() == null ? tipoMoraDefecto : anterior.getTipoMora());
         valorMora.setText(nvl(anterior.getValorMora()).toPlainString());
         diasGracia.setText(String.valueOf(anterior.getDiasGracia()));
-        observaciones.setText(anterior.getObservaciones() == null ? "" : anterior.getObservaciones());
+        observaciones.setText(
+                anterior.getObservaciones() == null ? "" : anterior.getObservaciones());
         actualizarVistaPrevia();
     }
 
@@ -281,21 +354,31 @@ public class ContratoFormController implements Refrescable {
     private void actualizarVistaPrevia() {
         try {
             LocalDate fecha = inicio.getValue();
-            if (fecha == null) { limpiarResumen(); return; }
+            if (fecha == null) {
+                limpiarResumen();
+                return;
+            }
             int cantidad = entero(meses.getText(), "La duración");
             int dia = entero(diaPago.getText(), "El día de pago");
             BigDecimal monto = decimal(renta.getText());
-            if (cantidad < 1 || cantidad > 120 || dia < 1 || dia > 28
-                    || monto == null || monto.signum() <= 0) {
+            if (cantidad < 1
+                    || cantidad > 120
+                    || dia < 1
+                    || dia > 28
+                    || monto == null
+                    || monto.signum() <= 0) {
                 limpiarResumen();
                 return;
             }
             BigDecimal inc = decimal(incremento.getText());
-            List<Cuota> lista = generador.generar(fecha, cantidad, dia, monto,
-                    inc == null ? BigDecimal.ZERO : inc);
+            List<Cuota> lista =
+                    generador.generar(
+                            fecha, cantidad, dia, monto, inc == null ? BigDecimal.ZERO : inc);
             cronograma.setAll(lista);
-            BigDecimal total = lista.stream().map(Cuota::getMontoCuota)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal total =
+                    lista.stream()
+                            .map(Cuota::getMontoCuota)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
             resumenRenta.setText(Tablas.moneda(monto));
             resumenCuotas.setText(cantidad + " cuotas");
             resumenTotal.setText(Tablas.moneda(total));
@@ -311,8 +394,9 @@ public class ContratoFormController implements Refrescable {
         if (monto == null || monto.signum() <= 0) {
             resumenGarantia.setText("Sin garantía");
         } else {
-            resumenGarantia.setText(Tablas.moneda(monto) + (garantiaRecibida.isSelected()
-                    ? " · recibida" : " · pendiente"));
+            resumenGarantia.setText(
+                    Tablas.moneda(monto)
+                            + (garantiaRecibida.isSelected() ? " · recibida" : " · pendiente"));
         }
     }
 
@@ -325,30 +409,39 @@ public class ContratoFormController implements Refrescable {
         resumenFin.setText("—");
     }
 
-    @FXML private void onRegistrar() {
+    @FXML
+    private void onRegistrar() {
         try {
             ContratoService.Solicitud solicitud = leerSolicitud();
             mensaje.setText("");
             btnRegistrar.setDisable(true);
             if (modoRenovacion && contratoAnteriorId != null) {
                 Long anterior = contratoAnteriorId;
-                tareas.ejecutar(() -> contratos.renovar(anterior, solicitud),
+                tareas.ejecutar(
+                        () -> contratos.renovar(anterior, solicitud),
                         creado -> {
                             btnRegistrar.setDisable(false);
                             aviso.info("Contrato renovado: " + creado.getCodigo());
                             limpiar();
                             principal.irA("contratos");
                         },
-                        e -> { btnRegistrar.setDisable(false); aviso.error(mensaje(e)); });
+                        e -> {
+                            btnRegistrar.setDisable(false);
+                            aviso.error(mensaje(e));
+                        });
             } else {
-                tareas.ejecutar(() -> contratos.crear(solicitud),
+                tareas.ejecutar(
+                        () -> contratos.crear(solicitud),
                         creado -> {
                             btnRegistrar.setDisable(false);
                             aviso.info("Contrato registrado: " + creado.getCodigo());
                             limpiar();
                             principal.irA("contratos");
                         },
-                        e -> { btnRegistrar.setDisable(false); aviso.error(mensaje(e)); });
+                        e -> {
+                            btnRegistrar.setDisable(false);
+                            aviso.error(mensaje(e));
+                        });
             }
         } catch (RuntimeException e) {
             mensaje.setText(e.getMessage());
@@ -357,32 +450,46 @@ public class ContratoFormController implements Refrescable {
     }
 
     private ContratoService.Solicitud leerSolicitud() {
-        if (inmueble.getValue() == null) throw new IllegalArgumentException("Selecciona un inmueble disponible.");
-        if (arrendatario.getValue() == null) throw new IllegalArgumentException("Selecciona un arrendatario.");
-        if (inicio.getValue() == null) throw new IllegalArgumentException("Indica la fecha de inicio.");
+        if (inmueble.getValue() == null)
+            throw new IllegalArgumentException("Selecciona un inmueble disponible.");
+        if (arrendatario.getValue() == null)
+            throw new IllegalArgumentException("Selecciona un arrendatario.");
+        if (inicio.getValue() == null)
+            throw new IllegalArgumentException("Indica la fecha de inicio.");
         int cantidad = entero(meses.getText(), "La duración");
         int dia = entero(diaPago.getText(), "El día de pago");
         BigDecimal monto = decimal(renta.getText());
-        if (monto == null || monto.signum() <= 0) throw new IllegalArgumentException("La renta debe ser mayor que cero.");
+        if (monto == null || monto.signum() <= 0)
+            throw new IllegalArgumentException("La renta debe ser mayor que cero.");
         BigDecimal garantiaMonto = decimal(garantia.getText());
         if (garantiaMonto == null) garantiaMonto = BigDecimal.ZERO;
         BigDecimal inc = decimal(incremento.getText());
         BigDecimal mora = decimal(valorMora.getText());
         int gracia = entero(diasGracia.getText(), "Los días de gracia");
         Persona garanteSeleccionado = garante.getValue();
-        if (garanteSeleccionado != null && garanteSeleccionado.getId().equals(arrendatario.getValue().getId())) {
+        if (garanteSeleccionado != null
+                && garanteSeleccionado.getId().equals(arrendatario.getValue().getId())) {
             throw new IllegalArgumentException("El garante debe ser distinto del arrendatario.");
         }
         return new ContratoService.Solicitud(
-                inmueble.getValue().getId(), arrendatario.getValue().getId(),
+                inmueble.getValue().getId(),
+                arrendatario.getValue().getId(),
                 garanteSeleccionado == null ? null : garanteSeleccionado.getId(),
-                inicio.getValue(), cantidad, dia, monto,
-                inc == null ? BigDecimal.ZERO : inc, garantiaMonto, garantiaRecibida.isSelected(),
-                gracia, tipoMora.getValue(), mora == null ? BigDecimal.ZERO : mora,
+                inicio.getValue(),
+                cantidad,
+                dia,
+                monto,
+                inc == null ? BigDecimal.ZERO : inc,
+                garantiaMonto,
+                garantiaRecibida.isSelected(),
+                gracia,
+                tipoMora.getValue(),
+                mora == null ? BigDecimal.ZERO : mora,
                 observaciones.getText());
     }
 
-    @FXML private void onCancelar() {
+    @FXML
+    private void onCancelar() {
         limpiar();
         principal.irA("contratos");
     }
@@ -404,12 +511,21 @@ public class ContratoFormController implements Refrescable {
         }
     }
 
-    private static BigDecimal nvl(BigDecimal valor) { return valor == null ? BigDecimal.ZERO : valor; }
-
-    private static String mensaje(Throwable e) {
-        return e.getCause() != null && e.getCause().getMessage() != null ? e.getCause().getMessage() : e.getMessage();
+    private static BigDecimal nvl(BigDecimal valor) {
+        return valor == null ? BigDecimal.ZERO : valor;
     }
 
-    private record Carga(List<Inmueble> inmuebles, List<Persona> personas, Contrato renovacion,
-                         TipoMora tipoMora, BigDecimal valorMora, int gracia) { }
+    private static String mensaje(Throwable e) {
+        return e.getCause() != null && e.getCause().getMessage() != null
+                ? e.getCause().getMessage()
+                : e.getMessage();
+    }
+
+    private record Carga(
+            List<Inmueble> inmuebles,
+            List<Persona> personas,
+            Contrato renovacion,
+            TipoMora tipoMora,
+            BigDecimal valorMora,
+            int gracia) {}
 }

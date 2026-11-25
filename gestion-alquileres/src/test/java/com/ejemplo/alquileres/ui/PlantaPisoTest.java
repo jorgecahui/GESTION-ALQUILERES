@@ -5,30 +5,32 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ejemplo.alquileres.model.EstadoInmueble;
+
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.Test;
 
 class PlantaPisoTest {
 
-    @Test void areaNulaOInvalidaUsaElAnchoPorDefecto() {
+    @Test
+    void areaNulaOInvalidaUsaElAnchoPorDefecto() {
         assertEquals(PlantaPiso.ANCHO_POR_DEFECTO, PlantaPiso.anchoPara(null), 0.001);
-        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO,
-                PlantaPiso.anchoPara(BigDecimal.ZERO), 0.001);
-        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO,
-                PlantaPiso.anchoPara(new BigDecimal("-10")), 0.001);
+        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO, PlantaPiso.anchoPara(BigDecimal.ZERO), 0.001);
+        assertEquals(
+                PlantaPiso.ANCHO_POR_DEFECTO, PlantaPiso.anchoPara(new BigDecimal("-10")), 0.001);
     }
 
-    @Test void elAnchoRespetaElMinimoYElMaximo() {
-        assertEquals(PlantaPiso.ANCHO_MINIMO,
-                PlantaPiso.anchoPara(BigDecimal.ONE), 0.001);
-        assertEquals(PlantaPiso.ANCHO_MAXIMO,
-                PlantaPiso.anchoPara(new BigDecimal("500")), 0.001);
+    @Test
+    void elAnchoRespetaElMinimoYElMaximo() {
+        assertEquals(PlantaPiso.ANCHO_MINIMO, PlantaPiso.anchoPara(BigDecimal.ONE), 0.001);
+        assertEquals(PlantaPiso.ANCHO_MAXIMO, PlantaPiso.anchoPara(new BigDecimal("500")), 0.001);
     }
 
-    @Test void elAnchoEsProporcionalDentroDelRango() {
+    @Test
+    void elAnchoEsProporcionalDentroDelRango() {
         double cincuenta = PlantaPiso.anchoPara(new BigDecimal("50"));
         double setenta = PlantaPiso.anchoPara(new BigDecimal("70"));
 
@@ -37,7 +39,8 @@ class PlantaPisoTest {
         assertTrue(setenta > cincuenta);
     }
 
-    @Test void cincoUnidadesQuedanEnUnaHileraCentradaConPasilloAlFrente() {
+    @Test
+    void cincoUnidadesQuedanEnUnaHileraCentradaConPasilloAlFrente() {
         PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(2, unidades(5));
 
         assertEquals(1, distribucion.filas());
@@ -47,37 +50,47 @@ class PlantaPisoTest {
             assertEquals(0, recinto.fila());
             assertEquals(-PlantaPiso.ANCHO_PASILLO / 2, recinto.z(), 0.001);
         }
-        assertEquals(distribucion.profundidad() / 2 - PlantaPiso.ANCHO_PASILLO / 2,
-                distribucion.pasilloZ(), 0.001);
+        assertEquals(
+                distribucion.profundidad() / 2 - PlantaPiso.ANCHO_PASILLO / 2,
+                distribucion.pasilloZ(),
+                0.001);
     }
 
-    @Test void ochoUnidadesSeRepartenEnDosHilerasEnfrentadas() {
+    @Test
+    void ochoUnidadesSeRepartenEnDosHilerasEnfrentadas() {
         PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(3, unidades(8));
 
         assertEquals(2, distribucion.filas());
         assertEquals(8, distribucion.recintos().size());
-        long primera = distribucion.recintos().stream()
-                .filter(recinto -> recinto.fila() == 0).count();
-        long segunda = distribucion.recintos().stream()
-                .filter(recinto -> recinto.fila() == 1).count();
+        long primera =
+                distribucion.recintos().stream().filter(recinto -> recinto.fila() == 0).count();
+        long segunda =
+                distribucion.recintos().stream().filter(recinto -> recinto.fila() == 1).count();
         assertEquals(4, primera);
         assertEquals(4, segunda);
         assertEquals(0.0, distribucion.pasilloZ(), 0.001);
 
         for (PlantaPiso.Recinto recinto : distribucion.recintos()) {
-            double zEsperada = recinto.fila() == 0
-                    ? -(PlantaPiso.PROFUNDIDAD_RECINTO / 2 + PlantaPiso.ANCHO_PASILLO / 2)
-                    : PlantaPiso.PROFUNDIDAD_RECINTO / 2 + PlantaPiso.ANCHO_PASILLO / 2;
+            double zEsperada =
+                    recinto.fila() == 0
+                            ? -(PlantaPiso.PROFUNDIDAD_RECINTO / 2 + PlantaPiso.ANCHO_PASILLO / 2)
+                            : PlantaPiso.PROFUNDIDAD_RECINTO / 2 + PlantaPiso.ANCHO_PASILLO / 2;
             assertEquals(zEsperada, recinto.z(), 0.001);
         }
         assertEquals(0.0, centroXFila(distribucion, 0), 0.001);
         assertEquals(0.0, centroXFila(distribucion, 1), 0.001);
     }
 
-    @Test void losRecintosDeUnaHileraNoSeSolapan() {
-        PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(1, unidadesConAreas(
-                new BigDecimal("25"), new BigDecimal("60"), new BigDecimal("90"),
-                new BigDecimal("40")));
+    @Test
+    void losRecintosDeUnaHileraNoSeSolapan() {
+        PlantaPiso.Distribucion distribucion =
+                PlantaPiso.calcular(
+                        1,
+                        unidadesConAreas(
+                                new BigDecimal("25"),
+                                new BigDecimal("60"),
+                                new BigDecimal("90"),
+                                new BigDecimal("40")));
 
         List<PlantaPiso.Recinto> recintos = distribucion.recintos();
         for (int i = 1; i < recintos.size(); i++) {
@@ -89,7 +102,8 @@ class PlantaPisoTest {
         }
     }
 
-    @Test void laDistribucionEsDeterministaAunqueCambieElOrdenDeEntrada() {
+    @Test
+    void laDistribucionEsDeterministaAunqueCambieElOrdenDeEntrada() {
         List<BloqueMaqueta> unidades = unidades(8);
         List<BloqueMaqueta> desordenadas = new ArrayList<>(unidades);
         Collections.reverse(desordenadas);
@@ -97,17 +111,18 @@ class PlantaPisoTest {
         assertEquals(PlantaPiso.calcular(4, unidades), PlantaPiso.calcular(4, desordenadas));
     }
 
-    @Test void unidadSinAreaSeRotulaSinMetrosYUsaElAnchoPorDefecto() {
+    @Test
+    void unidadSinAreaSeRotulaSinMetrosYUsaElAnchoPorDefecto() {
         BloqueMaqueta bloque = bloque(1L, 1, null);
         PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(1, List.of(bloque));
 
-        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO,
-                distribucion.recintos().get(0).ancho(), 0.001);
+        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO, distribucion.recintos().get(0).ancho(), 0.001);
         assertFalse(PlantaPiso.tieneArea(bloque));
         assertTrue(PlantaPiso.tieneArea(bloque(2L, 1, new BigDecimal("45"))));
     }
 
-    @Test void unPisoSinUnidadesNoGeneraRecintos() {
+    @Test
+    void unPisoSinUnidadesNoGeneraRecintos() {
         PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(5, List.of());
 
         assertTrue(distribucion.recintos().isEmpty());
@@ -132,9 +147,22 @@ class PlantaPisoTest {
     }
 
     private BloqueMaqueta bloque(Long id, int orden, BigDecimal area) {
-        return new BloqueMaqueta(id, "INM-" + id, "Unidad " + orden, "Departamento",
-                2, orden, EstadoInmueble.DISPONIBLE, null, null, null, false,
-                area, new BigDecimal("1000.00"), null, null);
+        return new BloqueMaqueta(
+                id,
+                "INM-" + id,
+                "Unidad " + orden,
+                "Departamento",
+                2,
+                orden,
+                EstadoInmueble.DISPONIBLE,
+                null,
+                null,
+                null,
+                false,
+                area,
+                new BigDecimal("1000.00"),
+                null,
+                null);
     }
 
     private double centroX(PlantaPiso.Distribucion distribucion) {
@@ -142,14 +170,18 @@ class PlantaPisoTest {
     }
 
     private double centroXFila(PlantaPiso.Distribucion distribucion, int fila) {
-        double izquierda = distribucion.recintos().stream()
-                .filter(recinto -> recinto.fila() == fila)
-                .mapToDouble(recinto -> recinto.x() - recinto.ancho() / 2)
-                .min().orElse(Double.NaN);
-        double derecha = distribucion.recintos().stream()
-                .filter(recinto -> recinto.fila() == fila)
-                .mapToDouble(recinto -> recinto.x() + recinto.ancho() / 2)
-                .max().orElse(Double.NaN);
+        double izquierda =
+                distribucion.recintos().stream()
+                        .filter(recinto -> recinto.fila() == fila)
+                        .mapToDouble(recinto -> recinto.x() - recinto.ancho() / 2)
+                        .min()
+                        .orElse(Double.NaN);
+        double derecha =
+                distribucion.recintos().stream()
+                        .filter(recinto -> recinto.fila() == fila)
+                        .mapToDouble(recinto -> recinto.x() + recinto.ancho() / 2)
+                        .max()
+                        .orElse(Double.NaN);
         return (izquierda + derecha) / 2;
     }
 }

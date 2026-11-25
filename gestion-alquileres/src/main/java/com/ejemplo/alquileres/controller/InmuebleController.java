@@ -3,9 +3,7 @@ package com.ejemplo.alquileres.controller;
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.service.*;
 import com.ejemplo.alquileres.ui.*;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -16,8 +14,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class InmuebleController implements Refrescable {
@@ -37,8 +40,23 @@ public class InmuebleController implements Refrescable {
     private Long id;
     private boolean actualizandoTipos;
 
-    @FXML private TextField buscar, codigo, nombre, direccion, referencia, distrito, provincia,
-            departamento, piso, nivel, orden, dormitorios, banos, estacionamientos, renta, area;
+    @FXML
+    private TextField buscar,
+            codigo,
+            nombre,
+            direccion,
+            referencia,
+            distrito,
+            provincia,
+            departamento,
+            piso,
+            nivel,
+            orden,
+            dormitorios,
+            banos,
+            estacionamientos,
+            renta,
+            area;
     @FXML private TextArea serviciosIncluidos, descripcion;
     @FXML private CheckBox amoblado;
     @FXML private ComboBox<EstadoInmueble> filtroEstado, estado;
@@ -46,7 +64,8 @@ public class InmuebleController implements Refrescable {
     @FXML private ComboBox<TipoFiltro> filtroTipo;
     @FXML private ComboBox<Propietario> propietario;
     @FXML private TableView<Inmueble> tabla;
-    @FXML private TableColumn<Inmueble, String> colCodigo, colNombre, colTipo, colPropietario, colEstado;
+    @FXML
+    private TableColumn<Inmueble, String> colCodigo, colNombre, colTipo, colPropietario, colEstado;
     @FXML private TableColumn<Inmueble, BigDecimal> colRenta;
     @FXML private VBox drawer, ficha;
     @FXML private Region overlay;
@@ -54,17 +73,30 @@ public class InmuebleController implements Refrescable {
     @FXML private Label titulo, fichaTitulo, fichaDatos, fichaFinanzas;
     @FXML private Label errorCodigo, errorNombre;
     @FXML private TableView<Contrato> fichaContratos;
-    @FXML private TableColumn<Contrato, String> colFichaContratoCodigo, colFichaContratoArrendatario,
-            colFichaContratoVigencia, colFichaContratoEstado;
+    @FXML
+    private TableColumn<Contrato, String> colFichaContratoCodigo,
+            colFichaContratoArrendatario,
+            colFichaContratoVigencia,
+            colFichaContratoEstado;
     @FXML private TableColumn<Contrato, BigDecimal> colFichaContratoRenta;
     @FXML private TableView<Mantenimiento> fichaMantenimientos;
-    @FXML private TableColumn<Mantenimiento, String> colFichaMantCodigo, colFichaMantTitulo,
-            colFichaMantEstado, colFichaMantPrioridad;
+    @FXML
+    private TableColumn<Mantenimiento, String> colFichaMantCodigo,
+            colFichaMantTitulo,
+            colFichaMantEstado,
+            colFichaMantPrioridad;
     @FXML private TableColumn<Mantenimiento, BigDecimal> colFichaMantCosto;
 
-    public InmuebleController(InmuebleService s, TipoInmuebleService ti, PropietarioService pr,
-                              ReporteInmueblesExcelService e, FichaInmuebleController fichaController,
-                              ContratoService contratos, Tareas t, Notificador a, Exportador x) {
+    public InmuebleController(
+            InmuebleService s,
+            TipoInmuebleService ti,
+            PropietarioService pr,
+            ReporteInmueblesExcelService e,
+            FichaInmuebleController fichaController,
+            ContratoService contratos,
+            Tareas t,
+            Notificador a,
+            Exportador x) {
         service = s;
         tipos = ti;
         propietarios = pr;
@@ -76,7 +108,8 @@ public class InmuebleController implements Refrescable {
         exportador = x;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         limitar(referencia, 250);
         limitar(distrito, 100);
         limitar(provincia, 100);
@@ -91,73 +124,127 @@ public class InmuebleController implements Refrescable {
         Formularios.soloDigitos(estacionamientos, 3);
         filtroEstado.setItems(FXCollections.observableArrayList(EstadoInmueble.values()));
         estadosEditables();
-        filtroTipo.setConverter(new StringConverter<>() {
-            public String toString(TipoFiltro valor) {
-                return valor == null ? TODOS_LOS_TIPOS.nombre() : valor.nombre();
-            }
-            public TipoFiltro fromString(String texto) { return null; }
-        });
+        filtroTipo.setConverter(
+                new StringConverter<>() {
+                    public String toString(TipoFiltro valor) {
+                        return valor == null ? TODOS_LOS_TIPOS.nombre() : valor.nombre();
+                    }
+
+                    public TipoFiltro fromString(String texto) {
+                        return null;
+                    }
+                });
         filtroTipo.setItems(FXCollections.observableArrayList(TODOS_LOS_TIPOS));
         filtroTipo.setValue(TODOS_LOS_TIPOS);
-        tipo.setConverter(new StringConverter<>() {
-            public String toString(TipoInmueble valor) {
-                return valor == null ? "" : valor.getNombre() + " · " + valor.getCodigo();
-            }
-            public TipoInmueble fromString(String texto) { return null; }
-        });
-        propietario.setConverter(new StringConverter<>() {
-            public String toString(Propietario valor) {
-                return valor == null ? "" : valor.getNombre() + " · "
-                        + valor.getTipoDocumento() + " " + valor.getNumeroDocumento();
-            }
-            public Propietario fromString(String texto) { return null; }
-        });
+        tipo.setConverter(
+                new StringConverter<>() {
+                    public String toString(TipoInmueble valor) {
+                        return valor == null ? "" : valor.getNombre() + " · " + valor.getCodigo();
+                    }
+
+                    public TipoInmueble fromString(String texto) {
+                        return null;
+                    }
+                });
+        propietario.setConverter(
+                new StringConverter<>() {
+                    public String toString(Propietario valor) {
+                        return valor == null
+                                ? ""
+                                : valor.getNombre()
+                                        + " · "
+                                        + valor.getTipoDocumento()
+                                        + " "
+                                        + valor.getNumeroDocumento();
+                    }
+
+                    public Propietario fromString(String texto) {
+                        return null;
+                    }
+                });
         codigo.textProperty().addListener((o, a, b) -> ocultarError(errorCodigo));
         nombre.textProperty().addListener((o, a, b) -> ocultarError(errorNombre));
-        renta.focusedProperty().addListener((o, a, b) -> {
-            if (b) campoRenta.getStyleClass().add("focused");
-            else campoRenta.getStyleClass().remove("focused");
-        });
+        renta.focusedProperty()
+                .addListener(
+                        (o, a, b) -> {
+                            if (b) campoRenta.getStyleClass().add("focused");
+                            else campoRenta.getStyleClass().remove("focused");
+                        });
         colCodigo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCodigo()));
-        colNombre.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getNombre() + " · " + n(c.getValue().getDireccion())));
-        colTipo.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getTipo() == null ? "Sin tipo" : c.getValue().getTipo().getNombre()));
-        colPropietario.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getPropietario() == null ? "Sin propietario" : c.getValue().getPropietario().getNombre()));
-        colRenta.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getRentaReferencial()));
+        colNombre.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getNombre() + " · " + n(c.getValue().getDireccion())));
+        colTipo.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getTipo() == null
+                                        ? "Sin tipo"
+                                        : c.getValue().getTipo().getNombre()));
+        colPropietario.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getPropietario() == null
+                                        ? "Sin propietario"
+                                        : c.getValue().getPropietario().getNombre()));
+        colRenta.setCellValueFactory(
+                c -> new SimpleObjectProperty<>(c.getValue().getRentaReferencial()));
         colRenta.setCellFactory(x -> moneda());
-        colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
+        colEstado.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
         tabla.setItems(datos);
         buscar.textProperty().addListener((o, a, b) -> refrescarLista());
         filtroEstado.valueProperty().addListener((o, a, b) -> refrescarLista());
-        filtroTipo.valueProperty().addListener((o, a, b) -> {
-            if (!actualizandoTipos) refrescarLista();
-        });
-        tabla.setOnMouseClicked(e -> { if (e.getClickCount() == 2) verFicha(tabla.getSelectionModel().getSelectedItem()); });
+        filtroTipo
+                .valueProperty()
+                .addListener(
+                        (o, a, b) -> {
+                            if (!actualizandoTipos) refrescarLista();
+                        });
+        tabla.setOnMouseClicked(
+                e -> {
+                    if (e.getClickCount() == 2)
+                        verFicha(tabla.getSelectionModel().getSelectedItem());
+                });
 
-        colFichaContratoCodigo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCodigo()));
-        colFichaContratoArrendatario.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getArrendatario().getNombreCompleto()));
-        colFichaContratoVigencia.setCellValueFactory(c -> new SimpleStringProperty(
-                Fechas.dia(c.getValue().getFechaInicio()) + " al " + Fechas.dia(c.getValue().getFechaFin())));
-        colFichaContratoEstado.setCellValueFactory(c -> new SimpleStringProperty(
-                contratos.estadoVisual(c.getValue()).getEtiqueta()));
-        colFichaContratoRenta.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getRentaMensual()));
+        colFichaContratoCodigo.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getCodigo()));
+        colFichaContratoArrendatario.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getArrendatario().getNombreCompleto()));
+        colFichaContratoVigencia.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                Fechas.dia(c.getValue().getFechaInicio())
+                                        + " al "
+                                        + Fechas.dia(c.getValue().getFechaFin())));
+        colFichaContratoEstado.setCellValueFactory(
+                c -> new SimpleStringProperty(contratos.estadoVisual(c.getValue()).getEtiqueta()));
+        colFichaContratoRenta.setCellValueFactory(
+                c -> new SimpleObjectProperty<>(c.getValue().getRentaMensual()));
         colFichaContratoRenta.setCellFactory(x -> moneda());
 
-        colFichaMantCodigo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCodigo()));
-        colFichaMantTitulo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTitulo()));
-        colFichaMantEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
-        colFichaMantPrioridad.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getPrioridad().getEtiqueta()));
-        colFichaMantCosto.setCellValueFactory(c -> new SimpleObjectProperty<>(
-                c.getValue().getCostoReal() == null ? c.getValue().getCostoEstimado() : c.getValue().getCostoReal()));
+        colFichaMantCodigo.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getCodigo()));
+        colFichaMantTitulo.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getTitulo()));
+        colFichaMantEstado.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
+        colFichaMantPrioridad.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getPrioridad().getEtiqueta()));
+        colFichaMantCosto.setCellValueFactory(
+                c ->
+                        new SimpleObjectProperty<>(
+                                c.getValue().getCostoReal() == null
+                                        ? c.getValue().getCostoEstimado()
+                                        : c.getValue().getCostoReal()));
         colFichaMantCosto.setCellFactory(x -> moneda());
         fichaContratos.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-        fichaMantenimientos.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        fichaMantenimientos.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
-    @Override public void refrescar() {
+    @Override
+    public void refrescar() {
         cargarTiposFiltro();
     }
 
@@ -167,35 +254,45 @@ public class InmuebleController implements Refrescable {
         EstadoInmueble filtro = filtroEstado.getValue();
         TipoFiltro elegido = filtroTipo.getValue();
         Long tipoId = elegido == null ? null : elegido.id();
-        tareas.ejecutar(() -> service.listar(texto, filtro, tipoId, 0, 100),
-                this::mostrar, e -> aviso.error(msg(e)));
+        tareas.ejecutar(
+                () -> service.listar(texto, filtro, tipoId, 0, 100),
+                this::mostrar,
+                e -> aviso.error(msg(e)));
     }
 
     private void cargarTiposFiltro() {
         TipoFiltro actual = filtroTipo == null ? null : filtroTipo.getValue();
         Long seleccionado = actual == null ? null : actual.id();
-        tareas.ejecutar(tipos::activos, lista -> {
-            List<TipoFiltro> opciones = new ArrayList<>();
-            opciones.add(TODOS_LOS_TIPOS);
-            for (TipoInmueble tipo : lista) {
-                opciones.add(new TipoFiltro(tipo.getId(), tipo.getNombre()));
-            }
-            TipoFiltro elegido = opciones.stream()
-                    .filter(opcion -> opcion.id() == null
-                            ? seleccionado == null : opcion.id().equals(seleccionado))
-                    .findFirst().orElse(TODOS_LOS_TIPOS);
-            actualizandoTipos = true;
-            try {
-                filtroTipo.setItems(FXCollections.observableArrayList(opciones));
-                filtroTipo.setValue(elegido);
-            } finally {
-                actualizandoTipos = false;
-            }
-            refrescarLista();
-        }, e -> {
-            aviso.error(msg(e));
-            refrescarLista();
-        });
+        tareas.ejecutar(
+                tipos::activos,
+                lista -> {
+                    List<TipoFiltro> opciones = new ArrayList<>();
+                    opciones.add(TODOS_LOS_TIPOS);
+                    for (TipoInmueble tipo : lista) {
+                        opciones.add(new TipoFiltro(tipo.getId(), tipo.getNombre()));
+                    }
+                    TipoFiltro elegido =
+                            opciones.stream()
+                                    .filter(
+                                            opcion ->
+                                                    opcion.id() == null
+                                                            ? seleccionado == null
+                                                            : opcion.id().equals(seleccionado))
+                                    .findFirst()
+                                    .orElse(TODOS_LOS_TIPOS);
+                    actualizandoTipos = true;
+                    try {
+                        filtroTipo.setItems(FXCollections.observableArrayList(opciones));
+                        filtroTipo.setValue(elegido);
+                    } finally {
+                        actualizandoTipos = false;
+                    }
+                    refrescarLista();
+                },
+                e -> {
+                    aviso.error(msg(e));
+                    refrescarLista();
+                });
     }
 
     private void mostrar(Page<Inmueble> p) {
@@ -203,16 +300,26 @@ public class InmuebleController implements Refrescable {
         datos.setAll(visibles);
     }
 
-    @FXML private void onExportar() {
-        java.io.File destino = exportador.elegirDestino(ficha.getScene() == null ? null : ficha.getScene().getWindow(),
-                "reporte-inmuebles-" + java.time.LocalDate.now() + ".xlsx", "Excel", "xlsx");
+    @FXML
+    private void onExportar() {
+        java.io.File destino =
+                exportador.elegirDestino(
+                        ficha.getScene() == null ? null : ficha.getScene().getWindow(),
+                        "reporte-inmuebles-" + java.time.LocalDate.now() + ".xlsx",
+                        "Excel",
+                        "xlsx");
         if (destino == null) return;
-        tareas.ejecutar(() -> excel.generar(visibles),
-                bytes -> { exportador.escribir(destino, bytes); aviso.info("Excel generado."); },
+        tareas.ejecutar(
+                () -> excel.generar(visibles),
+                bytes -> {
+                    exportador.escribir(destino, bytes);
+                    aviso.info("Excel generado.");
+                },
                 e -> aviso.error(msg(e)));
     }
 
-    @FXML private void onNuevo() {
+    @FXML
+    private void onNuevo() {
         id = null;
         limpiarErrores();
         codigo.clear();
@@ -243,7 +350,10 @@ public class InmuebleController implements Refrescable {
         cargarOpciones();
     }
 
-    @FXML private void onEditar() { editar(tabla.getSelectionModel().getSelectedItem()); }
+    @FXML
+    private void onEditar() {
+        editar(tabla.getSelectionModel().getSelectedItem());
+    }
 
     private void editar(Inmueble i) {
         if (i == null) return;
@@ -265,7 +375,8 @@ public class InmuebleController implements Refrescable {
         amoblado.setSelected(i.isAmoblado());
         serviciosIncluidos.setText(texto(i.getServiciosIncluidos()));
         descripcion.setText(texto(i.getDescripcion()));
-        renta.setText(i.getRentaReferencial() == null ? "" : i.getRentaReferencial().toPlainString());
+        renta.setText(
+                i.getRentaReferencial() == null ? "" : i.getRentaReferencial().toPlainString());
         area.setText(i.getAreaM2() == null ? "" : i.getAreaM2().toPlainString());
         if (i.getEstado() == EstadoInmueble.ALQUILADO) {
             estado.setItems(FXCollections.observableArrayList(EstadoInmueble.values()));
@@ -277,46 +388,74 @@ public class InmuebleController implements Refrescable {
         }
         titulo.setText("Editar inmueble");
         cargarOpciones();
-        tareas.ejecutar(() -> new Object[]{i.getTipo(), i.getPropietario()}, x -> {
-            tipo.setValue((TipoInmueble) x[0]);
-            propietario.setValue((Propietario) x[1]);
-            abrir();
-        }, e -> aviso.error(msg(e)));
+        tareas.ejecutar(
+                () -> new Object[] {i.getTipo(), i.getPropietario()},
+                x -> {
+                    tipo.setValue((TipoInmueble) x[0]);
+                    propietario.setValue((Propietario) x[1]);
+                    abrir();
+                },
+                e -> aviso.error(msg(e)));
     }
 
     private void estadosEditables() {
-        estado.setItems(FXCollections.observableArrayList(
-                EstadoInmueble.DISPONIBLE, EstadoInmueble.MANTENIMIENTO, EstadoInmueble.INACTIVO));
+        estado.setItems(
+                FXCollections.observableArrayList(
+                        EstadoInmueble.DISPONIBLE,
+                        EstadoInmueble.MANTENIMIENTO,
+                        EstadoInmueble.INACTIVO));
         estado.setDisable(false);
     }
 
     private void cargarOpciones() {
-        tareas.ejecutar(() -> List.of(tipos.activos(), propietarios.activos()), x -> {
-            tipo.setItems(FXCollections.observableArrayList((List<TipoInmueble>) x.get(0)));
-            propietario.setItems(FXCollections.observableArrayList((List<Propietario>) x.get(1)));
-        }, e -> aviso.error(msg(e)));
+        tareas.ejecutar(
+                () -> List.of(tipos.activos(), propietarios.activos()),
+                x -> {
+                    tipo.setItems(FXCollections.observableArrayList((List<TipoInmueble>) x.get(0)));
+                    propietario.setItems(
+                            FXCollections.observableArrayList((List<Propietario>) x.get(1)));
+                },
+                e -> aviso.error(msg(e)));
     }
 
-    @FXML private void onGuardar() {
+    @FXML
+    private void onGuardar() {
         limpiarErrores();
         if (!validarFormulario()) return;
         try {
-            Inmueble i = Inmueble.builder().id(id).codigo(codigo.getText()).nombre(nombre.getText())
-                    .direccion(direccion.getText()).referencia(referencia.getText())
-                    .distrito(distrito.getText()).provincia(provincia.getText())
-                    .departamento(departamento.getText()).piso(piso.getText())
-                    .nivel(enteroNulo(nivel.getText())).orden(enteroNulo(orden.getText()))
-                    .dormitorios(entero(dormitorios.getText())).banos(entero(banos.getText()))
-                    .estacionamientos(entero(estacionamientos.getText())).amoblado(amoblado.isSelected())
-                    .serviciosIncluidos(serviciosIncluidos.getText()).descripcion(descripcion.getText())
-                    .tipo(tipo.getValue()).propietario(propietario.getValue())
-                    .areaM2(decimal(area.getText())).rentaReferencial(decimal(renta.getText()))
-                    .estado(estado.getValue()).build();
-            tareas.ejecutar(() -> service.guardar(i), x -> {
-                cerrar();
-                aviso.info("Inmueble guardado.");
-                refrescar();
-            }, e -> aviso.error(msg(e)));
+            Inmueble i =
+                    Inmueble.builder()
+                            .id(id)
+                            .codigo(codigo.getText())
+                            .nombre(nombre.getText())
+                            .direccion(direccion.getText())
+                            .referencia(referencia.getText())
+                            .distrito(distrito.getText())
+                            .provincia(provincia.getText())
+                            .departamento(departamento.getText())
+                            .piso(piso.getText())
+                            .nivel(enteroNulo(nivel.getText()))
+                            .orden(enteroNulo(orden.getText()))
+                            .dormitorios(entero(dormitorios.getText()))
+                            .banos(entero(banos.getText()))
+                            .estacionamientos(entero(estacionamientos.getText()))
+                            .amoblado(amoblado.isSelected())
+                            .serviciosIncluidos(serviciosIncluidos.getText())
+                            .descripcion(descripcion.getText())
+                            .tipo(tipo.getValue())
+                            .propietario(propietario.getValue())
+                            .areaM2(decimal(area.getText()))
+                            .rentaReferencial(decimal(renta.getText()))
+                            .estado(estado.getValue())
+                            .build();
+            tareas.ejecutar(
+                    () -> service.guardar(i),
+                    x -> {
+                        cerrar();
+                        aviso.info("Inmueble guardado.");
+                        refrescar();
+                    },
+                    e -> aviso.error(msg(e)));
         } catch (NumberFormatException e) {
             aviso.error("Área y renta deben ser números válidos.");
         }
@@ -354,7 +493,10 @@ public class InmuebleController implements Refrescable {
         ocultarError(errorNombre);
     }
 
-    @FXML private void onFicha() { verFicha(tabla.getSelectionModel().getSelectedItem()); }
+    @FXML
+    private void onFicha() {
+        verFicha(tabla.getSelectionModel().getSelectedItem());
+    }
 
     private void verFicha(Inmueble i) {
         if (i == null) return;
@@ -369,47 +511,82 @@ public class InmuebleController implements Refrescable {
         ficha.setManaged(true);
         overlay.setVisible(true);
         overlay.setManaged(true);
-        tareas.ejecutar(() -> fichaController.cargar(i), this::mostrarFicha, e -> aviso.error(msg(e)));
+        tareas.ejecutar(
+                () -> fichaController.cargar(i), this::mostrarFicha, e -> aviso.error(msg(e)));
     }
 
     private void mostrarFicha(FichaInmuebleController.Ficha f) {
         Inmueble i = f.inmueble();
         fichaTitulo.setText(i.getCodigo() + " · " + i.getNombre());
         fichaDatos.setText(
-                "Código: " + i.getCodigo()
-                        + "\nNombre: " + n(i.getNombre())
-                        + "\nTipo: " + (i.getTipo() == null ? "—" : i.getTipo().getNombre())
-                        + "\nPropietario: " + (i.getPropietario() == null ? "—" : i.getPropietario().getNombre())
-                        + "\nDirección: " + n(i.getDireccion())
-                        + "\nReferencia: " + n(i.getReferencia())
-                        + "\nDistrito: " + n(i.getDistrito())
-                        + "\nProvincia: " + n(i.getProvincia())
-                        + "\nDepartamento: " + n(i.getDepartamento())
-                        + "\nPiso: " + n(i.getPiso())
-                        + "\nNivel: " + numero(i.getNivel())
-                        + "\nOrden: " + numero(i.getOrden())
-                        + "\nÁrea: " + (i.getAreaM2() == null ? "—" : i.getAreaM2().toPlainString() + " m²")
-                        + "\nDormitorios: " + numero(i.getDormitorios())
-                        + "\nBaños: " + numero(i.getBanos())
-                        + "\nEstacionamientos: " + numero(i.getEstacionamientos())
-                        + "\nAmoblado: " + (i.isAmoblado() ? "Sí" : "No")
-                        + "\nServicios incluidos: " + n(i.getServiciosIncluidos())
-                        + "\nDescripción: " + n(i.getDescripcion())
-                        + "\nRenta referencial: " + Tablas.moneda(i.getRentaReferencial())
-                        + "\nEstado: " + i.getEstado().getEtiqueta()
-                        + "\nFecha de registro: " + n(Fechas.dia(i.getFechaRegistro())));
+                "Código: "
+                        + i.getCodigo()
+                        + "\nNombre: "
+                        + n(i.getNombre())
+                        + "\nTipo: "
+                        + (i.getTipo() == null ? "—" : i.getTipo().getNombre())
+                        + "\nPropietario: "
+                        + (i.getPropietario() == null ? "—" : i.getPropietario().getNombre())
+                        + "\nDirección: "
+                        + n(i.getDireccion())
+                        + "\nReferencia: "
+                        + n(i.getReferencia())
+                        + "\nDistrito: "
+                        + n(i.getDistrito())
+                        + "\nProvincia: "
+                        + n(i.getProvincia())
+                        + "\nDepartamento: "
+                        + n(i.getDepartamento())
+                        + "\nPiso: "
+                        + n(i.getPiso())
+                        + "\nNivel: "
+                        + numero(i.getNivel())
+                        + "\nOrden: "
+                        + numero(i.getOrden())
+                        + "\nÁrea: "
+                        + (i.getAreaM2() == null ? "—" : i.getAreaM2().toPlainString() + " m²")
+                        + "\nDormitorios: "
+                        + numero(i.getDormitorios())
+                        + "\nBaños: "
+                        + numero(i.getBanos())
+                        + "\nEstacionamientos: "
+                        + numero(i.getEstacionamientos())
+                        + "\nAmoblado: "
+                        + (i.isAmoblado() ? "Sí" : "No")
+                        + "\nServicios incluidos: "
+                        + n(i.getServiciosIncluidos())
+                        + "\nDescripción: "
+                        + n(i.getDescripcion())
+                        + "\nRenta referencial: "
+                        + Tablas.moneda(i.getRentaReferencial())
+                        + "\nEstado: "
+                        + i.getEstado().getEtiqueta()
+                        + "\nFecha de registro: "
+                        + n(Fechas.dia(i.getFechaRegistro())));
         fichaContratos.setItems(FXCollections.observableArrayList(f.contratos()));
         fichaMantenimientos.setItems(FXCollections.observableArrayList(f.mantenimientos()));
         RentabilidadService.Resumen finanzas = f.finanzas();
-        fichaFinanzas.setText("Año actual\n\nIngresos: " + Tablas.moneda(finanzas.ingresos())
-                + "\nGastos: " + Tablas.moneda(finanzas.gastos())
-                + "\nNeto: " + Tablas.moneda(finanzas.neto())
-                + "\nMargen: " + finanzas.margen().toPlainString() + " %");
+        fichaFinanzas.setText(
+                "Año actual\n\nIngresos: "
+                        + Tablas.moneda(finanzas.ingresos())
+                        + "\nGastos: "
+                        + Tablas.moneda(finanzas.gastos())
+                        + "\nNeto: "
+                        + Tablas.moneda(finanzas.neto())
+                        + "\nMargen: "
+                        + finanzas.margen().toPlainString()
+                        + " %");
     }
 
-    @FXML private void onCerrar() { cerrar(); }
+    @FXML
+    private void onCerrar() {
+        cerrar();
+    }
 
-    @FXML private void onCerrarFicha() { cerrar(); }
+    @FXML
+    private void onCerrarFicha() {
+        cerrar();
+    }
 
     private void abrir() {
         ficha.setVisible(false);
@@ -440,13 +617,13 @@ public class InmuebleController implements Refrescable {
     }
 
     private void limitar(TextInputControl campo, int maximo) {
-        campo.setTextFormatter(new TextFormatter<>(c ->
-                c.getControlNewText().length() <= maximo ? c : null));
+        campo.setTextFormatter(
+                new TextFormatter<>(c -> c.getControlNewText().length() <= maximo ? c : null));
     }
 
     private void limitarNivel(TextField campo) {
-        campo.setTextFormatter(new TextFormatter<>(c ->
-                c.getControlNewText().matches("-?\\d{0,3}") ? c : null));
+        campo.setTextFormatter(
+                new TextFormatter<>(c -> c.getControlNewText().matches("-?\\d{0,3}") ? c : null));
     }
 
     private BigDecimal decimal(String v) {
@@ -461,16 +638,27 @@ public class InmuebleController implements Refrescable {
         return v == null || v.isBlank() || "-".equals(v.trim()) ? null : Integer.parseInt(v.trim());
     }
 
-    private String texto(String v) { return v == null ? "" : v; }
-
-    private String cantidad(Integer v) { return v == null ? "" : String.valueOf(v); }
-
-    private String numero(Integer v) { return v == null ? "—" : String.valueOf(v); }
-
-    private String n(String v) { return v == null || v.isBlank() ? "—" : v; }
-    private String msg(Throwable e) {
-        return e.getCause() != null && e.getCause().getMessage() != null ? e.getCause().getMessage() : e.getMessage();
+    private String texto(String v) {
+        return v == null ? "" : v;
     }
 
-    private record TipoFiltro(Long id, String nombre) { }
+    private String cantidad(Integer v) {
+        return v == null ? "" : String.valueOf(v);
+    }
+
+    private String numero(Integer v) {
+        return v == null ? "—" : String.valueOf(v);
+    }
+
+    private String n(String v) {
+        return v == null || v.isBlank() ? "—" : v;
+    }
+
+    private String msg(Throwable e) {
+        return e.getCause() != null && e.getCause().getMessage() != null
+                ? e.getCause().getMessage()
+                : e.getMessage();
+    }
+
+    private record TipoFiltro(Long id, String nombre) {}
 }

@@ -3,10 +3,7 @@ package com.ejemplo.alquileres.controller;
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.service.*;
 import com.ejemplo.alquileres.ui.*;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.List;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -17,8 +14,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
+
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class MantenimientoController implements Refrescable {
@@ -48,13 +51,27 @@ public class MantenimientoController implements Refrescable {
     @FXML private ToggleButton prioridadBaja, prioridadMedia, prioridadAlta, prioridadUrgente;
     @FXML private Label errorInmueble, errorTitulo, errorCategoria;
     @FXML private TableView<Mantenimiento> tabla;
-    @FXML private TableColumn<Mantenimiento, String> colCodigo, colInmueble, colTitulo, colCategoria,
-            colPrioridad, colEstado, colResponsable, colFecha;
+    @FXML
+    private TableColumn<Mantenimiento, String> colCodigo,
+            colInmueble,
+            colTitulo,
+            colCategoria,
+            colPrioridad,
+            colEstado,
+            colResponsable,
+            colFecha;
     @FXML private TableColumn<Mantenimiento, BigDecimal> colCosto;
     @FXML private Label abiertos, urgentes, enProceso, gastoMes;
 
-    public MantenimientoController(MantenimientoService s, InmuebleService i, ReporteMantenimientoExcelService e,
-                                   RentabilidadService r, Clock c, Tareas t, Notificador a, Exportador x) {
+    public MantenimientoController(
+            MantenimientoService s,
+            InmuebleService i,
+            ReporteMantenimientoExcelService e,
+            RentabilidadService r,
+            Clock c,
+            Tareas t,
+            Notificador a,
+            Exportador x) {
         service = s;
         inmuebles = i;
         excel = e;
@@ -65,40 +82,66 @@ public class MantenimientoController implements Refrescable {
         exportador = x;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         filtroEstado.setItems(FXCollections.observableArrayList(EstadoMantenimiento.values()));
-        filtroPrioridad.setItems(FXCollections.observableArrayList(PrioridadMantenimiento.values()));
-        filtroCategoria.setItems(FXCollections.observableArrayList(CategoriaMantenimiento.values()));
+        filtroPrioridad.setItems(
+                FXCollections.observableArrayList(PrioridadMantenimiento.values()));
+        filtroCategoria.setItems(
+                FXCollections.observableArrayList(CategoriaMantenimiento.values()));
         categoria.setItems(FXCollections.observableArrayList(CategoriaMantenimiento.values()));
         responsable.setItems(FXCollections.observableArrayList(ResponsablePago.values()));
-        inmueble.setConverter(new javafx.util.StringConverter<>() {
-            public String toString(Inmueble v) { return v == null ? "" : v.getCodigo() + " · " + v.getNombre(); }
-            public Inmueble fromString(String t) { return null; }
-        });
+        inmueble.setConverter(
+                new javafx.util.StringConverter<>() {
+                    public String toString(Inmueble v) {
+                        return v == null ? "" : v.getCodigo() + " · " + v.getNombre();
+                    }
+
+                    public Inmueble fromString(String t) {
+                        return null;
+                    }
+                });
 
         prioridadMedia.setSelected(true);
-        grupoPrioridad.selectedToggleProperty().addListener((o, anterior, actual) -> {
-            if (actual == null) grupoPrioridad.selectToggle(anterior == null ? prioridadMedia : anterior);
-        });
+        grupoPrioridad
+                .selectedToggleProperty()
+                .addListener(
+                        (o, anterior, actual) -> {
+                            if (actual == null)
+                                grupoPrioridad.selectToggle(
+                                        anterior == null ? prioridadMedia : anterior);
+                        });
 
         inmueble.valueProperty().addListener((o, a, b) -> ocultarError(errorInmueble));
         titulo.textProperty().addListener((o, a, b) -> ocultarError(errorTitulo));
         categoria.valueProperty().addListener((o, a, b) -> ocultarError(errorCategoria));
-        costo.focusedProperty().addListener((o, a, b) -> {
-            if (b) campoCosto.getStyleClass().add("focused");
-            else campoCosto.getStyleClass().remove("focused");
-        });
+        costo.focusedProperty()
+                .addListener(
+                        (o, a, b) -> {
+                            if (b) campoCosto.getStyleClass().add("focused");
+                            else campoCosto.getStyleClass().remove("focused");
+                        });
 
         colCodigo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCodigo()));
-        colInmueble.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getInmueble().getNombre()));
+        colInmueble.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getInmueble().getNombre()));
         colTitulo.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTitulo()));
-        colCategoria.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCategoria().getEtiqueta()));
-        colPrioridad.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getPrioridad().getEtiqueta()));
-        colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
-        colResponsable.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getResponsablePago().getEtiqueta()));
-        colFecha.setCellValueFactory(c -> new SimpleStringProperty(Fechas.dia(c.getValue().getFechaReporte())));
-        colCosto.setCellValueFactory(c -> new SimpleObjectProperty<>(
-                c.getValue().getCostoReal() == null ? c.getValue().getCostoEstimado() : c.getValue().getCostoReal()));
+        colCategoria.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getCategoria().getEtiqueta()));
+        colPrioridad.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getPrioridad().getEtiqueta()));
+        colEstado.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getEstado().getEtiqueta()));
+        colResponsable.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().getResponsablePago().getEtiqueta()));
+        colFecha.setCellValueFactory(
+                c -> new SimpleStringProperty(Fechas.dia(c.getValue().getFechaReporte())));
+        colCosto.setCellValueFactory(
+                c ->
+                        new SimpleObjectProperty<>(
+                                c.getValue().getCostoReal() == null
+                                        ? c.getValue().getCostoEstimado()
+                                        : c.getValue().getCostoReal()));
         colCosto.setCellFactory(x -> moneda());
         tabla.setItems(datos);
         buscar.textProperty().addListener((o, a, b) -> refrescar());
@@ -107,14 +150,25 @@ public class MantenimientoController implements Refrescable {
         filtroCategoria.valueProperty().addListener((o, a, b) -> refrescar());
     }
 
-    @Override public void refrescar() {
+    @Override
+    public void refrescar() {
         String texto = buscar.getText();
         EstadoMantenimiento estadoFiltro = filtroEstado.getValue();
         PrioridadMantenimiento prioridadFiltro = filtroPrioridad.getValue();
         CategoriaMantenimiento categoriaFiltro = filtroCategoria.getValue();
-        tareas.ejecutar(() -> new Object[]{
-                        service.listar(texto, estadoFiltro, prioridadFiltro, null, categoriaFiltro, 0, 100),
-                        service.resumen()},
+        tareas.ejecutar(
+                () ->
+                        new Object[] {
+                            service.listar(
+                                    texto,
+                                    estadoFiltro,
+                                    prioridadFiltro,
+                                    null,
+                                    categoriaFiltro,
+                                    0,
+                                    100),
+                            service.resumen()
+                        },
                 x -> {
                     Page<Mantenimiento> p = (Page<Mantenimiento>) x[0];
                     visibles = p.getContent();
@@ -124,10 +178,12 @@ public class MantenimientoController implements Refrescable {
                     urgentes.setText(String.valueOf(r.urgentes()));
                     enProceso.setText(String.valueOf(r.enProceso()));
                     gastoMes.setText(Tablas.moneda(r.gastoMes()));
-                }, e -> aviso.error(msg(e)));
+                },
+                e -> aviso.error(msg(e)));
     }
 
-    @FXML private void onNuevo() {
+    @FXML
+    private void onNuevo() {
         limpiarErrores();
         titulo.clear();
         descripcion.clear();
@@ -140,25 +196,40 @@ public class MantenimientoController implements Refrescable {
         categoria.setValue(CategoriaMantenimiento.OTROS);
         responsable.setValue(ResponsablePago.PROPIETARIO);
         abrir();
-        tareas.ejecutar(() -> inmuebles.listar("", null, null, 0, 200),
+        tareas.ejecutar(
+                () -> inmuebles.listar("", null, null, 0, 200),
                 p -> inmueble.setItems(FXCollections.observableArrayList(p.getContent())),
                 e -> aviso.error(msg(e)));
     }
 
-    @FXML private void onGuardar() {
+    @FXML
+    private void onGuardar() {
         limpiarErrores();
         if (!validarFormulario()) return;
         try {
-            MantenimientoService.Solicitud s = new MantenimientoService.Solicitud(
-                    inmueble.getValue() == null ? null : inmueble.getValue().getId(), null,
-                    fechaReporte.getValue(), titulo.getText(), descripcion.getText(),
-                    categoria.getValue(), prioridadSeleccionada(), responsable.getValue(),
-                    null, null, decimal(costo.getText()), fechaProgramada.getValue(), observaciones.getText());
-            tareas.ejecutar(() -> service.registrar(s), x -> {
-                cerrar();
-                aviso.info("Mantenimiento registrado.");
-                refrescar();
-            }, e -> aviso.error(msg(e)));
+            MantenimientoService.Solicitud s =
+                    new MantenimientoService.Solicitud(
+                            inmueble.getValue() == null ? null : inmueble.getValue().getId(),
+                            null,
+                            fechaReporte.getValue(),
+                            titulo.getText(),
+                            descripcion.getText(),
+                            categoria.getValue(),
+                            prioridadSeleccionada(),
+                            responsable.getValue(),
+                            null,
+                            null,
+                            decimal(costo.getText()),
+                            fechaProgramada.getValue(),
+                            observaciones.getText());
+            tareas.ejecutar(
+                    () -> service.registrar(s),
+                    x -> {
+                        cerrar();
+                        aviso.info("Mantenimiento registrado.");
+                        refrescar();
+                    },
+                    e -> aviso.error(msg(e)));
         } catch (NumberFormatException e) {
             aviso.error("El costo debe ser un número válido.");
         }
@@ -218,90 +289,143 @@ public class MantenimientoController implements Refrescable {
         }
     }
 
-    @FXML private void onIniciar() {
+    @FXML
+    private void onIniciar() {
         Mantenimiento m = seleccion();
         if (m == null) return;
         CheckBox c = new CheckBox("Poner el inmueble en mantenimiento");
-        new Alert(Alert.AlertType.CONFIRMATION, "¿Iniciar " + m.getCodigo() + "?", ButtonType.OK, ButtonType.CANCEL) {
-            { getDialogPane().setContent(c); }
-        }.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
-            boolean poner = c.isSelected();
-            tareas.ejecutar(() -> service.iniciar(m.getId(), poner), x -> {
-                aviso.info("Mantenimiento iniciado.");
-                refrescar();
-            }, e -> aviso.error(msg(e)));
-        });
+        new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "¿Iniciar " + m.getCodigo() + "?",
+                ButtonType.OK,
+                ButtonType.CANCEL) {
+            {
+                getDialogPane().setContent(c);
+            }
+        }.showAndWait()
+                .filter(b -> b == ButtonType.OK)
+                .ifPresent(
+                        b -> {
+                            boolean poner = c.isSelected();
+                            tareas.ejecutar(
+                                    () -> service.iniciar(m.getId(), poner),
+                                    x -> {
+                                        aviso.info("Mantenimiento iniciado.");
+                                        refrescar();
+                                    },
+                                    e -> aviso.error(msg(e)));
+                        });
     }
 
-    @FXML private void onResolver() {
+    @FXML
+    private void onResolver() {
         Mantenimiento m = seleccion();
         if (m == null) return;
         DatePicker f = new DatePicker(LocalDate.now(clock));
         TextField v = new TextField();
         v.setPromptText("Costo real");
-        VBox box = new VBox(8, new Label("Fecha de resolución"), f, new Label("Costo real (S/)"), v);
+        VBox box =
+                new VBox(8, new Label("Fecha de resolución"), f, new Label("Costo real (S/)"), v);
         Alert d = new Alert(Alert.AlertType.CONFIRMATION);
         d.setHeaderText("Resolver " + m.getCodigo());
         d.getDialogPane().setContent(box);
-        d.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
-            try {
-                LocalDate fechaResolucion = f.getValue();
-                BigDecimal costoReal = decimal(v.getText());
-                tareas.ejecutar(() -> service.resolver(m.getId(), fechaResolucion, costoReal), x -> {
-                    aviso.info("Mantenimiento resuelto.");
-                    refrescar();
-                }, e -> aviso.error(msg(e)));
-            } catch (NumberFormatException e) {
-                aviso.error("El costo debe ser válido.");
-            }
-        });
+        d.showAndWait()
+                .filter(b -> b == ButtonType.OK)
+                .ifPresent(
+                        b -> {
+                            try {
+                                LocalDate fechaResolucion = f.getValue();
+                                BigDecimal costoReal = decimal(v.getText());
+                                tareas.ejecutar(
+                                        () ->
+                                                service.resolver(
+                                                        m.getId(), fechaResolucion, costoReal),
+                                        x -> {
+                                            aviso.info("Mantenimiento resuelto.");
+                                            refrescar();
+                                        },
+                                        e -> aviso.error(msg(e)));
+                            } catch (NumberFormatException e) {
+                                aviso.error("El costo debe ser válido.");
+                            }
+                        });
     }
 
-    @FXML private void onCancelar() {
+    @FXML
+    private void onCancelar() {
         Mantenimiento m = seleccion();
         if (m == null) return;
-        if (!DialogoConfirmacion.mostrar(ventana(), "Cancelar mantenimiento",
-                "Se cancelará el mantenimiento «" + m.getCodigo() + "». "
+        if (!DialogoConfirmacion.mostrar(
+                ventana(),
+                "Cancelar mantenimiento",
+                "Se cancelará el mantenimiento «"
+                        + m.getCodigo()
+                        + "». "
                         + "Se anulará la cuota de cargo si no tiene pagos y el inmueble "
                         + "volverá a su estado anterior.",
                 "Cancelar mantenimiento")) {
             return;
         }
-        tareas.ejecutar(() -> service.cancelar(m.getId()), x -> {
-            aviso.info("Mantenimiento cancelado.");
-            refrescar();
-        }, e -> aviso.error(msg(e)));
+        tareas.ejecutar(
+                () -> service.cancelar(m.getId()),
+                x -> {
+                    aviso.info("Mantenimiento cancelado.");
+                    refrescar();
+                },
+                e -> aviso.error(msg(e)));
     }
 
-    @FXML private void onCargo() {
+    @FXML
+    private void onCargo() {
         Mantenimiento m = seleccion();
         if (m == null) return;
         DatePicker f = new DatePicker(LocalDate.now(clock));
         Alert d = new Alert(Alert.AlertType.CONFIRMATION);
         d.setHeaderText("Vencimiento del cargo");
         d.getDialogPane().setContent(f);
-        d.showAndWait().filter(b -> b == ButtonType.OK).ifPresent(b -> {
-            LocalDate vencimiento = f.getValue();
-            tareas.ejecutar(() -> service.generarCargo(m.getId(), vencimiento), x -> {
-                aviso.info("Cargo generado en Cuentas por cobrar.");
-                refrescar();
-            }, e -> aviso.error(msg(e)));
-        });
+        d.showAndWait()
+                .filter(b -> b == ButtonType.OK)
+                .ifPresent(
+                        b -> {
+                            LocalDate vencimiento = f.getValue();
+                            tareas.ejecutar(
+                                    () -> service.generarCargo(m.getId(), vencimiento),
+                                    x -> {
+                                        aviso.info("Cargo generado en Cuentas por cobrar.");
+                                        refrescar();
+                                    },
+                                    e -> aviso.error(msg(e)));
+                        });
     }
 
-    @FXML private void onExportar() {
-        java.io.File destino = exportador.elegirDestino(
-                tabla.getScene() == null ? null : tabla.getScene().getWindow(),
-                "reporte-mantenimiento-" + java.time.LocalDate.now() + ".xlsx", "Excel", "xlsx");
+    @FXML
+    private void onExportar() {
+        java.io.File destino =
+                exportador.elegirDestino(
+                        tabla.getScene() == null ? null : tabla.getScene().getWindow(),
+                        "reporte-mantenimiento-" + java.time.LocalDate.now() + ".xlsx",
+                        "Excel",
+                        "xlsx");
         if (destino == null) return;
         Periodo.Rango r = Periodo.ESTE_ANIO.resolver(clock, null, null);
-        tareas.ejecutar(() -> excel.generar(visibles, rentabilidad.porInmueble(r.desde(), r.hasta()),
-                        r.desde(), r.hasta()),
-                bytes -> { exportador.escribir(destino, bytes); aviso.info("Excel generado."); },
+        tareas.ejecutar(
+                () ->
+                        excel.generar(
+                                visibles,
+                                rentabilidad.porInmueble(r.desde(), r.hasta()),
+                                r.desde(),
+                                r.hasta()),
+                bytes -> {
+                    exportador.escribir(destino, bytes);
+                    aviso.info("Excel generado.");
+                },
                 e -> aviso.error(msg(e)));
     }
 
-    @FXML private void onCerrar() { cerrar(); }
+    @FXML
+    private void onCerrar() {
+        cerrar();
+    }
 
     private void abrir() {
         drawer.setVisible(true);
@@ -342,6 +466,8 @@ public class MantenimientoController implements Refrescable {
     }
 
     private String msg(Throwable e) {
-        return e.getCause() != null && e.getCause().getMessage() != null ? e.getCause().getMessage() : e.getMessage();
+        return e.getCause() != null && e.getCause().getMessage() != null
+                ? e.getCause().getMessage()
+                : e.getMessage();
     }
 }

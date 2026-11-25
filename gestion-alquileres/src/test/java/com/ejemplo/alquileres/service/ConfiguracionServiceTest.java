@@ -22,18 +22,22 @@ import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.CuotaRepository;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
 import com.ejemplo.alquileres.repository.PersonaRepository;
+
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Optional;
-import org.junit.jupiter.api.Test;
 
 class ConfiguracionServiceTest {
-    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-03-01T12:00:00Z"), ZoneOffset.UTC);
+    private static final Clock CLOCK =
+            Clock.fixed(Instant.parse("2026-03-01T12:00:00Z"), ZoneOffset.UTC);
 
-    @Test void construyeValoresPorDefectoDesdeLasPropiedades() {
+    @Test
+    void construyeValoresPorDefectoDesdeLasPropiedades() {
         ConfiguracionService servicio = servicio(propiedades());
 
         Configuracion c = servicio.actual();
@@ -49,9 +53,12 @@ class ConfiguracionServiceTest {
         assertNotNull(c.getPlantillaPreventivo());
     }
 
-    @Test void guardaEInvalidaLaCacheSinVolverALaBase() {
+    @Test
+    void guardaEInvalidaLaCacheSinVolverALaBase() {
         ConfiguracionRepository repo = repositorio();
-        ConfiguracionService servicio = new ConfiguracionService(repo, propiedades(), DatosFase6.permisosAdmin(), DatosFase6.auditoria());
+        ConfiguracionService servicio =
+                new ConfiguracionService(
+                        repo, propiedades(), DatosFase6.permisosAdmin(), DatosFase6.auditoria());
         Configuracion cambios = servicio.actual();
         cambios.setArrendadorRazonSocial("NUEVA INMOBILIARIA S.A.C.");
         cambios.setReciboSerie("r002");
@@ -66,16 +73,20 @@ class ConfiguracionServiceTest {
         verify(repo, times(1)).findById(Configuracion.FILA_UNICA);
     }
 
-    @Test void rechazaSerieInvalidaYNoGuarda() {
+    @Test
+    void rechazaSerieInvalidaYNoGuarda() {
         ConfiguracionRepository repo = repositorio();
-        ConfiguracionService servicio = new ConfiguracionService(repo, propiedades(), DatosFase6.permisosAdmin(), DatosFase6.auditoria());
+        ConfiguracionService servicio =
+                new ConfiguracionService(
+                        repo, propiedades(), DatosFase6.permisosAdmin(), DatosFase6.auditoria());
         Configuracion cambios = servicio.actual();
         cambios.setReciboSerie("R 001!");
 
         assertThrows(NegocioException.class, () -> servicio.guardar(cambios));
     }
 
-    @Test void aplicaLaMoraPorDefectoAUnContratoNuevo() {
+    @Test
+    void aplicaLaMoraPorDefectoAUnContratoNuevo() {
         AppProperties propiedades = propiedades();
         propiedades.getMora().setTipo("MONTO_DIARIO");
         propiedades.getMora().setValor(new BigDecimal("2.50"));
@@ -88,19 +99,57 @@ class ConfiguracionServiceTest {
         SecuenciaService secuencias = mock(SecuenciaService.class);
         when(contratos.existeTraslape(any(), any(), any(), any())).thenReturn(false);
         when(contratos.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(inmuebles.findById(1L)).thenReturn(Optional.of(Inmueble.builder().id(1L).codigo("INM-0001")
-                .nombre("Departamento").estado(EstadoInmueble.DISPONIBLE).build()));
-        when(personas.findById(2L)).thenReturn(Optional.of(Persona.builder().id(2L).nombres("Ana")
-                .tipoDocumento(TipoDocumento.DNI).numeroDocumento("12345678").activo(true).build()));
+        when(inmuebles.findById(1L))
+                .thenReturn(
+                        Optional.of(
+                                Inmueble.builder()
+                                        .id(1L)
+                                        .codigo("INM-0001")
+                                        .nombre("Departamento")
+                                        .estado(EstadoInmueble.DISPONIBLE)
+                                        .build()));
+        when(personas.findById(2L))
+                .thenReturn(
+                        Optional.of(
+                                Persona.builder()
+                                        .id(2L)
+                                        .nombres("Ana")
+                                        .tipoDocumento(TipoDocumento.DNI)
+                                        .numeroDocumento("12345678")
+                                        .activo(true)
+                                        .build()));
         when(secuencias.siguiente("CONTRATO")).thenReturn(1L);
         when(secuencias.formatear("CTR-", 1L, 6)).thenReturn("CTR-000001");
-        ContratoService contratosService = new ContratoService(contratos, mock(CuotaRepository.class),
-                inmuebles, personas, secuencias, new CronogramaGenerador(), configuracion,
-                DatosFase6.permisosAdmin(), DatosFase6.auditoria(), CLOCK);
+        ContratoService contratosService =
+                new ContratoService(
+                        contratos,
+                        mock(CuotaRepository.class),
+                        inmuebles,
+                        personas,
+                        secuencias,
+                        new CronogramaGenerador(),
+                        configuracion,
+                        DatosFase6.permisosAdmin(),
+                        DatosFase6.auditoria(),
+                        CLOCK);
 
-        var contrato = contratosService.crear(new ContratoService.Solicitud(1L, 2L, null,
-                LocalDate.of(2026, 3, 1), 6, 5, new BigDecimal("1200.00"), null, BigDecimal.ZERO,
-                false, null, null, null, null));
+        var contrato =
+                contratosService.crear(
+                        new ContratoService.Solicitud(
+                                1L,
+                                2L,
+                                null,
+                                LocalDate.of(2026, 3, 1),
+                                6,
+                                5,
+                                new BigDecimal("1200.00"),
+                                null,
+                                BigDecimal.ZERO,
+                                false,
+                                null,
+                                null,
+                                null,
+                                null));
 
         assertEquals(TipoMora.MONTO_DIARIO, contrato.getTipoMora());
         assertEquals(new BigDecimal("2.5000"), contrato.getValorMora());
@@ -108,7 +157,8 @@ class ConfiguracionServiceTest {
     }
 
     private ConfiguracionService servicio(AppProperties propiedades) {
-        return new ConfiguracionService(repositorio(), propiedades, DatosFase6.permisosAdmin(), DatosFase6.auditoria());
+        return new ConfiguracionService(
+                repositorio(), propiedades, DatosFase6.permisosAdmin(), DatosFase6.auditoria());
     }
 
     private ConfiguracionRepository repositorio() {

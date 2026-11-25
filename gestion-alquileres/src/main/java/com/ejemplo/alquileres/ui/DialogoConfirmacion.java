@@ -9,15 +9,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
-/** Confirmación reutilizable con el estilo visual de la aplicación. */
 public final class DialogoConfirmacion {
-    private DialogoConfirmacion() { }
+    private DialogoConfirmacion() {}
 
-    /**
-     * Muestra una confirmación modal. Devuelve {@code true} solo si se pulsa el botón
-     * de acción; Cancelar es el botón predeterminado.
-     */
-    public static boolean mostrar(Window propietario, String titulo, String mensaje, String accion) {
+    public static boolean mostrar(
+            Window propietario, String titulo, String mensaje, String accion) {
         Dialog<ButtonType> dialogo = new Dialog<>();
         if (propietario != null) dialogo.initOwner(propietario);
         dialogo.setTitle(titulo);
@@ -46,11 +42,12 @@ public final class DialogoConfirmacion {
         botonCancelar.setDefaultButton(true);
         botonCancelar.setCancelButton(true);
         botonConfirmar.setDefaultButton(false);
-        dialogo.setOnShown(evento -> {
-            botonCancelar.setDefaultButton(true);
-            botonConfirmar.setDefaultButton(false);
-            botonCancelar.requestFocus();
-        });
+        dialogo.setOnShown(
+                evento -> {
+                    botonCancelar.setDefaultButton(true);
+                    botonConfirmar.setDefaultButton(false);
+                    botonCancelar.requestFocus();
+                });
 
         return dialogo.showAndWait().orElse(cancelar) == confirmar;
     }

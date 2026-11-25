@@ -3,6 +3,7 @@ package com.ejemplo.alquileres.controller;
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.service.PropietarioService;
 import com.ejemplo.alquileres.ui.*;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
+
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +30,12 @@ public class PropietarioController implements Refrescable {
     @FXML private CheckBox activos;
     @FXML private Button btnEliminarDesactivar, btnReactivar;
     @FXML private TableView<Propietario> tabla;
-    @FXML private TableColumn<Propietario, String> colNombre, colDocumento, colTelefono, colEmail, colEstado;
+    @FXML
+    private TableColumn<Propietario, String> colNombre,
+            colDocumento,
+            colTelefono,
+            colEmail,
+            colEstado;
     @FXML private VBox drawer;
     @FXML private Region overlay;
     @FXML private Label titulo, errorTipo, errorDocumento, errorNombre;
@@ -39,38 +46,54 @@ public class PropietarioController implements Refrescable {
         aviso = a;
     }
 
-    @FXML public void initialize() {
+    @FXML
+    public void initialize() {
         tipo.setItems(FXCollections.observableArrayList(TipoDocumento.values()));
         tipo.setValue(TipoDocumento.DNI);
         activos.setSelected(true);
         colNombre.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNombre()));
-        colDocumento.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().getTipoDocumento() + " " + c.getValue().getNumeroDocumento()));
+        colDocumento.setCellValueFactory(
+                c ->
+                        new SimpleStringProperty(
+                                c.getValue().getTipoDocumento()
+                                        + " "
+                                        + c.getValue().getNumeroDocumento()));
         colTelefono.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTelefono()));
         colEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
-        colEstado.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
+        colEstado.setCellValueFactory(
+                c -> new SimpleStringProperty(c.getValue().isActivo() ? "Activo" : "Inactivo"));
         tabla.setItems(datos);
-        tabla.getSelectionModel().selectedItemProperty().addListener(
-                (o, a, b) -> actualizarAcciones(b));
+        tabla.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((o, a, b) -> actualizarAcciones(b));
         actualizarAcciones(null);
         buscar.textProperty().addListener((o, a, b) -> refrescar());
         activos.selectedProperty().addListener((o, a, b) -> refrescar());
-        tabla.setOnMouseClicked(e -> { if (e.getClickCount() == 2) editar(tabla.getSelectionModel().getSelectedItem()); });
+        tabla.setOnMouseClicked(
+                e -> {
+                    if (e.getClickCount() == 2) editar(tabla.getSelectionModel().getSelectedItem());
+                });
         tipo.valueProperty().addListener((o, a, b) -> ocultarError(errorTipo));
         documento.textProperty().addListener((o, a, b) -> ocultarError(errorDocumento));
         nombre.textProperty().addListener((o, a, b) -> ocultarError(errorNombre));
     }
 
-    @Override public void refrescar() {
+    @Override
+    public void refrescar() {
         String texto = buscar.getText();
         Boolean soloActivos = activos.isSelected() ? true : null;
-        tareas.ejecutar(() -> service.listar(texto, soloActivos, 0, 100),
-                this::mostrar, e -> aviso.error(msg(e)));
+        tareas.ejecutar(
+                () -> service.listar(texto, soloActivos, 0, 100),
+                this::mostrar,
+                e -> aviso.error(msg(e)));
     }
 
-    private void mostrar(Page<Propietario> p) { datos.setAll(p.getContent()); }
+    private void mostrar(Page<Propietario> p) {
+        datos.setAll(p.getContent());
+    }
 
-    @FXML private void onNuevo() {
+    @FXML
+    private void onNuevo() {
         id = null;
         activo = true;
         limpiarErrores();
@@ -85,7 +108,8 @@ public class PropietarioController implements Refrescable {
         abrir();
     }
 
-    @FXML private void onEditar() {
+    @FXML
+    private void onEditar() {
         Propietario p = tabla.getSelectionModel().getSelectedItem();
         if (p == null) {
             aviso.error("Selecciona un propietario.");
@@ -110,18 +134,30 @@ public class PropietarioController implements Refrescable {
         abrir();
     }
 
-    @FXML private void onGuardar() {
+    @FXML
+    private void onGuardar() {
         limpiarErrores();
         if (!validarFormulario()) return;
-        Propietario p = Propietario.builder().id(id).tipoDocumento(tipo.getValue())
-                .numeroDocumento(documento.getText()).nombre(nombre.getText())
-                .telefono(telefono.getText()).email(email.getText()).banco(banco.getText())
-                .cuenta(cuenta.getText()).activo(activo).build();
-        tareas.ejecutar(() -> service.guardar(p), x -> {
-            cerrar();
-            aviso.info("Propietario guardado.");
-            refrescar();
-        }, e -> aviso.error(msg(e)));
+        Propietario p =
+                Propietario.builder()
+                        .id(id)
+                        .tipoDocumento(tipo.getValue())
+                        .numeroDocumento(documento.getText())
+                        .nombre(nombre.getText())
+                        .telefono(telefono.getText())
+                        .email(email.getText())
+                        .banco(banco.getText())
+                        .cuenta(cuenta.getText())
+                        .activo(activo)
+                        .build();
+        tareas.ejecutar(
+                () -> service.guardar(p),
+                x -> {
+                    cerrar();
+                    aviso.info("Propietario guardado.");
+                    refrescar();
+                },
+                e -> aviso.error(msg(e)));
     }
 
     private boolean validarFormulario() {
@@ -161,29 +197,40 @@ public class PropietarioController implements Refrescable {
         ocultarError(errorNombre);
     }
 
-    @FXML private void onEliminar() {
+    @FXML
+    private void onEliminar() {
         Propietario p = tabla.getSelectionModel().getSelectedItem();
         if (p == null) {
             aviso.error("Selecciona un propietario.");
             return;
         }
-        tareas.ejecutar(() -> service.tieneReferencias(p.getId()),
+        tareas.ejecutar(
+                () -> service.tieneReferencias(p.getId()),
                 referencias -> confirmarAccion(p, referencias),
                 e -> aviso.error(msg(e)));
     }
 
     private void confirmarAccion(Propietario p, boolean referencias) {
         String titulo = referencias ? "Desactivar" : "Eliminar definitivamente";
-        String mensaje = referencias
-                ? "«" + p.getNombre() + "» está en uso, por lo que se desactivará "
-                        + "y podrás reactivarlo después."
-                : "Se eliminará «" + p.getNombre() + "» de forma permanente. "
-                        + "Esta acción no se puede deshacer.";
-        if (!DialogoConfirmacion.mostrar(ventana(), titulo, mensaje,
-                referencias ? "Desactivar" : "Eliminar")) {
+        String mensaje =
+                referencias
+                        ? "«"
+                                + p.getNombre()
+                                + "» está en uso, por lo que se desactivará "
+                                + "y podrás reactivarlo después."
+                        : "Se eliminará «"
+                                + p.getNombre()
+                                + "» de forma permanente. "
+                                + "Esta acción no se puede deshacer.";
+        if (!DialogoConfirmacion.mostrar(
+                ventana(), titulo, mensaje, referencias ? "Desactivar" : "Eliminar")) {
             return;
         }
-        tareas.ejecutar(() -> { service.eliminar(p.getId()); return null; },
+        tareas.ejecutar(
+                () -> {
+                    service.eliminar(p.getId());
+                    return null;
+                },
                 x -> {
                     aviso.info(referencias ? "Propietario desactivado." : "Propietario eliminado.");
                     refrescar();
@@ -195,14 +242,22 @@ public class PropietarioController implements Refrescable {
         return tabla.getScene() == null ? null : tabla.getScene().getWindow();
     }
 
-    @FXML private void onReactivar() {
+    @FXML
+    private void onReactivar() {
         Propietario p = tabla.getSelectionModel().getSelectedItem();
         if (p == null) {
             aviso.error("Selecciona un propietario.");
             return;
         }
-        tareas.ejecutar(() -> { service.reactivar(p.getId()); return null; },
-                x -> { aviso.info("Propietario reactivado."); refrescar(); },
+        tareas.ejecutar(
+                () -> {
+                    service.reactivar(p.getId());
+                    return null;
+                },
+                x -> {
+                    aviso.info("Propietario reactivado.");
+                    refrescar();
+                },
                 e -> aviso.error(msg(e)));
     }
 
@@ -217,7 +272,10 @@ public class PropietarioController implements Refrescable {
         boton.setManaged(visible);
     }
 
-    @FXML private void onCerrar() { cerrar(); }
+    @FXML
+    private void onCerrar() {
+        cerrar();
+    }
 
     private void abrir() {
         drawer.setVisible(true);
@@ -234,7 +292,9 @@ public class PropietarioController implements Refrescable {
         limpiarErrores();
     }
 
-    private String n(String v) { return v == null ? "" : v; }
+    private String n(String v) {
+        return v == null ? "" : v;
+    }
 
     private String msg(Throwable e) {
         return e.getCause() != null ? e.getCause().getMessage() : e.getMessage();

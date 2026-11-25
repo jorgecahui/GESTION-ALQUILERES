@@ -4,14 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Genera el esquema referencial de una unidad. Es lógica pura: no usa JavaFX
- * ni datos de negocio que no estén en los parámetros. La distribución interior
- * es inventada por el sistema; solo el área y las cantidades son datos reales.
- *
- * <p>Coordenadas en metros: x hacia la derecha, y hacia arriba; el origen es la
- * esquina inferior izquierda del rectángulo exterior.</p>
- */
 public final class GeneradorEsquema {
 
     public static final int MAX_DORMITORIOS = 8;
@@ -31,8 +23,7 @@ public final class GeneradorEsquema {
     private static final double UMBRAL_AREA_CHICA = 45.0;
     private static final double ANCHO_PUERTA = 0.9;
 
-    private GeneradorEsquema() {
-    }
+    private GeneradorEsquema() {}
 
     public enum TipoAmbiente {
         SALA_COMEDOR("Sala-comedor"),
@@ -56,23 +47,25 @@ public final class GeneradorEsquema {
         }
     }
 
-    /** Un ambiente rectangular del esquema. */
-    public record Recinto(TipoAmbiente tipo, double x, double y,
-                          double ancho, double alto) {
+    public record Recinto(TipoAmbiente tipo, double x, double y, double ancho, double alto) {
         public double area() {
             return ancho * alto;
         }
     }
 
-    /** Marcador de la puerta principal sobre el borde inferior. */
-    public record Puerta(double x, double y, double ancho) {
-    }
+    public record Puerta(double x, double y, double ancho) {}
 
-    /** Resultado completo del generador. */
-    public record Esquema(double ancho, double alto, double areaUsada,
-                          boolean simple, boolean areaEstimada, boolean ajustado,
-                          boolean amoblado, List<Recinto> recintos, Puerta puerta,
-                          List<String> avisos) {
+    public record Esquema(
+            double ancho,
+            double alto,
+            double areaUsada,
+            boolean simple,
+            boolean areaEstimada,
+            boolean ajustado,
+            boolean amoblado,
+            List<Recinto> recintos,
+            Puerta puerta,
+            List<String> avisos) {
         public Esquema {
             recintos = List.copyOf(recintos);
             avisos = List.copyOf(avisos);
@@ -83,10 +76,8 @@ public final class GeneradorEsquema {
         }
     }
 
-    private record Cuerpo(List<Recinto> recintos, Puerta puerta, boolean ajustado) {
-    }
+    private record Cuerpo(List<Recinto> recintos, Puerta puerta, boolean ajustado) {}
 
-    /** Área estimada cuando el inmueble no trae un área válida. */
     public static double areaPorDefecto(int dormitorios) {
         int d = Math.max(0, Math.min(MAX_DORMITORIOS, dormitorios));
         return switch (d) {
@@ -98,12 +89,8 @@ public final class GeneradorEsquema {
         };
     }
 
-    /**
-     * Genera el esquema. Los valores de dormitorios y baños se topan a 8 y 6;
-     * un área nula o no positiva usa el área por defecto según dormitorios.
-     */
-    public static Esquema generar(BigDecimal areaM2, Integer dormitorios,
-                                  Integer banos, Boolean amoblado) {
+    public static Esquema generar(
+            BigDecimal areaM2, Integer dormitorios, Integer banos, Boolean amoblado) {
         int dormitoriosSolicitados = dormitorios == null ? 0 : Math.max(0, dormitorios);
         int banosSolicitados = banos == null ? 0 : Math.max(0, banos);
         int d = Math.min(dormitoriosSolicitados, MAX_DORMITORIOS);
@@ -124,17 +111,23 @@ public final class GeneradorEsquema {
 
         double ancho = Math.sqrt(area * RELACION_ANCHO_ALTO);
         double alto = area / ancho;
-        Cuerpo cuerpo = d == 0
-                ? construirSimple(ancho, alto, b)
-                : construirCompleto(ancho, alto, d, b);
+        Cuerpo cuerpo =
+                d == 0 ? construirSimple(ancho, alto, b) : construirCompleto(ancho, alto, d, b);
         if (cuerpo.ajustado()) avisos.add("Distribución ajustada al área");
 
-        return new Esquema(ancho, alto, area, d == 0, areaEstimada,
-                cuerpo.ajustado(), Boolean.TRUE.equals(amoblado),
-                cuerpo.recintos(), cuerpo.puerta(), avisos);
+        return new Esquema(
+                ancho,
+                alto,
+                area,
+                d == 0,
+                areaEstimada,
+                cuerpo.ajustado(),
+                Boolean.TRUE.equals(amoblado),
+                cuerpo.recintos(),
+                cuerpo.puerta(),
+                avisos);
     }
 
-    /** Recinto simple: un ambiente y, si hay baños, una fila en la esquina superior derecha. */
     private static Cuerpo construirSimple(double ancho, double alto, int banos) {
         List<Recinto> recintos = new ArrayList<>();
         double anchoPuerta = Math.min(ANCHO_PUERTA, ancho * 0.6);
@@ -152,25 +145,34 @@ public final class GeneradorEsquema {
 
         recintos.add(new Recinto(TipoAmbiente.AMBIENTE, 0, 0, ancho, altoPrincipal));
         if (anchoPrincipalSuperior > 0.0001) {
-            recintos.add(new Recinto(TipoAmbiente.AMBIENTE_AUXILIAR,
-                    0, altoPrincipal, anchoPrincipalSuperior, altoBanos));
+            recintos.add(
+                    new Recinto(
+                            TipoAmbiente.AMBIENTE_AUXILIAR,
+                            0,
+                            altoPrincipal,
+                            anchoPrincipalSuperior,
+                            altoBanos));
         }
         for (int i = 0; i < banos; i++) {
-            recintos.add(new Recinto(TipoAmbiente.BANO,
-                    ancho - anchoBanosTotal + i * anchoBano,
-                    altoPrincipal, anchoBano, altoBanos));
+            recintos.add(
+                    new Recinto(
+                            TipoAmbiente.BANO,
+                            ancho - anchoBanosTotal + i * anchoBano,
+                            altoPrincipal,
+                            anchoBano,
+                            altoBanos));
         }
         boolean ajustado = anchoBano * altoBanos < AREA_BANO_MINIMA;
         return new Cuerpo(recintos, puerta, ajustado);
     }
 
-    /** Esquema completo: franja social, pasillo opcional y franja privada. */
     private static Cuerpo construirCompleto(double ancho, double alto, int dormitorios, int banos) {
-        double proporcionSocial = ancho * alto < UMBRAL_AREA_CHICA
-                ? PROPORCION_SOCIAL_CHICA : PROPORCION_SOCIAL_GRANDE;
+        double proporcionSocial =
+                ancho * alto < UMBRAL_AREA_CHICA
+                        ? PROPORCION_SOCIAL_CHICA
+                        : PROPORCION_SOCIAL_GRANDE;
         double anchoSocial = ancho * proporcionSocial;
-        double anchoPasillo = dormitorios >= 2
-                ? Math.min(1.0, ancho * 0.12) : 0;
+        double anchoPasillo = dormitorios >= 2 ? Math.min(1.0, ancho * 0.12) : 0;
         double anchoPrivado = ancho - anchoSocial - anchoPasillo;
         if (anchoPrivado < ancho * 0.15) {
             anchoSocial = ancho * 0.55;
@@ -190,13 +192,13 @@ public final class GeneradorEsquema {
         if (anchoSocial * altoSala < ancho * alto * 0.30) ajustado = true;
 
         if (anchoPasillo > 0) {
-            recintos.add(new Recinto(TipoAmbiente.PASILLO,
-                    anchoSocial, 0, anchoPasillo, alto));
+            recintos.add(new Recinto(TipoAmbiente.PASILLO, anchoSocial, 0, anchoPasillo, alto));
         }
 
         double xPrivado = anchoSocial + anchoPasillo;
-        double objetivoDormitorios = AREA_DORMITORIO_PRINCIPAL_OBJETIVO
-                + Math.max(0, dormitorios - 1) * AREA_DORMITORIO_OBJETIVO;
+        double objetivoDormitorios =
+                AREA_DORMITORIO_PRINCIPAL_OBJETIVO
+                        + Math.max(0, dormitorios - 1) * AREA_DORMITORIO_OBJETIVO;
 
         double anchoBano = 0;
         double anchoBanosTotal = 0;
@@ -213,13 +215,22 @@ public final class GeneradorEsquema {
         if (banos > 0) {
             double yBanos = alto - altoBanos;
             if (anchoPasilloSuperior > 0.0001) {
-                recintos.add(new Recinto(TipoAmbiente.PASILLO_AUXILIAR, xPrivado,
-                        yBanos, anchoPasilloSuperior, altoBanos));
+                recintos.add(
+                        new Recinto(
+                                TipoAmbiente.PASILLO_AUXILIAR,
+                                xPrivado,
+                                yBanos,
+                                anchoPasilloSuperior,
+                                altoBanos));
             }
             for (int i = 0; i < banos; i++) {
-                recintos.add(new Recinto(TipoAmbiente.BANO,
-                        xPrivado + anchoPasilloSuperior + i * anchoBano,
-                        yBanos, anchoBano, altoBanos));
+                recintos.add(
+                        new Recinto(
+                                TipoAmbiente.BANO,
+                                xPrivado + anchoPasilloSuperior + i * anchoBano,
+                                yBanos,
+                                anchoBano,
+                                altoBanos));
             }
             if (anchoBano * altoBanos < AREA_BANO_MINIMA) ajustado = true;
         }
@@ -229,19 +240,20 @@ public final class GeneradorEsquema {
             altoDormitorios = alto;
             altoBanos = 0;
         }
-        double altoPrincipal = AREA_DORMITORIO_PRINCIPAL_OBJETIVO
-                / Math.max(1, objetivoDormitorios) * altoDormitorios;
-        double altoOtros = AREA_DORMITORIO_OBJETIVO
-                / Math.max(1, objetivoDormitorios) * altoDormitorios;
+        double altoPrincipal =
+                AREA_DORMITORIO_PRINCIPAL_OBJETIVO
+                        / Math.max(1, objetivoDormitorios)
+                        * altoDormitorios;
+        double altoOtros =
+                AREA_DORMITORIO_OBJETIVO / Math.max(1, objetivoDormitorios) * altoDormitorios;
 
         double y = alto - altoBanos;
         for (int i = 0; i < dormitorios; i++) {
-            double altura = i == dormitorios - 1
-                    ? y : (i == 0 ? altoPrincipal : altoOtros);
+            double altura = i == dormitorios - 1 ? y : (i == 0 ? altoPrincipal : altoOtros);
             if (altura <= 0) altura = Math.max(0.0001, y);
             y -= altura;
-            TipoAmbiente tipo = i == 0
-                    ? TipoAmbiente.DORMITORIO_PRINCIPAL : TipoAmbiente.DORMITORIO;
+            TipoAmbiente tipo =
+                    i == 0 ? TipoAmbiente.DORMITORIO_PRINCIPAL : TipoAmbiente.DORMITORIO;
             recintos.add(new Recinto(tipo, xPrivado, y, anchoPrivado, altura));
             double area = anchoPrivado * altura;
             if (area < AREA_DORMITORIO_MINIMA) ajustado = true;

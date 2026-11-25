@@ -1,3 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?><?import javafx.scene.layout.*?>
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" spacing="12" styleClass="drawer"><Label text="Ficha del inmueble" styleClass="drawer-titulo"/><TabPane><tabs><Tab text="Datos"><VBox spacing="8"><Label text="Datos generales y disponibilidad."/></VBox></Tab><Tab text="Contratos"><VBox spacing="8"><Label text="Historial de contratos."/></VBox></Tab><Tab text="Mantenimiento"><VBox spacing="8"><Label text="Incidencias del inmueble."/></VBox></Tab><Tab text="Ingresos y gastos"><VBox spacing="8"><Label text="Resumen financiero del año."/></VBox></Tab></tabs></TabPane></VBox>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" spacing="12" styleClass="drawer">
+    <Label text="Ficha del inmueble" styleClass="drawer-titulo"/>
+    <TabPane>
+        <tabs>
+            <Tab text="Datos">
+                <VBox spacing="8">
+                    <Label text="Datos generales y disponibilidad."/>
+                </VBox>
+            </Tab>
+            <Tab text="Contratos">
+                <VBox spacing="8">
+                    <Label text="Historial de contratos."/>
+                </VBox>
+            </Tab>
+            <Tab text="Mantenimiento">
+                <VBox spacing="8">
+                    <Label text="Incidencias del inmueble."/>
+                </VBox>
+            </Tab>
+            <Tab text="Ingresos y gastos">
+                <VBox spacing="8">
+                    <Label text="Resumen financiero del año."/>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

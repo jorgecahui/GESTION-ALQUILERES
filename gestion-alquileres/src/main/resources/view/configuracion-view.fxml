@@ -2,14 +2,18 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.ImageView?>
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.ejemplo.alquileres.controller.ConfiguracionController"
-      spacing="16" styleClass="pagina">
+<VBox
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.ejemplo.alquileres.controller.ConfiguracionController"
+    spacing="16"
+    styleClass="pagina">
     <HBox spacing="12">
         <VBox HBox.hgrow="ALWAYS">
             <Label text="Configuración" styleClass="pagina-titulo"/>
-            <Label text="Parámetros del arrendador, recibos, mora, alertas, semáforo y plantillas."
-                   styleClass="pagina-subtitulo"/>
+            <Label
+                text="Parámetros del arrendador, recibos, mora, alertas, semáforo y plantillas."
+                styleClass="pagina-subtitulo"/>
         </VBox>
         <Label fx:id="estado" styleClass="pagina-subtitulo"/>
         <Button text="Guardar cambios" onAction="#onGuardar" styleClass="boton-primario,requiere-admin"/>
@@ -24,13 +28,30 @@
                             <ColumnConstraints hgrow="ALWAYS"/>
                         </columnConstraints>
                         <Label text="Razón social / nombre" styleClass="campo-label" GridPane.rowIndex="0"/>
-                        <TextField fx:id="razonSocial" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity"/>
+                        <TextField
+                            fx:id="razonSocial"
+                            GridPane.rowIndex="0"
+                            GridPane.columnIndex="1"
+                            maxWidth="Infinity"/>
                         <Label text="Tipo de documento" styleClass="campo-label" GridPane.rowIndex="1"/>
-                        <TextField fx:id="tipoDocumento" promptText="RUC" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="tipoDocumento"
+                            promptText="RUC"
+                            GridPane.rowIndex="1"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                         <Label text="Número de documento" styleClass="campo-label" GridPane.rowIndex="2"/>
-                        <TextField fx:id="documento" GridPane.rowIndex="2" GridPane.columnIndex="1" maxWidth="Infinity"/>
+                        <TextField
+                            fx:id="documento"
+                            GridPane.rowIndex="2"
+                            GridPane.columnIndex="1"
+                            maxWidth="Infinity"/>
                         <Label text="Dirección" styleClass="campo-label" GridPane.rowIndex="3"/>
-                        <TextField fx:id="direccion" GridPane.rowIndex="3" GridPane.columnIndex="1" maxWidth="Infinity"/>
+                        <TextField
+                            fx:id="direccion"
+                            GridPane.rowIndex="3"
+                            GridPane.columnIndex="1"
+                            maxWidth="Infinity"/>
                         <Label text="Teléfono" styleClass="campo-label" GridPane.rowIndex="4"/>
                         <TextField fx:id="telefono" GridPane.rowIndex="4" GridPane.columnIndex="1" maxWidth="Infinity"/>
                         <Label text="Correo electrónico" styleClass="campo-label" GridPane.rowIndex="5"/>
@@ -42,9 +63,17 @@
                             <Button text="Quitar" onAction="#onQuitarLogo" styleClass="requiere-admin"/>
                         </HBox>
                     </GridPane>
-                    <ImageView fx:id="logoVista" fitWidth="160" fitHeight="70" preserveRatio="true" visible="false" managed="false"/>
-                    <Label text="El logo se copia a la carpeta de datos y se usa en recibos, contratos y estados de cuenta."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <ImageView
+                        fx:id="logoVista"
+                        fitWidth="160"
+                        fitHeight="70"
+                        preserveRatio="true"
+                        visible="false"
+                        managed="false"/>
+                    <Label
+                        text="El logo se copia a la carpeta de datos y se usa en recibos, contratos y estados de cuenta."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -57,12 +86,24 @@
                             <ColumnConstraints hgrow="ALWAYS"/>
                         </columnConstraints>
                         <Label text="Serie del recibo" styleClass="campo-label" GridPane.rowIndex="0"/>
-                        <TextField fx:id="reciboSerie" promptText="R001" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="reciboSerie"
+                            promptText="R001"
+                            GridPane.rowIndex="0"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                         <Label text="Leyenda al pie" styleClass="campo-label" GridPane.rowIndex="1"/>
-                        <TextArea fx:id="reciboLeyenda" prefRowCount="3" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <TextArea
+                            fx:id="reciboLeyenda"
+                            prefRowCount="3"
+                            wrapText="true"
+                            GridPane.rowIndex="1"
+                            GridPane.columnIndex="1"/>
                     </GridPane>
-                    <Label text="La serie se aplica a los nuevos recibos. Los ya emitidos conservan su numeración."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <Label
+                        text="La serie se aplica a los nuevos recibos. Los ya emitidos conservan su numeración."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -77,12 +118,24 @@
                         <Label text="Tipo de mora por defecto" styleClass="campo-label" GridPane.rowIndex="0"/>
                         <ComboBox fx:id="moraTipo" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="300"/>
                         <Label text="Valor" styleClass="campo-label" GridPane.rowIndex="1"/>
-                        <TextField fx:id="moraValor" promptText="0.10" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="moraValor"
+                            promptText="0.10"
+                            GridPane.rowIndex="1"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                         <Label text="Días de gracia" styleClass="campo-label" GridPane.rowIndex="2"/>
-                        <TextField fx:id="moraDiasGracia" promptText="3" GridPane.rowIndex="2" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="moraDiasGracia"
+                            promptText="3"
+                            GridPane.rowIndex="2"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                     </GridPane>
-                    <Label text="Estos valores se copian a cada contrato nuevo y quedan congelados en él."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <Label
+                        text="Estos valores se copian a cada contrato nuevo y quedan congelados en él."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -95,12 +148,24 @@
                             <ColumnConstraints hgrow="ALWAYS"/>
                         </columnConstraints>
                         <Label text="Días para «por vencer»" styleClass="campo-label" GridPane.rowIndex="0"/>
-                        <TextField fx:id="diasVencimiento" promptText="60" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="diasVencimiento"
+                            promptText="60"
+                            GridPane.rowIndex="0"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                         <Label text="Días del recordatorio preventivo" styleClass="campo-label" GridPane.rowIndex="1"/>
-                        <TextField fx:id="diasRecordatorio" promptText="3" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="diasRecordatorio"
+                            promptText="3"
+                            GridPane.rowIndex="1"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                     </GridPane>
-                    <Label text="El recordatorio preventivo incluye cuotas que vencen dentro de esos días."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <Label
+                        text="El recordatorio preventivo incluye cuotas que vencen dentro de esos días."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -113,27 +178,50 @@
                             <ColumnConstraints hgrow="ALWAYS"/>
                         </columnConstraints>
                         <Label text="Umbral de atraso leve (días)" styleClass="campo-label" GridPane.rowIndex="0"/>
-                        <TextField fx:id="umbralLeve" promptText="15" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="umbralLeve"
+                            promptText="15"
+                            GridPane.rowIndex="0"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                         <Label text="Cuotas vencidas para marcar rojo" styleClass="campo-label" GridPane.rowIndex="1"/>
-                        <TextField fx:id="cuotasRojo" promptText="2" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="cuotasRojo"
+                            promptText="2"
+                            GridPane.rowIndex="1"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                     </GridPane>
-                    <Label text="Verde: al día. Ámbar: atraso leve. Rojo: supera el umbral de días o la cantidad de cuotas."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <Label
+                        text="Verde: al día. Ámbar: atraso leve. Rojo: supera el umbral de días o la cantidad de cuotas."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
             </ScrollPane>
         </Tab>
         <Tab text="Plantillas">
             <ScrollPane fitToWidth="true" styleClass="pagina-scroll">
                 <VBox spacing="14" styleClass="pagina">
-                    <Label text="Marcadores disponibles: {nombre} {inmueble} {arrendador} {contrato} {fecha_fin} {dias} {concepto} {monto} {mora} {vencimiento}"
-                           styleClass="pagina-subtitulo" wrapText="true"/>
-                    <VBox spacing="6"><Label text="Recordatorio preventivo" styleClass="campo-label"/>
-                        <TextArea fx:id="plantillaPreventivo" prefRowCount="5" wrapText="true"/></VBox>
-                    <VBox spacing="6"><Label text="Recordatorio de cuota vencida" styleClass="campo-label"/>
-                        <TextArea fx:id="plantillaVencido" prefRowCount="5" wrapText="true"/></VBox>
-                    <VBox spacing="6"><Label text="Aviso de fin de contrato" styleClass="campo-label"/>
-                        <TextArea fx:id="plantillaFinContrato" prefRowCount="4" wrapText="true"/></VBox>
-                    <Button text="Restaurar textos por defecto" onAction="#onRestaurarPlantillas" styleClass="requiere-admin"/>
+                    <Label
+                        text="Marcadores disponibles: {nombre} {inmueble} {arrendador} {contrato} {fecha_fin} {dias} {concepto} {monto} {mora} {vencimiento}"
+                        styleClass="pagina-subtitulo"
+                        wrapText="true"/>
+                    <VBox spacing="6">
+                        <Label text="Recordatorio preventivo" styleClass="campo-label"/>
+                        <TextArea fx:id="plantillaPreventivo" prefRowCount="5" wrapText="true"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Recordatorio de cuota vencida" styleClass="campo-label"/>
+                        <TextArea fx:id="plantillaVencido" prefRowCount="5" wrapText="true"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Aviso de fin de contrato" styleClass="campo-label"/>
+                        <TextArea fx:id="plantillaFinContrato" prefRowCount="4" wrapText="true"/>
+                    </VBox>
+                    <Button
+                        text="Restaurar textos por defecto"
+                        onAction="#onRestaurarPlantillas"
+                        styleClass="requiere-admin"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -146,10 +234,17 @@
                             <ColumnConstraints hgrow="ALWAYS"/>
                         </columnConstraints>
                         <Label text="Minutos de inactividad" styleClass="campo-label" GridPane.rowIndex="0"/>
-                        <TextField fx:id="inactividad" promptText="15" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="240"/>
+                        <TextField
+                            fx:id="inactividad"
+                            promptText="15"
+                            GridPane.rowIndex="0"
+                            GridPane.columnIndex="1"
+                            maxWidth="240"/>
                     </GridPane>
-                    <Label text="Tras esos minutos sin actividad se muestra la pantalla de bloqueo. Usa 0 para desactivar el bloqueo."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <Label
+                        text="Tras esos minutos sin actividad se muestra la pantalla de bloqueo. Usa 0 para desactivar el bloqueo."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -157,15 +252,22 @@
             <ScrollPane fitToWidth="true" styleClass="pagina-scroll">
                 <VBox spacing="12" styleClass="pagina">
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <VBox HBox.hgrow="ALWAYS"><Label text="Respaldo y restauración" styleClass="pagina-titulo"/>
-                            <Label text="Copia consistente de la base de datos y restauración con validación previa."
-                                   styleClass="pagina-subtitulo"/></VBox>
-                        <Button text="Crear respaldo ahora" onAction="#onCrearRespaldo" styleClass="boton-primario,requiere-admin"/>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="Respaldo y restauración" styleClass="pagina-titulo"/>
+                            <Label
+                                text="Copia consistente de la base de datos y restauración con validación previa."
+                                styleClass="pagina-subtitulo"/>
+                        </VBox>
+                        <Button
+                            text="Crear respaldo ahora"
+                            onAction="#onCrearRespaldo"
+                            styleClass="boton-primario,requiere-admin"/>
                         <Button text="Restaurar respaldo" onAction="#onRestaurarRespaldo" styleClass="requiere-admin"/>
                     </HBox>
                     <Label fx:id="rutaDatos" styleClass="campo-ayuda" wrapText="true"/>
-                    <Label text="Respaldos automáticos (se conservan los últimos 10 al cerrar la aplicación)"
-                           styleClass="pagina-subtitulo"/>
+                    <Label
+                        text="Respaldos automáticos (se conservan los últimos 10 al cerrar la aplicación)"
+                        styleClass="pagina-subtitulo"/>
                     <TableView fx:id="tablaRespaldos" VBox.vgrow="ALWAYS" styleClass="tabla" prefHeight="380">
                         <columns>
                             <TableColumn fx:id="colRespNombre" text="Archivo" prefWidth="420"/>
@@ -173,8 +275,10 @@
                             <TableColumn fx:id="colRespTamano" text="Tamaño" prefWidth="130"/>
                         </columns>
                     </TableView>
-                    <Label text="Al restaurar se crea un respaldo de seguridad en la carpeta de respaldos y luego se cierra la aplicación."
-                           styleClass="campo-ayuda" wrapText="true"/>
+                    <Label
+                        text="Al restaurar se crea un respaldo de seguridad en la carpeta de respaldos y luego se cierra la aplicación."
+                        styleClass="campo-ayuda"
+                        wrapText="true"/>
                 </VBox>
             </ScrollPane>
         </Tab>
@@ -182,13 +286,25 @@
             <ScrollPane fitToWidth="true" styleClass="pagina-scroll">
                 <VBox spacing="12" styleClass="pagina">
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <VBox HBox.hgrow="ALWAYS"><Label text="Usuarios" styleClass="pagina-titulo"/>
-                            <Label text="Solo el administrador puede crear, editar y restablecer contraseñas."
-                                   styleClass="pagina-subtitulo"/></VBox>
-                        <Button text="Nuevo usuario" onAction="#onNuevoUsuario" styleClass="boton-primario,requiere-admin"/>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="Usuarios" styleClass="pagina-titulo"/>
+                            <Label
+                                text="Solo el administrador puede crear, editar y restablecer contraseñas."
+                                styleClass="pagina-subtitulo"/>
+                        </VBox>
+                        <Button
+                            text="Nuevo usuario"
+                            onAction="#onNuevoUsuario"
+                            styleClass="boton-primario,requiere-admin"/>
                         <Button text="Editar" onAction="#onEditarUsuario" styleClass="requiere-admin"/>
-                        <Button text="Activar / desactivar" onAction="#onDesactivarUsuario" styleClass="requiere-admin"/>
-                        <Button text="Restablecer contraseña" onAction="#onRestablecerPassword" styleClass="requiere-admin"/>
+                        <Button
+                            text="Activar / desactivar"
+                            onAction="#onDesactivarUsuario"
+                            styleClass="requiere-admin"/>
+                        <Button
+                            text="Restablecer contraseña"
+                            onAction="#onRestablecerPassword"
+                            styleClass="requiere-admin"/>
                     </HBox>
                     <TableView fx:id="tablaUsuarios" VBox.vgrow="ALWAYS" styleClass="tabla" prefHeight="420">
                         <columns>
@@ -206,9 +322,12 @@
             <ScrollPane fitToWidth="true" styleClass="pagina-scroll">
                 <VBox spacing="12" styleClass="pagina">
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <VBox HBox.hgrow="ALWAYS"><Label text="Auditoría" styleClass="pagina-titulo"/>
-                            <Label text="Operaciones sensibles registradas por usuario y fecha. No contiene contraseñas."
-                                   styleClass="pagina-subtitulo"/></VBox>
+                        <VBox HBox.hgrow="ALWAYS">
+                            <Label text="Auditoría" styleClass="pagina-titulo"/>
+                            <Label
+                                text="Operaciones sensibles registradas por usuario y fecha. No contiene contraseñas."
+                                styleClass="pagina-subtitulo"/>
+                        </VBox>
                         <Button text="Exportar Excel" onAction="#onExportarAuditoria"/>
                     </HBox>
                     <HBox spacing="8" alignment="CENTER_LEFT">

@@ -1,4 +1,37 @@
 package com.ejemplo.alquileres.seeder;
-import com.ejemplo.alquileres.model.TipoInmueble; import com.ejemplo.alquileres.repository.TipoInmuebleRepository; import com.ejemplo.alquileres.service.TipoInmuebleService; import lombok.RequiredArgsConstructor; import org.springframework.stereotype.Component;
-@Component @RequiredArgsConstructor public class TipoInmuebleSeeder { private final TipoInmuebleRepository repo; private final TipoInmuebleService service;
- public void cargar(){String[][] datos={{"TI-DEP","Departamento"},{"TI-CAS","Casa"},{"TI-LOC","Local comercial"},{"TI-OFI","Oficina"},{"TI-COC","Cochera"},{"TI-HAB","Habitación"},{"TI-TER","Terreno"}};for(String[] d:datos)if(!repo.existsByCodigoIgnoreCase(d[0]))service.guardar(TipoInmueble.builder().codigo(d[0]).nombre(d[1]).descripcion("Tipo de inmueble").activo(true).build());}}
+
+import com.ejemplo.alquileres.model.TipoInmueble;
+import com.ejemplo.alquileres.repository.TipoInmuebleRepository;
+import com.ejemplo.alquileres.service.TipoInmuebleService;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class TipoInmuebleSeeder {
+    private final TipoInmuebleRepository repo;
+    private final TipoInmuebleService service;
+
+    public void cargar() {
+        String[][] datos = {
+            {"TI-DEP", "Departamento"},
+            {"TI-CAS", "Casa"},
+            {"TI-LOC", "Local comercial"},
+            {"TI-OFI", "Oficina"},
+            {"TI-COC", "Cochera"},
+            {"TI-HAB", "Habitación"},
+            {"TI-TER", "Terreno"}
+        };
+        for (String[] d : datos)
+            if (!repo.existsByCodigoIgnoreCase(d[0]))
+                service.guardar(
+                        TipoInmueble.builder()
+                                .codigo(d[0])
+                                .nombre(d[1])
+                                .descripcion("Tipo de inmueble")
+                                .activo(true)
+                                .build());
+    }
+}

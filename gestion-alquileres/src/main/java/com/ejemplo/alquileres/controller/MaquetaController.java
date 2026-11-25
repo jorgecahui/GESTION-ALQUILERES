@@ -19,23 +19,6 @@ import com.ejemplo.alquileres.ui.Semaforo;
 import com.ejemplo.alquileres.ui.Tablas;
 import com.ejemplo.alquileres.ui.Tareas;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -109,10 +92,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-/**
- * Maqueta 3D del edificio de alquileres. Los bloques se cargan desde
- * {@link MaquetaService} fuera del hilo de JavaFX y se convierten en nodos en el hilo FX.
- */
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Component
 @Scope("prototype")
 public class MaquetaController implements Refrescable {
@@ -230,7 +226,8 @@ public class MaquetaController implements Refrescable {
     private final Notificador notificador;
     private final MainController principal;
 
-    private final Map<EstadoInmueble, PhongMaterial> materiales = new EnumMap<>(EstadoInmueble.class);
+    private final Map<EstadoInmueble, PhongMaterial> materiales =
+            new EnumMap<>(EstadoInmueble.class);
     private final Map<EstadoInmueble, PhongMaterial> materialesAtenuados =
             new EnumMap<>(EstadoInmueble.class);
     private final Map<Color, PhongMaterial> materialesMora = new HashMap<>();
@@ -241,8 +238,9 @@ public class MaquetaController implements Refrescable {
             new EnumMap<>(BloqueMaqueta.CategoriaMora.class);
     private final Map<BloqueMaqueta.CategoriaVencimiento, PhongMaterial> materialesVencimiento =
             new EnumMap<>(BloqueMaqueta.CategoriaVencimiento.class);
-    private final Map<BloqueMaqueta.CategoriaVencimiento, PhongMaterial> materialesVencimientoAtenuados =
-            new EnumMap<>(BloqueMaqueta.CategoriaVencimiento.class);
+    private final Map<BloqueMaqueta.CategoriaVencimiento, PhongMaterial>
+            materialesVencimientoAtenuados =
+                    new EnumMap<>(BloqueMaqueta.CategoriaVencimiento.class);
     private final List<PhongMaterial> materialesRenta = new ArrayList<>();
     private final List<PhongMaterial> materialesRentaAtenuados = new ArrayList<>();
     private final Map<GeneradorEsquema.TipoAmbiente, PhongMaterial> materialesAmbiente =
@@ -259,13 +257,15 @@ public class MaquetaController implements Refrescable {
     private final Map<BloqueMaqueta, Box> cajasPlantaPorBloque = new HashMap<>();
     private final Map<BloqueMaqueta, Cylinder> marcasPlantaPorBloque = new HashMap<>();
     private final Map<BloqueMaqueta, PlantaPiso.Recinto> recintosPlantaPorBloque = new HashMap<>();
-    private final Map<Integer, PlantaPiso.Distribucion> distribucionesPlanta = new LinkedHashMap<>();
+    private final Map<Integer, PlantaPiso.Distribucion> distribucionesPlanta =
+            new LinkedHashMap<>();
     private final List<Box> basesPlanta = new ArrayList<>();
     private final Map<Node, Integer> mapaPisos = new HashMap<>();
     private final List<EtiquetaPiso> etiquetasPiso = new ArrayList<>();
     private final List<EtiquetaUnidad> etiquetasUnidad = new ArrayList<>();
     private final List<EtiquetaAmbiente> etiquetasAmbiente = new ArrayList<>();
-    private final Preferences preferencias = Preferences.userNodeForPackage(MaquetaController.class);
+    private final Preferences preferencias =
+            Preferences.userNodeForPackage(MaquetaController.class);
     private final EventHandler<KeyEvent> manejadorTecla = this::alPresionarTecla;
 
     private Group mundo;
@@ -273,9 +273,16 @@ public class MaquetaController implements Refrescable {
     private SubScene subEscena;
     private PerspectiveCamera camara;
     private Rotate rotacionX, rotacionY;
-    private PhongMaterial materialEstructura, materialSeleccion, materialHover,
-            materialLosa, materialPasillo, materialSueloClaro, materialSueloOscuro,
-            materialParedEsquema, materialSinDato, materialSinDatoAtenuado;
+    private PhongMaterial materialEstructura,
+            materialSeleccion,
+            materialHover,
+            materialLosa,
+            materialPasillo,
+            materialSueloClaro,
+            materialSueloOscuro,
+            materialParedEsquema,
+            materialSinDato,
+            materialSinDatoAtenuado;
     private Box suelo;
     private Geometria geometria;
     private List<Point3D> puntosEncuadre = List.of();
@@ -319,8 +326,11 @@ public class MaquetaController implements Refrescable {
     private boolean filtroActivo;
     private boolean filtroFijo;
 
-    public MaquetaController(MaquetaService service, Tareas tareas, Notificador notificador,
-                             MainController principal) {
+    public MaquetaController(
+            MaquetaService service,
+            Tareas tareas,
+            Notificador notificador,
+            MainController principal) {
         this.service = service;
         this.tareas = tareas;
         this.notificador = notificador;
@@ -329,8 +339,9 @@ public class MaquetaController implements Refrescable {
 
     @FXML
     public void initialize() {
-        modoVista = ModoVista.desdePreferencia(
-                preferencias.get(PREFERENCIA_MODO, ModoVista.ESTADO.name()));
+        modoVista =
+                ModoVista.desdePreferencia(
+                        preferencias.get(PREFERENCIA_MODO, ModoVista.ESTADO.name()));
         configurarSelectorModo();
         configurarNavegacionTeclado();
         actualizarBarraNavegacion();
@@ -345,10 +356,11 @@ public class MaquetaController implements Refrescable {
             reiniciarNavegacion();
             mostrarCargandoEscena();
         } else {
-            Platform.runLater(() -> {
-                reiniciarNavegacion();
-                mostrarCargandoEscena();
-            });
+            Platform.runLater(
+                    () -> {
+                        reiniciarNavegacion();
+                        mostrarCargandoEscena();
+                    });
         }
         tareas.ejecutar(service::cargar, this::aplicarResultado, this::mostrarError);
     }
@@ -393,8 +405,6 @@ public class MaquetaController implements Refrescable {
         agregarIluminacion(raiz3d);
         configurarCamara(raiz3d);
         if (lienzoPlano != null) {
-            // Igual que el SubScene: si el Canvas participa del layout, su tamaño
-            // enlazado al contenedor realimenta el cálculo y agranda la página.
             lienzoPlano.setManaged(false);
             lienzoPlano.widthProperty().bind(contenedor3d.widthProperty());
             lienzoPlano.heightProperty().bind(contenedor3d.heightProperty());
@@ -402,8 +412,12 @@ public class MaquetaController implements Refrescable {
         configurarTemaSuelo();
         configurarInteraccion();
 
-        contenedor3d.widthProperty().addListener((observable, anterior, actual) -> actualizarEncuadreYEtiquetas());
-        contenedor3d.heightProperty().addListener((observable, anterior, actual) -> actualizarEncuadreYEtiquetas());
+        contenedor3d
+                .widthProperty()
+                .addListener((observable, anterior, actual) -> actualizarEncuadreYEtiquetas());
+        contenedor3d
+                .heightProperty()
+                .addListener((observable, anterior, actual) -> actualizarEncuadreYEtiquetas());
         Platform.runLater(this::actualizarEncuadreYEtiquetas);
     }
 
@@ -419,7 +433,8 @@ public class MaquetaController implements Refrescable {
         actualizarResumen(resultado.bloques());
         if (resultado.bloques().isEmpty()) {
             limpiarEscena();
-            mostrarMensajeEscena("Sin inmuebles ubicados",
+            mostrarMensajeEscena(
+                    "Sin inmuebles ubicados",
                     "No hay unidades con nivel y orden para dibujar. "
                             + "Asigna una ubicación desde el formulario de inmuebles.");
             return;
@@ -431,7 +446,8 @@ public class MaquetaController implements Refrescable {
         } catch (RuntimeException error) {
             log.error("No se pudo construir la escena 3D de la maqueta", error);
             limpiarEscena();
-            mostrarMensajeEscena("No se pudo dibujar la maqueta",
+            mostrarMensajeEscena(
+                    "No se pudo dibujar la maqueta",
                     "Ocurrió un error al construir la vista 3D. Intenta nuevamente.");
             notificador.error("No se pudo dibujar la maqueta 3D. Intenta nuevamente.");
         }
@@ -448,8 +464,6 @@ public class MaquetaController implements Refrescable {
 
     private void configurarCamara(Group raiz3d) {
         subEscena = new SubScene(raiz3d, 1, 1, true, SceneAntialiasing.BALANCED);
-        // Sin managed, el tamaño enlazado del SubScene no retroalimenta el cálculo
-        // de tamaño del StackPane (eso hacía crecer la vista en cada pulso).
         subEscena.setManaged(false);
         subEscena.setFill(Color.TRANSPARENT);
         subEscena.widthProperty().bind(contenedor3d.widthProperty());
@@ -473,13 +487,18 @@ public class MaquetaController implements Refrescable {
     }
 
     private void configurarTemaSuelo() {
-        contenedor3d.sceneProperty().addListener((observable, anterior, escena) -> {
-            if (escena == null) return;
-            Parent raiz = escena.getRoot();
-            raiz.getStyleClass().addListener(
-                    (ListChangeListener<String>) cambio -> actualizarMaterialSuelo());
-            actualizarMaterialSuelo();
-        });
+        contenedor3d
+                .sceneProperty()
+                .addListener(
+                        (observable, anterior, escena) -> {
+                            if (escena == null) return;
+                            Parent raiz = escena.getRoot();
+                            raiz.getStyleClass()
+                                    .addListener(
+                                            (ListChangeListener<String>)
+                                                    cambio -> actualizarMaterialSuelo());
+                            actualizarMaterialSuelo();
+                        });
     }
 
     private void actualizarMaterialSuelo() {
@@ -490,7 +509,8 @@ public class MaquetaController implements Refrescable {
     }
 
     private boolean esTemaOscuro() {
-        return contenedor3d != null && contenedor3d.getScene() != null
+        return contenedor3d != null
+                && contenedor3d.getScene() != null
                 && contenedor3d.getScene().getRoot().getStyleClass().contains("dark");
     }
 
@@ -524,43 +544,45 @@ public class MaquetaController implements Refrescable {
         materialesMoraAtenuados.put(COLOR_MORA_MOROSO, materialAtenuado(COLOR_MORA_MOROSO));
         materialesMoraAtenuados.put(COLOR_MORA_ATRASO, materialAtenuado(COLOR_MORA_ATRASO));
 
-        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.AL_DIA,
-                material(COLOR_MORA_AL_DIA));
-        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.ATRASO_LEVE,
-                material(COLOR_MORA_ATRASO));
-        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.MOROSO,
-                material(COLOR_MORA_MOROSO));
-        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.SIN_MORA,
-                material(COLOR_SIN_DATO));
-        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.AL_DIA,
-                materialAtenuado(COLOR_MORA_AL_DIA));
-        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.ATRASO_LEVE,
-                materialAtenuado(COLOR_MORA_ATRASO));
-        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.MOROSO,
-                materialAtenuado(COLOR_MORA_MOROSO));
-        materialesCategoriaMoraAtenuados.put(BloqueMaqueta.CategoriaMora.SIN_MORA,
-                materialAtenuado(COLOR_SIN_DATO));
+        materialesCategoriaMora.put(
+                BloqueMaqueta.CategoriaMora.AL_DIA, material(COLOR_MORA_AL_DIA));
+        materialesCategoriaMora.put(
+                BloqueMaqueta.CategoriaMora.ATRASO_LEVE, material(COLOR_MORA_ATRASO));
+        materialesCategoriaMora.put(
+                BloqueMaqueta.CategoriaMora.MOROSO, material(COLOR_MORA_MOROSO));
+        materialesCategoriaMora.put(BloqueMaqueta.CategoriaMora.SIN_MORA, material(COLOR_SIN_DATO));
+        materialesCategoriaMoraAtenuados.put(
+                BloqueMaqueta.CategoriaMora.AL_DIA, materialAtenuado(COLOR_MORA_AL_DIA));
+        materialesCategoriaMoraAtenuados.put(
+                BloqueMaqueta.CategoriaMora.ATRASO_LEVE, materialAtenuado(COLOR_MORA_ATRASO));
+        materialesCategoriaMoraAtenuados.put(
+                BloqueMaqueta.CategoriaMora.MOROSO, materialAtenuado(COLOR_MORA_MOROSO));
+        materialesCategoriaMoraAtenuados.put(
+                BloqueMaqueta.CategoriaMora.SIN_MORA, materialAtenuado(COLOR_SIN_DATO));
 
-        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.VENCIDO,
-                material(COLOR_VENCIDO));
-        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS,
-                material(COLOR_MORA_MOROSO));
-        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS,
-                material(COLOR_MANTENIMIENTO));
-        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS,
-                material(COLOR_DISPONIBLE));
-        materialesVencimiento.put(BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO,
-                material(COLOR_SIN_DATO));
-        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.VENCIDO,
-                materialAtenuado(COLOR_VENCIDO));
-        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS,
+        materialesVencimiento.put(
+                BloqueMaqueta.CategoriaVencimiento.VENCIDO, material(COLOR_VENCIDO));
+        materialesVencimiento.put(
+                BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS, material(COLOR_MORA_MOROSO));
+        materialesVencimiento.put(
+                BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS, material(COLOR_MANTENIMIENTO));
+        materialesVencimiento.put(
+                BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS, material(COLOR_DISPONIBLE));
+        materialesVencimiento.put(
+                BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO, material(COLOR_SIN_DATO));
+        materialesVencimientoAtenuados.put(
+                BloqueMaqueta.CategoriaVencimiento.VENCIDO, materialAtenuado(COLOR_VENCIDO));
+        materialesVencimientoAtenuados.put(
+                BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS,
                 materialAtenuado(COLOR_MORA_MOROSO));
-        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS,
+        materialesVencimientoAtenuados.put(
+                BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS,
                 materialAtenuado(COLOR_MANTENIMIENTO));
-        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS,
+        materialesVencimientoAtenuados.put(
+                BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS,
                 materialAtenuado(COLOR_DISPONIBLE));
-        materialesVencimientoAtenuados.put(BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO,
-                materialAtenuado(COLOR_SIN_DATO));
+        materialesVencimientoAtenuados.put(
+                BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO, materialAtenuado(COLOR_SIN_DATO));
 
         for (Color color : COLORES_RENTA) {
             materialesRenta.add(material(color));
@@ -578,24 +600,24 @@ public class MaquetaController implements Refrescable {
         materialSueloClaro = materialSuelo(COLOR_SUELO_CLARO_CENTRO, COLOR_SUELO_CLARO_BORDE);
         materialSueloOscuro = materialSuelo(COLOR_SUELO_OSCURO_CENTRO, COLOR_SUELO_OSCURO_BORDE);
 
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.SALA_COMEDOR,
-                material(COLOR_ESQUEMA_SALA));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.COCINA,
-                material(COLOR_ESQUEMA_COCINA));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.DORMITORIO_PRINCIPAL,
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.SALA_COMEDOR, material(COLOR_ESQUEMA_SALA));
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.COCINA, material(COLOR_ESQUEMA_COCINA));
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.DORMITORIO_PRINCIPAL,
                 material(COLOR_ESQUEMA_DORMITORIO_PRINCIPAL));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.DORMITORIO,
-                material(COLOR_ESQUEMA_DORMITORIO));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.BANO,
-                material(COLOR_ESQUEMA_BANO));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.PASILLO,
-                material(COLOR_ESQUEMA_PASILLO));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.PASILLO_AUXILIAR,
-                material(COLOR_ESQUEMA_PASILLO));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.AMBIENTE,
-                material(COLOR_ESQUEMA_AMBIENTE));
-        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.AMBIENTE_AUXILIAR,
-                material(COLOR_ESQUEMA_AMBIENTE));
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.DORMITORIO, material(COLOR_ESQUEMA_DORMITORIO));
+        materialesAmbiente.put(GeneradorEsquema.TipoAmbiente.BANO, material(COLOR_ESQUEMA_BANO));
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.PASILLO, material(COLOR_ESQUEMA_PASILLO));
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.PASILLO_AUXILIAR, material(COLOR_ESQUEMA_PASILLO));
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.AMBIENTE, material(COLOR_ESQUEMA_AMBIENTE));
+        materialesAmbiente.put(
+                GeneradorEsquema.TipoAmbiente.AMBIENTE_AUXILIAR, material(COLOR_ESQUEMA_AMBIENTE));
     }
 
     private static List<Color> crearPaletaRenta() {
@@ -614,7 +636,6 @@ public class MaquetaController implements Refrescable {
         return material;
     }
 
-    /** Paredes del esquema: una emisión tenue evita que queden negras en tema oscuro. */
     private PhongMaterial materialParedEsquema(Color color) {
         PhongMaterial material = material(color);
         WritableImage emision = new WritableImage(1, 1);
@@ -624,8 +645,10 @@ public class MaquetaController implements Refrescable {
     }
 
     private PhongMaterial materialAtenuado(Color color) {
-        PhongMaterial material = new PhongMaterial(new Color(color.getRed(), color.getGreen(),
-                color.getBlue(), ALFA_ATENUADO));
+        PhongMaterial material =
+                new PhongMaterial(
+                        new Color(
+                                color.getRed(), color.getGreen(), color.getBlue(), ALFA_ATENUADO));
         material.setSpecularColor(Color.TRANSPARENT);
         material.setSpecularPower(0);
         return material;
@@ -698,8 +721,7 @@ public class MaquetaController implements Refrescable {
 
             List<BloqueMaqueta> unidades = new ArrayList<>();
             for (FilaPiso fila : piso.filas()) unidades.addAll(fila.bloques());
-            PlantaPiso.Distribucion distribucion =
-                    PlantaPiso.calcular(piso.nivel(), unidades);
+            PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(piso.nivel(), unidades);
             distribucionesPlanta.put(piso.nivel(), distribucion);
             for (PlantaPiso.Recinto recinto : distribucion.recintos()) {
                 recintosPlantaPorBloque.put(recinto.bloque(), recinto);
@@ -734,8 +756,12 @@ public class MaquetaController implements Refrescable {
         for (BloqueMaqueta bloque : bloques) {
             porNivel.computeIfAbsent(bloque.nivel(), nivel -> new ArrayList<>()).add(bloque);
         }
-        porNivel.values().forEach(lista ->
-                lista.sort(Comparator.comparingInt(BloqueMaqueta::orden).thenComparing(BloqueMaqueta::id)));
+        porNivel.values()
+                .forEach(
+                        lista ->
+                                lista.sort(
+                                        Comparator.comparingInt(BloqueMaqueta::orden)
+                                                .thenComparing(BloqueMaqueta::id)));
 
         List<Integer> niveles = List.copyOf(porNivel.keySet());
         Map<Integer, List<List<BloqueMaqueta>>> filasPorNivel = new LinkedHashMap<>();
@@ -744,15 +770,17 @@ public class MaquetaController implements Refrescable {
         for (Map.Entry<Integer, List<BloqueMaqueta>> entrada : porNivel.entrySet()) {
             List<List<BloqueMaqueta>> filas = repartirFilas(entrada.getValue());
             filasPorNivel.put(entrada.getKey(), filas);
-            columnasMax = Math.max(columnasMax, filas.stream().mapToInt(List::size).max().orElse(1));
+            columnasMax =
+                    Math.max(columnasMax, filas.stream().mapToInt(List::size).max().orElse(1));
             filasMax = Math.max(filasMax, filas.size());
         }
 
         double ancho = anchoColumnas(columnasMax);
-        double profundidad = filasMax * PROFUNDIDAD_UNIDAD
-                + Math.max(0, filasMax - 1) * SEPARACION_FILA;
+        double profundidad =
+                filasMax * PROFUNDIDAD_UNIDAD + Math.max(0, filasMax - 1) * SEPARACION_FILA;
         int cantidadNiveles = Math.max(1, niveles.size());
-        double alto = cantidadNiveles * ALTO_UNIDAD + Math.max(0, cantidadNiveles - 1) * SEPARACION_PISO;
+        double alto =
+                cantidadNiveles * ALTO_UNIDAD + Math.max(0, cantidadNiveles - 1) * SEPARACION_PISO;
 
         double anchoBase = ancho + 2 * MARGEN_SUELO_X;
         double profundidadBase = profundidad + 2 * MARGEN_SUELO_Z;
@@ -789,19 +817,31 @@ public class MaquetaController implements Refrescable {
                 }
                 filasGeometria.add(new FilaPiso(List.copyOf(unidades), z));
             }
-            double profundidadPiso = filas.size() * PROFUNDIDAD_UNIDAD
-                    + Math.max(0, filas.size() - 1) * SEPARACION_FILA;
-            pisos.put(nivel, new PisoGeometria(nivel, y, anchoPiso, profundidadPiso,
-                    List.copyOf(filasGeometria)));
+            double profundidadPiso =
+                    filas.size() * PROFUNDIDAD_UNIDAD
+                            + Math.max(0, filas.size() - 1) * SEPARACION_FILA;
+            pisos.put(
+                    nivel,
+                    new PisoGeometria(
+                            nivel, y, anchoPiso, profundidadPiso, List.copyOf(filasGeometria)));
         }
 
-        return new Geometria(ancho, profundidad, alto, anchoBase, profundidadBase,
-                anchoTecho, profundidadTecho, desplazamientoY, pisos, posiciones);
+        return new Geometria(
+                ancho,
+                profundidad,
+                alto,
+                anchoBase,
+                profundidadBase,
+                anchoTecho,
+                profundidadTecho,
+                desplazamientoY,
+                pisos,
+                posiciones);
     }
 
     private static List<List<BloqueMaqueta>> repartirFilas(List<BloqueMaqueta> unidades) {
-        int cantidadFilas = Math.max(1,
-                (unidades.size() + MAX_UNIDADES_POR_FILA - 1) / MAX_UNIDADES_POR_FILA);
+        int cantidadFilas =
+                Math.max(1, (unidades.size() + MAX_UNIDADES_POR_FILA - 1) / MAX_UNIDADES_POR_FILA);
         int base = unidades.size() / cantidadFilas;
         int resto = unidades.size() % cantidadFilas;
         List<List<BloqueMaqueta>> filas = new ArrayList<>(cantidadFilas);
@@ -820,39 +860,69 @@ public class MaquetaController implements Refrescable {
 
     private List<Point3D> calcularPuntosEncuadre() {
         List<Point3D> puntos = new ArrayList<>();
-        agregarPuntosCaja(puntos, 0, yBase(), 0, geometria.anchoBase(), BASE_ALTO, geometria.profundidadBase());
+        agregarPuntosCaja(
+                puntos,
+                0,
+                yBase(),
+                0,
+                geometria.anchoBase(),
+                BASE_ALTO,
+                geometria.profundidadBase());
         double dzTecho = geometria.profundidadTecho() / 2 - COLUMNA_ANCHO / 2;
         double dxTecho = geometria.anchoTecho() / 2 - COLUMNA_ANCHO / 2;
-        agregarPuntosCaja(puntos, 0, yTecho(), -dzTecho,
-                geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO);
-        agregarPuntosCaja(puntos, 0, yTecho(), dzTecho,
-                geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO);
-        agregarPuntosCaja(puntos, -dxTecho, yTecho(), 0,
-                COLUMNA_ANCHO, TECHO_ALTO, geometria.profundidadTecho());
-        agregarPuntosCaja(puntos, dxTecho, yTecho(), 0,
-                COLUMNA_ANCHO, TECHO_ALTO, geometria.profundidadTecho());
-        for (double dx : new double[]{-xColumna(), xColumna()}) {
-            for (double dz : new double[]{-zColumna(), zColumna()}) {
-                agregarPuntosCaja(puntos, dx, yColumnas(), dz,
-                        COLUMNA_ANCHO, altoColumna(), COLUMNA_ANCHO);
+        agregarPuntosCaja(
+                puntos, 0, yTecho(), -dzTecho, geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO);
+        agregarPuntosCaja(
+                puntos, 0, yTecho(), dzTecho, geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO);
+        agregarPuntosCaja(
+                puntos,
+                -dxTecho,
+                yTecho(),
+                0,
+                COLUMNA_ANCHO,
+                TECHO_ALTO,
+                geometria.profundidadTecho());
+        agregarPuntosCaja(
+                puntos,
+                dxTecho,
+                yTecho(),
+                0,
+                COLUMNA_ANCHO,
+                TECHO_ALTO,
+                geometria.profundidadTecho());
+        for (double dx : new double[] {-xColumna(), xColumna()}) {
+            for (double dz : new double[] {-zColumna(), zColumna()}) {
+                agregarPuntosCaja(
+                        puntos, dx, yColumnas(), dz, COLUMNA_ANCHO, altoColumna(), COLUMNA_ANCHO);
             }
         }
         for (Point3D posicion : geometria.posiciones().values()) {
-            agregarPuntosCaja(puntos, posicion.getX(), posicion.getY(), posicion.getZ(),
-                    ANCHO_UNIDAD, ALTO_UNIDAD, PROFUNDIDAD_UNIDAD);
+            agregarPuntosCaja(
+                    puntos,
+                    posicion.getX(),
+                    posicion.getY(),
+                    posicion.getZ(),
+                    ANCHO_UNIDAD,
+                    ALTO_UNIDAD,
+                    PROFUNDIDAD_UNIDAD);
         }
         return puntos;
     }
 
-    private static void agregarPuntosCaja(List<Point3D> puntos, double centroX, double centroY,
-                                          double centroZ, double ancho, double alto,
-                                          double profundidad) {
+    private static void agregarPuntosCaja(
+            List<Point3D> puntos,
+            double centroX,
+            double centroY,
+            double centroZ,
+            double ancho,
+            double alto,
+            double profundidad) {
         double mitadX = ancho / 2;
         double mitadY = alto / 2;
         double mitadZ = profundidad / 2;
-        for (double dx : new double[]{-mitadX, mitadX}) {
-            for (double dy : new double[]{-mitadY, mitadY}) {
-                for (double dz : new double[]{-mitadZ, mitadZ}) {
+        for (double dx : new double[] {-mitadX, mitadX}) {
+            for (double dy : new double[] {-mitadY, mitadY}) {
+                for (double dz : new double[] {-mitadZ, mitadZ}) {
                     puntos.add(new Point3D(centroX + dx, centroY + dy, centroZ + dz));
                 }
             }
@@ -864,7 +934,10 @@ public class MaquetaController implements Refrescable {
     }
 
     private double yTecho() {
-        return -geometria.alto() / 2 - TECHO_ELEVACION - TECHO_ALTO / 2 + geometria.desplazamientoY();
+        return -geometria.alto() / 2
+                - TECHO_ELEVACION
+                - TECHO_ALTO / 2
+                + geometria.desplazamientoY();
     }
 
     private double yColumnas() {
@@ -897,10 +970,11 @@ public class MaquetaController implements Refrescable {
     }
 
     private Node crearLosa(PisoGeometria piso) {
-        Box losa = new Box(
-                piso.ancho() + 2 * LOSA_MARGEN_X,
-                LOSA_ALTO,
-                piso.profundidad() + 2 * LOSA_MARGEN_Z);
+        Box losa =
+                new Box(
+                        piso.ancho() + 2 * LOSA_MARGEN_X,
+                        LOSA_ALTO,
+                        piso.profundidad() + 2 * LOSA_MARGEN_Z);
         losa.setMaterial(materialLosa);
         losa.setTranslateY(piso.y() + ALTO_UNIDAD / 2 + LOSA_ALTO / 2);
         losa.setCursor(Cursor.HAND);
@@ -912,16 +986,28 @@ public class MaquetaController implements Refrescable {
         Group techo = new Group();
         double dz = geometria.profundidadTecho() / 2 - COLUMNA_ANCHO / 2;
         double dx = geometria.anchoTecho() / 2 - COLUMNA_ANCHO / 2;
-        techo.getChildren().addAll(
-                viga(geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO, 0, yTecho(), -dz),
-                viga(geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO, 0, yTecho(), dz),
-                viga(COLUMNA_ANCHO, TECHO_ALTO, geometria.profundidadTecho(), -dx, yTecho(), 0),
-                viga(COLUMNA_ANCHO, TECHO_ALTO, geometria.profundidadTecho(), dx, yTecho(), 0));
+        techo.getChildren()
+                .addAll(
+                        viga(geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO, 0, yTecho(), -dz),
+                        viga(geometria.anchoTecho(), TECHO_ALTO, COLUMNA_ANCHO, 0, yTecho(), dz),
+                        viga(
+                                COLUMNA_ANCHO,
+                                TECHO_ALTO,
+                                geometria.profundidadTecho(),
+                                -dx,
+                                yTecho(),
+                                0),
+                        viga(
+                                COLUMNA_ANCHO,
+                                TECHO_ALTO,
+                                geometria.profundidadTecho(),
+                                dx,
+                                yTecho(),
+                                0));
         return techo;
     }
 
-    private Box viga(double ancho, double alto, double profundidad,
-                     double x, double y, double z) {
+    private Box viga(double ancho, double alto, double profundidad, double x, double y, double z) {
         Box viga = new Box(ancho, alto, profundidad);
         viga.setMaterial(materialEstructura);
         viga.setTranslateX(x);
@@ -932,8 +1018,8 @@ public class MaquetaController implements Refrescable {
 
     private Node crearColumnas() {
         Group columnas = new Group();
-        for (double dx : new double[]{-xColumna(), xColumna()}) {
-            for (double dz : new double[]{-zColumna(), zColumna()}) {
+        for (double dx : new double[] {-xColumna(), xColumna()}) {
+            for (double dz : new double[] {-zColumna(), zColumna()}) {
                 Box columna = new Box(COLUMNA_ANCHO, altoColumna(), COLUMNA_ANCHO);
                 columna.setMaterial(materialEstructura);
                 columna.setTranslateX(dx);
@@ -955,17 +1041,15 @@ public class MaquetaController implements Refrescable {
             etiqueta.setCursor(Cursor.HAND);
             etiqueta.setVisible(false);
             int nivel = piso.nivel();
-            etiqueta.setOnMouseClicked(evento -> {
-                if (evento.getButton() != MouseButton.PRIMARY) return;
-                entrarPiso(nivel);
-                evento.consume();
-            });
+            etiqueta.setOnMouseClicked(
+                    evento -> {
+                        if (evento.getButton() != MouseButton.PRIMARY) return;
+                        entrarPiso(nivel);
+                        evento.consume();
+                    });
             capaEtiquetas.getChildren().add(etiqueta);
 
-            Point3D ancla = new Point3D(
-                    -xColumna(),
-                    piso.y(),
-                    piso.filas().get(0).z());
+            Point3D ancla = new Point3D(-xColumna(), piso.y(), piso.filas().get(0).z());
             etiquetasPiso.add(new EtiquetaPiso(nivel, etiqueta, ancla));
         }
     }
@@ -980,21 +1064,27 @@ public class MaquetaController implements Refrescable {
             etiqueta.setMouseTransparent(true);
             etiqueta.setVisible(false);
             capaEtiquetas.getChildren().add(etiqueta);
-            Point3D ancla = new Point3D(
-                    posicion.getX(),
-                    posicion.getY() - ALTO_UNIDAD / 2,
-                    posicion.getZ() - PROFUNDIDAD_UNIDAD / 2);
+            Point3D ancla =
+                    new Point3D(
+                            posicion.getX(),
+                            posicion.getY() - ALTO_UNIDAD / 2,
+                            posicion.getZ() - PROFUNDIDAD_UNIDAD / 2);
             PlantaPiso.Recinto recinto = recintosPlantaPorBloque.get(bloque);
             PisoGeometria piso = geometria.pisos().get(bloque.nivel());
-            Point3D anclaPlanta = recinto == null || piso == null ? ancla
-                    : new Point3D(recinto.x(), piso.y() - ALTO_CONTORNO_PLANTA, recinto.z());
+            Point3D anclaPlanta =
+                    recinto == null || piso == null
+                            ? ancla
+                            : new Point3D(
+                                    recinto.x(), piso.y() - ALTO_CONTORNO_PLANTA, recinto.z());
             etiquetasUnidad.add(new EtiquetaUnidad(bloque, etiqueta, ancla, anclaPlanta));
         }
     }
 
     static String numeroUnidad(BloqueMaqueta bloque) {
-        String texto = bloque.nombre() == null || bloque.nombre().isBlank()
-                ? bloque.codigo() : bloque.nombre();
+        String texto =
+                bloque.nombre() == null || bloque.nombre().isBlank()
+                        ? bloque.codigo()
+                        : bloque.nombre();
         if (texto != null) {
             Matcher matcher = NUMERO_UNIDAD.matcher(texto);
             if (matcher.find()) return matcher.group(1);
@@ -1044,8 +1134,11 @@ public class MaquetaController implements Refrescable {
         }
         gruposRecintos.put(piso.nivel(), recintos);
 
-        Box base = new Box(distribucion.anchoConMargen(), ALTO_PLACA_PLANTA,
-                distribucion.profundidadConMargen());
+        Box base =
+                new Box(
+                        distribucion.anchoConMargen(),
+                        ALTO_PLACA_PLANTA,
+                        distribucion.profundidadConMargen());
         base.setMaterial(esTemaOscuro() ? materialSueloOscuro : materialSueloClaro);
         base.setTranslateY(piso.y() + ALTO_PLACA_PLANTA / 2 + 1);
         basesPlanta.add(base);
@@ -1082,8 +1175,7 @@ public class MaquetaController implements Refrescable {
         paredDerecha.setTranslateX(ancho / 2 - mitadGrosor);
         paredDerecha.setTranslateY(yPared);
 
-        Group grupo = new Group(placa, paredFrente, paredFondo,
-                paredIzquierda, paredDerecha);
+        Group grupo = new Group(placa, paredFrente, paredFondo, paredIzquierda, paredDerecha);
 
         if (bloque.estado() == ALQUILADO) {
             Color colorMora = colorMora(bloque.semaforo());
@@ -1114,8 +1206,6 @@ public class MaquetaController implements Refrescable {
         return pared;
     }
 
-    // ------------------------------------------------------- Esquema unidad
-
     private void crearGrupoUnidad(BloqueMaqueta bloque, GeneradorEsquema.Esquema esquema) {
         limpiarGrupoUnidad();
         Group grupo = new Group();
@@ -1143,8 +1233,7 @@ public class MaquetaController implements Refrescable {
             etiqueta.setMouseTransparent(true);
             etiqueta.setVisible(false);
             capaEtiquetas.getChildren().add(etiqueta);
-            etiquetasAmbiente.add(new EtiquetaAmbiente(etiqueta,
-                    new Point3D(x, yEtiqueta, z)));
+            etiquetasAmbiente.add(new EtiquetaAmbiente(etiqueta, new Point3D(x, yEtiqueta, z)));
         }
 
         grupoUnidad = grupo;
@@ -1152,8 +1241,8 @@ public class MaquetaController implements Refrescable {
         mundo.getChildren().add(grupo);
     }
 
-    private List<Box> paredesEsquema(double ancho, double profundidad,
-                                     double x, double z, double y) {
+    private List<Box> paredesEsquema(
+            double ancho, double profundidad, double x, double z, double y) {
         double grosor = GROSOR_PARED_ESQUEMA;
         Box frente = new Box(ancho, ALTO_PARED_ESQUEMA, grosor);
         frente.setTranslateX(x);
@@ -1187,17 +1276,14 @@ public class MaquetaController implements Refrescable {
     }
 
     private String textoAmbiente(BloqueMaqueta bloque, GeneradorEsquema.Recinto recinto) {
-        return nombreAmbiente(bloque, recinto.tipo()) + " · "
-                + formatearArea(recinto.area());
+        return nombreAmbiente(bloque, recinto.tipo()) + " · " + formatearArea(recinto.area());
     }
 
-    private String nombreAmbiente(BloqueMaqueta bloque,
-                                  GeneradorEsquema.TipoAmbiente tipo) {
+    private String nombreAmbiente(BloqueMaqueta bloque, GeneradorEsquema.TipoAmbiente tipo) {
         if (tipo == GeneradorEsquema.TipoAmbiente.AMBIENTE
                 || tipo == GeneradorEsquema.TipoAmbiente.AMBIENTE_AUXILIAR) {
             String tipoInmueble = bloque == null ? null : bloque.tipo();
-            return tipoInmueble == null || tipoInmueble.isBlank()
-                    ? "Ambiente" : tipoInmueble;
+            return tipoInmueble == null || tipoInmueble.isBlank() ? "Ambiente" : tipoInmueble;
         }
         return tipo.getEtiqueta();
     }
@@ -1213,8 +1299,7 @@ public class MaquetaController implements Refrescable {
         }
         if (avisosUnidad != null) {
             boolean hayAvisos = esquemaActual != null && !esquemaActual.avisos().isEmpty();
-            avisosUnidad.setText(hayAvisos
-                    ? String.join(" · ", esquemaActual.avisos()) : "");
+            avisosUnidad.setText(hayAvisos ? String.join(" · ", esquemaActual.avisos()) : "");
             avisosUnidad.setVisible(hayAvisos);
             avisosUnidad.setManaged(hayAvisos);
         }
@@ -1225,20 +1310,23 @@ public class MaquetaController implements Refrescable {
     private void cargarDetallePanel(BloqueMaqueta bloque) {
         if (cuerpoPanelUnidad == null) return;
         mostrarCargandoDetalle(cuerpoPanelUnidad);
-        tareas.ejecutar(() -> service.detalle(bloque.id()), detalle -> {
-            if (!esUnidadActual(bloque)) return;
-            if (detalle == null) {
-                mostrarErrorPanel();
-                return;
-            }
-            detalleUnidad = detalle;
-            cuerpoPanelUnidad.getChildren().setAll(crearContenidoDetalle(detalle, true));
-            cuerpoPanelUnidad.requestLayout();
-        }, error -> {
-            if (!esUnidadActual(bloque)) return;
-            notificador.error("No se pudo cargar el detalle de la unidad.");
-            mostrarErrorPanel();
-        });
+        tareas.ejecutar(
+                () -> service.detalle(bloque.id()),
+                detalle -> {
+                    if (!esUnidadActual(bloque)) return;
+                    if (detalle == null) {
+                        mostrarErrorPanel();
+                        return;
+                    }
+                    detalleUnidad = detalle;
+                    cuerpoPanelUnidad.getChildren().setAll(crearContenidoDetalle(detalle, true));
+                    cuerpoPanelUnidad.requestLayout();
+                },
+                error -> {
+                    if (!esUnidadActual(bloque)) return;
+                    notificador.error("No se pudo cargar el detalle de la unidad.");
+                    mostrarErrorPanel();
+                });
     }
 
     private void mostrarErrorPanel() {
@@ -1250,8 +1338,10 @@ public class MaquetaController implements Refrescable {
     }
 
     private boolean esUnidadActual(BloqueMaqueta bloque) {
-        return nivelVista == NivelVista.UNIDAD && bloqueUnidad != null
-                && bloque != null && bloqueUnidad.id().equals(bloque.id());
+        return nivelVista == NivelVista.UNIDAD
+                && bloqueUnidad != null
+                && bloque != null
+                && bloqueUnidad.id().equals(bloque.id());
     }
 
     @FXML
@@ -1274,8 +1364,10 @@ public class MaquetaController implements Refrescable {
     }
 
     private void cambiarVistaUnidad(boolean plano) {
-        if (nivelVista != NivelVista.UNIDAD || plano == vistaPlano
-                || transicionVista != null || transicionActiva()) {
+        if (nivelVista != NivelVista.UNIDAD
+                || plano == vistaPlano
+                || transicionVista != null
+                || transicionActiva()) {
             return;
         }
         if (veloVista == null) {
@@ -1286,23 +1378,34 @@ public class MaquetaController implements Refrescable {
 
         veloVista.setVisible(true);
         veloVista.setOpacity(0);
-        Timeline subida = new Timeline(new KeyFrame(DURACION_FUNDIDO,
-                new KeyValue(veloVista.opacityProperty(), 1, Interpolator.EASE_BOTH)));
-        subida.setOnFinished(evento -> {
-            if (transicionVista != subida) return;
-            vistaPlano = plano;
-            aplicarVistaUnidad();
-            Timeline bajada = new Timeline(new KeyFrame(DURACION_FUNDIDO,
-                    new KeyValue(veloVista.opacityProperty(), 0,
-                            Interpolator.EASE_BOTH)));
-            bajada.setOnFinished(fin -> {
-                if (transicionVista != bajada) return;
-                transicionVista = null;
-                veloVista.setVisible(false);
-            });
-            transicionVista = bajada;
-            bajada.play();
-        });
+        Timeline subida =
+                new Timeline(
+                        new KeyFrame(
+                                DURACION_FUNDIDO,
+                                new KeyValue(
+                                        veloVista.opacityProperty(), 1, Interpolator.EASE_BOTH)));
+        subida.setOnFinished(
+                evento -> {
+                    if (transicionVista != subida) return;
+                    vistaPlano = plano;
+                    aplicarVistaUnidad();
+                    Timeline bajada =
+                            new Timeline(
+                                    new KeyFrame(
+                                            DURACION_FUNDIDO,
+                                            new KeyValue(
+                                                    veloVista.opacityProperty(),
+                                                    0,
+                                                    Interpolator.EASE_BOTH)));
+                    bajada.setOnFinished(
+                            fin -> {
+                                if (transicionVista != bajada) return;
+                                transicionVista = null;
+                                veloVista.setVisible(false);
+                            });
+                    transicionVista = bajada;
+                    bajada.play();
+                });
         transicionVista = subida;
         subida.play();
     }
@@ -1337,16 +1440,17 @@ public class MaquetaController implements Refrescable {
         }
     }
 
-    // ------------------------------------------------------ Plano 2D (Canvas)
-
     private void dibujarPlano() {
         if (lienzoPlano == null) return;
         GraphicsContext gc = lienzoPlano.getGraphicsContext2D();
         double ancho = lienzoPlano.getWidth();
         double alto = lienzoPlano.getHeight();
         gc.clearRect(0, 0, ancho, alto);
-        if (nivelVista != NivelVista.UNIDAD || !vistaPlano
-                || esquemaActual == null || ancho <= 0 || alto <= 0) {
+        if (nivelVista != NivelVista.UNIDAD
+                || !vistaPlano
+                || esquemaActual == null
+                || ancho <= 0
+                || alto <= 0) {
             return;
         }
 
@@ -1356,13 +1460,15 @@ public class MaquetaController implements Refrescable {
         double margenInferior = 40;
         double disponibleAncho = Math.max(80, anchoDisponible - 2 * margenLateral);
         double disponibleAlto = Math.max(80, alto - margenSuperior - margenInferior);
-        double escala = Math.min(disponibleAncho / esquemaActual.ancho(),
-                disponibleAlto / esquemaActual.alto()) * zoomPlano;
+        double escala =
+                Math.min(
+                                disponibleAncho / esquemaActual.ancho(),
+                                disponibleAlto / esquemaActual.alto())
+                        * zoomPlano;
         if (!Double.isFinite(escala) || escala <= 0) return;
 
         double ox = (anchoDisponible - esquemaActual.ancho() * escala) / 2;
-        double oy = margenSuperior
-                + (disponibleAlto - esquemaActual.alto() * escala) / 2;
+        double oy = margenSuperior + (disponibleAlto - esquemaActual.alto() * escala) / 2;
         boolean oscuro = esTemaOscuro();
         Color linea = oscuro ? COLOR_LINEA_OSCURA : COLOR_LINEA_CLARA;
 
@@ -1393,17 +1499,15 @@ public class MaquetaController implements Refrescable {
             gc.setFill(linea);
             double tamano = Math.max(8, Math.min(13, escala * 0.26));
             gc.setFont(Font.font("System", FontWeight.SEMI_BOLD, tamano));
-            gc.fillText(nombreAmbiente(bloqueUnidad, recinto.tipo()),
-                    centroX, centroY - tamano * 0.55);
-            gc.setFont(Font.font("System", FontWeight.NORMAL,
-                    Math.max(8, tamano - 2)));
+            gc.fillText(
+                    nombreAmbiente(bloqueUnidad, recinto.tipo()), centroX, centroY - tamano * 0.55);
+            gc.setFont(Font.font("System", FontWeight.NORMAL, Math.max(8, tamano - 2)));
             gc.fillText(formatearArea(recinto.area()), centroX, centroY + tamano * 0.6);
         }
 
         gc.setStroke(linea);
         gc.setLineWidth(3);
-        gc.strokeRect(ox, oy, esquemaActual.ancho() * escala,
-                esquemaActual.alto() * escala);
+        gc.strokeRect(ox, oy, esquemaActual.ancho() * escala, esquemaActual.alto() * escala);
 
         GeneradorEsquema.Puerta puerta = esquemaActual.puerta();
         if (puerta != null) {
@@ -1414,16 +1518,16 @@ public class MaquetaController implements Refrescable {
             gc.setStroke(linea);
             gc.setLineWidth(2);
             gc.strokeLine(px - pw / 2, py, px - pw / 2, py - pw);
-            gc.strokeArc(px - pw / 2, py - pw, pw * 2, pw * 2,
-                    0, 90, ArcType.OPEN);
+            gc.strokeArc(px - pw / 2, py - pw, pw * 2, pw * 2, 0, 90, ArcType.OPEN);
         }
 
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.BASELINE);
         gc.setFill(linea);
         gc.setFont(Font.font("System", FontWeight.NORMAL, 10.5));
-        String medida = String.format(Locale.US, "%.1f × %.1f m",
-                esquemaActual.ancho(), esquemaActual.alto());
+        String medida =
+                String.format(
+                        Locale.US, "%.1f × %.1f m", esquemaActual.ancho(), esquemaActual.alto());
         if (esquemaActual.areaEstimada()) medida += " · área estimada";
         if (esquemaActual.ajustado()) medida += " · distribución ajustada";
         gc.fillText(medida, ox, Math.max(12, oy - 12));
@@ -1480,7 +1584,8 @@ public class MaquetaController implements Refrescable {
         if (nivelVista == NivelVista.PISO) {
             Node nodo = nodosPlantaPorBloque.get(bloque);
             PlantaPiso.Recinto recinto = recintosPlantaPorBloque.get(bloque);
-            if (!(nodo instanceof Group grupo) || recinto == null
+            if (!(nodo instanceof Group grupo)
+                    || recinto == null
                     || contornoSeleccionPlanta == null) {
                 return;
             }
@@ -1547,23 +1652,27 @@ public class MaquetaController implements Refrescable {
         mostrarCargandoDetalle(cuerpo);
 
         boolean[] activo = {true};
-        dialogo.setOnHidden(evento -> {
-            activo[0] = false;
-            limpiarSeleccion();
-        });
+        dialogo.setOnHidden(
+                evento -> {
+                    activo[0] = false;
+                    limpiarSeleccion();
+                });
 
-        tareas.ejecutar(() -> service.detalle(bloque.id()), detalle -> {
-            if (!activo[0]) return;
-            cuerpo.getChildren().setAll(crearContenidoDetalle(detalle));
-            cuerpo.requestLayout();
-        }, error -> {
-            if (!activo[0]) return;
-            notificador.error("No se pudo cargar el detalle del inmueble.");
-            Label mensaje = new Label("No se pudo cargar el detalle. Intenta nuevamente.");
-            mensaje.getStyleClass().add("campo-error");
-            mensaje.setWrapText(true);
-            cuerpo.getChildren().setAll(mensaje);
-        });
+        tareas.ejecutar(
+                () -> service.detalle(bloque.id()),
+                detalle -> {
+                    if (!activo[0]) return;
+                    cuerpo.getChildren().setAll(crearContenidoDetalle(detalle));
+                    cuerpo.requestLayout();
+                },
+                error -> {
+                    if (!activo[0]) return;
+                    notificador.error("No se pudo cargar el detalle del inmueble.");
+                    Label mensaje = new Label("No se pudo cargar el detalle. Intenta nuevamente.");
+                    mensaje.getStyleClass().add("campo-error");
+                    mensaje.setWrapText(true);
+                    cuerpo.getChildren().setAll(mensaje);
+                });
 
         var resultado = dialogo.showAndWait();
         if (resultado.isPresent() && resultado.get() == ver && principal != null) {
@@ -1587,16 +1696,15 @@ public class MaquetaController implements Refrescable {
         return crearContenidoDetalle(detalle, false);
     }
 
-    private Node crearContenidoDetalle(MaquetaService.DetalleMaqueta detalle,
-                                       boolean compacto) {
+    private Node crearContenidoDetalle(MaquetaService.DetalleMaqueta detalle, boolean compacto) {
         VBox contenido = new VBox(8);
         Label titulo = new Label(detalle.codigo() + " · " + detalle.nombre());
         titulo.getStyleClass().add("dialogo-titulo");
         titulo.setWrapText(true);
         contenido.getChildren().addAll(titulo, new Separator());
         if (modoVista != ModoVista.ESTADO) {
-            Label datoModo = new Label("Vista " + modoVista.etiqueta()
-                    + " · " + descripcionModo(detalle));
+            Label datoModo =
+                    new Label("Vista " + modoVista.etiqueta() + " · " + descripcionModo(detalle));
             datoModo.getStyleClass().add("maqueta-detalle-modo");
             datoModo.setWrapText(true);
             contenido.getChildren().add(datoModo);
@@ -1609,8 +1717,12 @@ public class MaquetaController implements Refrescable {
         agregarPar(datos, 0, 1, "Nivel / orden", nivelOrden(detalle));
         agregarFilaCompleta(datos, 1, "Dirección", valor(detalle.direccion()));
         agregarPar(datos, 2, 0, "Distrito", valor(detalle.distrito()));
-        agregarPar(datos, 2, 1, "Área", detalle.areaM2() == null
-                ? "—" : detalle.areaM2().toPlainString() + " m²");
+        agregarPar(
+                datos,
+                2,
+                1,
+                "Área",
+                detalle.areaM2() == null ? "—" : detalle.areaM2().toPlainString() + " m²");
         agregarPar(datos, 3, 0, "Dormitorios", numero(detalle.dormitorios()));
         agregarPar(datos, 3, 1, "Baños", numero(detalle.banos()));
         agregarPar(datos, 4, 0, "Renta referencial", moneda(detalle.rentaReferencial()));
@@ -1627,8 +1739,10 @@ public class MaquetaController implements Refrescable {
             sinContrato.setWrapText(true);
             contenido.getChildren().add(sinContrato);
             if (detalle.inconsistencia()) {
-                Label aviso = new Label("Inconsistencia: el inmueble figura como alquilado "
-                        + "pero no tiene un contrato vigente.");
+                Label aviso =
+                        new Label(
+                                "Inconsistencia: el inmueble figura como alquilado "
+                                        + "pero no tiene un contrato vigente.");
                 aviso.getStyleClass().add("campo-error");
                 aviso.setWrapText(true);
                 contenido.getChildren().add(aviso);
@@ -1646,18 +1760,18 @@ public class MaquetaController implements Refrescable {
             agregarPar(datosContrato, 3, 1, "Fecha de fin", Fechas.dia(contrato.fechaFin()));
             contenido.getChildren().add(datosContrato);
 
-            HBox resumen = new HBox(compacto ? 16 : 30,
-                    datoResumen("Cuotas vencidas", String.valueOf(contrato.cuotasVencidas())),
-                    datoResumen("Monto total pendiente", moneda(contrato.montoPendiente())));
+            HBox resumen =
+                    new HBox(
+                            compacto ? 16 : 30,
+                            datoResumen(
+                                    "Cuotas vencidas", String.valueOf(contrato.cuotasVencidas())),
+                            datoResumen(
+                                    "Monto total pendiente", moneda(contrato.montoPendiente())));
             resumen.setAlignment(Pos.CENTER_LEFT);
             resumen.getStyleClass().add("maqueta-resumen-cuotas");
             contenido.getChildren().add(resumen);
         }
         return contenido;
-    }
-
-    private GridPane gridDetalle() {
-        return gridDetalle(false);
     }
 
     private GridPane gridDetalle(boolean compacto) {
@@ -1736,7 +1850,8 @@ public class MaquetaController implements Refrescable {
 
     private Window ventana() {
         return contenedor3d == null || contenedor3d.getScene() == null
-                ? null : contenedor3d.getScene().getWindow();
+                ? null
+                : contenedor3d.getScene().getWindow();
     }
 
     private void configurarInteraccion() {
@@ -1769,8 +1884,8 @@ public class MaquetaController implements Refrescable {
 
         rotacionY.setAngle(Math.IEEEremainder(rotacionY.getAngle() + dx * 0.3, 360));
         if (nivelVista == NivelVista.EDIFICIO) {
-            rotacionX.setAngle(limitar(rotacionX.getAngle() + dy * 0.22,
-                    ANGULO_X_MINIMO, ANGULO_X_MAXIMO));
+            rotacionX.setAngle(
+                    limitar(rotacionX.getAngle() + dy * 0.22, ANGULO_X_MINIMO, ANGULO_X_MAXIMO));
         }
         actualizarEtiquetasPiso();
         actualizarEtiquetasUnidad();
@@ -1823,8 +1938,11 @@ public class MaquetaController implements Refrescable {
         double tanV = Math.tan(Math.toRadians(camara.getFieldOfView() / 2));
         double foco = altoVista / (2 * tanV);
         double distancia = centroZAuto - (camara.getTranslateZ() - foco);
-        distancia = limitar(distancia - evento.getDeltaY() * 1.1,
-                distanciaAuto * FACTOR_ZOOM_CERCA, distanciaAuto * FACTOR_ZOOM_LEJOS);
+        distancia =
+                limitar(
+                        distancia - evento.getDeltaY() * 1.1,
+                        distanciaAuto * FACTOR_ZOOM_CERCA,
+                        distanciaAuto * FACTOR_ZOOM_LEJOS);
         camara.setTranslateZ(centroZAuto - distancia + foco);
         actualizarEtiquetasPiso();
         actualizarEtiquetasUnidad();
@@ -1848,19 +1966,24 @@ public class MaquetaController implements Refrescable {
         double altoVista = subEscena.getHeight();
         if (anchoVista < 60 || altoVista < 60) return;
 
-        List<Point3D> puntos = nivelVista == NivelVista.UNIDAD && esquemaActual != null
-                ? puntosEsquema(esquemaActual)
-                : puntosEncuadreActuales();
+        List<Point3D> puntos =
+                nivelVista == NivelVista.UNIDAD && esquemaActual != null
+                        ? puntosEsquema(esquemaActual)
+                        : puntosEncuadreActuales();
         double anchoDisponible = anchoEncuadreDisponible();
-        Encuadre encuadre = calcularEncuadre(proyectarAlPadre(puntos),
-                anchoDisponible, altoVista, camara.getFieldOfView(), camara.getNearClip(),
-                RELLENO_ENCUADRE);
+        Encuadre encuadre =
+                calcularEncuadre(
+                        proyectarAlPadre(puntos),
+                        anchoDisponible,
+                        altoVista,
+                        camara.getFieldOfView(),
+                        camara.getNearClip(),
+                        RELLENO_ENCUADRE);
         if (encuadre == null) return;
         aplicarEncuadre(encuadre, altoVista);
         actualizarEtiquetasPiso();
     }
 
-    /** Ancho útil de la escena: en UNIDAD se descuenta el panel de datos lateral. */
     private double anchoEncuadreDisponible() {
         double ancho = subEscena == null ? 0 : subEscena.getWidth();
         if (nivelVista == NivelVista.UNIDAD && panelUnidad != null && panelUnidad.isVisible()) {
@@ -1869,13 +1992,14 @@ public class MaquetaController implements Refrescable {
         return ancho;
     }
 
-    /** Ajusta el panel a ventanas pequeñas sin dejar de ser legible. */
     private void ajustarPanelUnidad() {
         if (panelUnidad == null || subEscena == null) return;
         double anchoEscena = subEscena.getWidth();
         if (anchoEscena <= 0) return;
-        double ancho = Math.max(ANCHO_PANEL_UNIDAD_MINIMO,
-                Math.min(ANCHO_PANEL_UNIDAD, anchoEscena * 0.42));
+        double ancho =
+                Math.max(
+                        ANCHO_PANEL_UNIDAD_MINIMO,
+                        Math.min(ANCHO_PANEL_UNIDAD, anchoEscena * 0.42));
         panelUnidad.setPrefWidth(ancho);
         if (nivelVista == NivelVista.UNIDAD) desplazarEscenaUnidad(true);
     }
@@ -1885,14 +2009,9 @@ public class MaquetaController implements Refrescable {
         double ancho = panelUnidad.getPrefWidth();
         if (ancho <= 0) ancho = panelUnidad.getWidth();
         if (ancho <= 0) ancho = ANCHO_PANEL_UNIDAD;
-        return Math.max(ANCHO_PANEL_UNIDAD_MINIMO,
-                Math.min(ANCHO_PANEL_UNIDAD, ancho));
+        return Math.max(ANCHO_PANEL_UNIDAD_MINIMO, Math.min(ANCHO_PANEL_UNIDAD, ancho));
     }
 
-    /**
-     * Encuadre del ámbito visible: la planta del piso enfocado o, en su defecto,
-     * todo el edificio.
-     */
     private List<Point3D> puntosEncuadreActuales() {
         if (nivelVista == NivelVista.PISO && nivelEnfocado != null && geometria != null) {
             PisoGeometria piso = geometria.pisos().get(nivelEnfocado);
@@ -1902,14 +2021,17 @@ public class MaquetaController implements Refrescable {
         return puntosEncuadre;
     }
 
-    private static List<Point3D> puntosPlanta(PisoGeometria piso,
-                                              PlantaPiso.Distribucion planta) {
+    private static List<Point3D> puntosPlanta(PisoGeometria piso, PlantaPiso.Distribucion planta) {
         List<Point3D> puntos = new ArrayList<>();
-        // La planta se extiende desde la etiqueta (arriba) hasta la base (abajo),
-        // recordando que en esta escena el eje Y positivo apunta hacia abajo.
         double alto = ALTO_CONTORNO_PLANTA + ALTO_PLACA_PLANTA + 3;
-        agregarPuntosCaja(puntos, 0, piso.y() - 3.5, 0,
-                planta.anchoConMargen(), alto, planta.profundidadConMargen());
+        agregarPuntosCaja(
+                puntos,
+                0,
+                piso.y() - 3.5,
+                0,
+                planta.anchoConMargen(),
+                alto,
+                planta.profundidadConMargen());
         return puntos;
     }
 
@@ -1918,8 +2040,7 @@ public class MaquetaController implements Refrescable {
         double ancho = esquema.ancho() * ESCALA_ESQUEMA + 40;
         double profundidad = esquema.alto() * ESCALA_ESQUEMA + 40;
         double alto = ALTO_PARED_ESQUEMA + 18;
-        agregarPuntosCaja(puntos, 0, -ALTO_PARED_ESQUEMA / 2, 0,
-                ancho, alto, profundidad);
+        agregarPuntosCaja(puntos, 0, -ALTO_PARED_ESQUEMA / 2, 0, ancho, alto, profundidad);
         return puntos;
     }
 
@@ -1929,12 +2050,11 @@ public class MaquetaController implements Refrescable {
         return padres;
     }
 
-    private List<Point3D> proyectarConRotacion(List<Point3D> puntos,
-                                               double anguloX, double anguloY) {
+    private List<Point3D> proyectarConRotacion(
+            List<Point3D> puntos, double anguloX, double anguloY) {
         Group temporal = new Group();
-        temporal.getTransforms().addAll(
-                new Rotate(anguloX, Rotate.X_AXIS),
-                new Rotate(anguloY, Rotate.Y_AXIS));
+        temporal.getTransforms()
+                .addAll(new Rotate(anguloX, Rotate.X_AXIS), new Rotate(anguloY, Rotate.Y_AXIS));
         List<Point3D> padres = new ArrayList<>(puntos.size());
         for (Point3D punto : puntos) padres.add(temporal.localToParent(punto));
         return padres;
@@ -1956,13 +2076,13 @@ public class MaquetaController implements Refrescable {
         camara.setFarClip(Math.max(6000, encuadre.distancia() * 6));
     }
 
-    /**
-     * Calcula el encuadre de un conjunto de puntos ya transformados por la rotación
-     * del mundo. Es lógica pura: no toca la cámara ni nodos, por lo que se prueba
-     * sin JavaFX.
-     */
-    static Encuadre calcularEncuadre(List<Point3D> puntos, double anchoVista, double altoVista,
-                                     double fovGrados, double nearClip, double relleno) {
+    static Encuadre calcularEncuadre(
+            List<Point3D> puntos,
+            double anchoVista,
+            double altoVista,
+            double fovGrados,
+            double nearClip,
+            double relleno) {
         if (puntos == null || puntos.isEmpty() || anchoVista <= 0 || altoVista <= 0) {
             return null;
         }
@@ -1987,8 +2107,7 @@ public class MaquetaController implements Refrescable {
 
         double ojoX = centroX;
         double ojoY = centroY;
-        double distancia = Math.max(500,
-                Math.max(maxX - minX, Math.max(maxY - minY, maxZ - minZ)));
+        double distancia = Math.max(500, Math.max(maxX - minX, Math.max(maxY - minY, maxZ - minZ)));
         for (int iteracion = 0; iteracion < 8; iteracion++) {
             double minNdcX = Double.POSITIVE_INFINITY, maxNdcX = Double.NEGATIVE_INFINITY;
             double minNdcY = Double.POSITIVE_INFINITY, maxNdcY = Double.NEGATIVE_INFINITY;
@@ -2006,7 +2125,8 @@ public class MaquetaController implements Refrescable {
             }
 
             if (profundidadMinima <= nearClip
-                    || !Double.isFinite(minNdcX) || !Double.isFinite(minNdcY)) {
+                    || !Double.isFinite(minNdcX)
+                    || !Double.isFinite(minNdcY)) {
                 distancia *= 1.5;
                 continue;
             }
@@ -2021,34 +2141,41 @@ public class MaquetaController implements Refrescable {
             distancia *= escala;
         }
 
-        if (!Double.isFinite(ojoX) || !Double.isFinite(ojoY)
-                || !Double.isFinite(distancia) || distancia <= 0) {
+        if (!Double.isFinite(ojoX)
+                || !Double.isFinite(ojoY)
+                || !Double.isFinite(distancia)
+                || distancia <= 0) {
             return null;
         }
         return new Encuadre(ojoX, ojoY, centroZ, Math.max(250, distancia));
     }
 
-    /**
-     * Puntos del piso enfocado: su losa y todos sus bloques, para encuadrarlo
-     * con la misma lógica que el edificio completo.
-     */
     static List<Point3D> puntosPiso(Geometria geometria, int nivel) {
         if (geometria == null) return List.of();
         PisoGeometria piso = geometria.pisos().get(nivel);
         if (piso == null) return List.of();
 
         List<Point3D> puntos = new ArrayList<>();
-        agregarPuntosCaja(puntos, 0,
+        agregarPuntosCaja(
+                puntos,
+                0,
                 piso.y() + ALTO_UNIDAD / 2 + LOSA_ALTO / 2,
                 0,
-                piso.ancho() + 2 * LOSA_MARGEN_X, LOSA_ALTO,
+                piso.ancho() + 2 * LOSA_MARGEN_X,
+                LOSA_ALTO,
                 piso.profundidad() + 2 * LOSA_MARGEN_Z);
         for (FilaPiso fila : piso.filas()) {
             for (BloqueMaqueta bloque : fila.bloques()) {
                 Point3D posicion = geometria.posiciones().get(bloque.id());
                 if (posicion == null) continue;
-                agregarPuntosCaja(puntos, posicion.getX(), posicion.getY(), posicion.getZ(),
-                        ANCHO_UNIDAD, ALTO_UNIDAD, PROFUNDIDAD_UNIDAD);
+                agregarPuntosCaja(
+                        puntos,
+                        posicion.getX(),
+                        posicion.getY(),
+                        posicion.getZ(),
+                        ANCHO_UNIDAD,
+                        ALTO_UNIDAD,
+                        PROFUNDIDAD_UNIDAD);
             }
         }
         return List.copyOf(puntos);
@@ -2063,11 +2190,15 @@ public class MaquetaController implements Refrescable {
         double tanV = Math.tan(Math.toRadians(camara.getFieldOfView() / 2));
         double aspecto = anchoVista / altoVista;
         double foco = altoVista / (2 * tanV);
-        Proyeccion proyeccion = new Proyeccion(
-                camara.getTranslateX() + anchoVista / 2,
-                camara.getTranslateY() + altoVista / 2,
-                camara.getTranslateZ() - foco,
-                tanV, aspecto, anchoVista, altoVista);
+        Proyeccion proyeccion =
+                new Proyeccion(
+                        camara.getTranslateX() + anchoVista / 2,
+                        camara.getTranslateY() + altoVista / 2,
+                        camara.getTranslateZ() - foco,
+                        tanV,
+                        aspecto,
+                        anchoVista,
+                        altoVista);
 
         for (EtiquetaPiso etiqueta : etiquetasPiso) {
             boolean dentroDelAmbito = nivelVista == NivelVista.EDIFICIO;
@@ -2093,7 +2224,6 @@ public class MaquetaController implements Refrescable {
         return nivelVista == NivelVista.PISO && nivelEnfocado != null && nivel == nivelEnfocado;
     }
 
-    /** Evita que las etiquetas queden flotando mientras corre una transición. */
     private void ocultarEtiquetasUnidad() {
         for (EtiquetaUnidad etiqueta : etiquetasUnidad) etiqueta.nodo().setVisible(false);
     }
@@ -2102,17 +2232,17 @@ public class MaquetaController implements Refrescable {
         Point3D punto = mundo.localToParent(ancla);
         double profundidad = punto.getZ() - proyeccion.ojoZ();
         if (profundidad <= 0.001) return null;
-        double ndcX = (punto.getX() - proyeccion.ojoX())
-                / (profundidad * proyeccion.tanV() * proyeccion.aspecto());
-        double ndcY = (punto.getY() - proyeccion.ojoY())
-                / (profundidad * proyeccion.tanV());
-        return new Point2D(
-                (ndcX + 1) * proyeccion.ancho() / 2,
-                (ndcY + 1) * proyeccion.alto() / 2);
+        double ndcX =
+                (punto.getX() - proyeccion.ojoX())
+                        / (profundidad * proyeccion.tanV() * proyeccion.aspecto());
+        double ndcY = (punto.getY() - proyeccion.ojoY()) / (profundidad * proyeccion.tanV());
+        return new Point2D((ndcX + 1) * proyeccion.ancho() / 2, (ndcY + 1) * proyeccion.alto() / 2);
     }
 
     private void actualizarEtiquetasUnidad() {
-        if (capaEtiquetas == null || subEscena == null || camara == null
+        if (capaEtiquetas == null
+                || subEscena == null
+                || camara == null
                 || etiquetasUnidad.isEmpty()) {
             return;
         }
@@ -2123,25 +2253,31 @@ public class MaquetaController implements Refrescable {
         double tanV = Math.tan(Math.toRadians(camara.getFieldOfView() / 2));
         double aspecto = anchoVista / altoVista;
         double foco = altoVista / (2 * tanV);
-        Proyeccion proyeccion = new Proyeccion(
-                camara.getTranslateX() + anchoVista / 2,
-                camara.getTranslateY() + altoVista / 2,
-                camara.getTranslateZ() - foco,
-                tanV, aspecto, anchoVista, altoVista);
+        Proyeccion proyeccion =
+                new Proyeccion(
+                        camara.getTranslateX() + anchoVista / 2,
+                        camara.getTranslateY() + altoVista / 2,
+                        camara.getTranslateZ() - foco,
+                        tanV,
+                        aspecto,
+                        anchoVista,
+                        altoVista);
 
         double distancia = centroZAuto - (camara.getTranslateZ() - foco);
         double factor = distanciaAuto > 0 ? distancia / distanciaAuto : 1;
-        long etiquetasEnAmbito = etiquetasUnidad.stream()
-                .filter(etiqueta -> enAmbito(etiqueta.bloque().nivel()))
-                .count();
-        boolean mostrar = factor <= 1.35
-                && (etiquetasEnAmbito <= 40 || factor < 0.9);
+        long etiquetasEnAmbito =
+                etiquetasUnidad.stream()
+                        .filter(etiqueta -> enAmbito(etiqueta.bloque().nivel()))
+                        .count();
+        boolean mostrar = factor <= 1.35 && (etiquetasEnAmbito <= 40 || factor < 0.9);
         for (EtiquetaUnidad etiqueta : etiquetasUnidad) {
             BloqueMaqueta bloque = etiqueta.bloque();
-            Point3D ancla = nivelVista == NivelVista.PISO
-                    ? etiqueta.anclaPlanta() : etiqueta.anclaEdificio();
-            Point2D pantalla = mostrar && enAmbito(bloque.nivel())
-                    ? proyectar(ancla, proyeccion) : null;
+            Point3D ancla =
+                    nivelVista == NivelVista.PISO
+                            ? etiqueta.anclaPlanta()
+                            : etiqueta.anclaEdificio();
+            Point2D pantalla =
+                    mostrar && enAmbito(bloque.nivel()) ? proyectar(ancla, proyeccion) : null;
             Label nodo = etiqueta.nodo();
             if (pantalla == null) {
                 nodo.setVisible(false);
@@ -2168,7 +2304,9 @@ public class MaquetaController implements Refrescable {
     }
 
     private void actualizarEtiquetasAmbiente() {
-        if (capaEtiquetas == null || subEscena == null || camara == null
+        if (capaEtiquetas == null
+                || subEscena == null
+                || camara == null
                 || etiquetasAmbiente.isEmpty()) {
             return;
         }
@@ -2183,11 +2321,15 @@ public class MaquetaController implements Refrescable {
         double tanV = Math.tan(Math.toRadians(camara.getFieldOfView() / 2));
         double aspecto = anchoVista / altoVista;
         double foco = altoVista / (2 * tanV);
-        Proyeccion proyeccion = new Proyeccion(
-                camara.getTranslateX() + anchoVista / 2,
-                camara.getTranslateY() + altoVista / 2,
-                camara.getTranslateZ() - foco,
-                tanV, aspecto, anchoVista, altoVista);
+        Proyeccion proyeccion =
+                new Proyeccion(
+                        camara.getTranslateX() + anchoVista / 2,
+                        camara.getTranslateY() + altoVista / 2,
+                        camara.getTranslateZ() - foco,
+                        tanV,
+                        aspecto,
+                        anchoVista,
+                        altoVista);
         double distancia = centroZAuto - (camara.getTranslateZ() - foco);
         double factor = distanciaAuto > 0 ? distancia / distanciaAuto : 1;
         boolean mostrar = factor <= 1.5;
@@ -2240,15 +2382,15 @@ public class MaquetaController implements Refrescable {
         if (nivelVista == NivelVista.PISO) {
             nodoHover = nodosPlantaPorBloque.get(bloque);
             PlantaPiso.Recinto recinto = recintosPlantaPorBloque.get(bloque);
-            if (nodoHover instanceof Group grupo && recinto != null
+            if (nodoHover instanceof Group grupo
+                    && recinto != null
                     && contornoHoverPlanta != null) {
                 ajustarContornoPlanta(contornoHoverPlanta, recinto);
                 grupo.getChildren().add(contornoHoverPlanta);
             }
         } else {
             nodoHover = nodosPorBloque.get(bloque);
-            Point3D posicion = geometria == null ? null
-                    : geometria.posiciones().get(bloque.id());
+            Point3D posicion = geometria == null ? null : geometria.posiciones().get(bloque.id());
             if (nodoHover instanceof Group grupo) {
                 escalar(nodoHover, 1.045);
                 if (contornoHover != null && posicion != null) {
@@ -2282,13 +2424,12 @@ public class MaquetaController implements Refrescable {
         nodo.setScaleZ(factor);
     }
 
-    // ---------------------------------------------------------- Navegación
-
     private void configurarNavegacionTeclado() {
         if (contenedor3d == null) return;
         enlazarTeclado(contenedor3d.getScene());
-        contenedor3d.sceneProperty().addListener(
-                (observable, anterior, actual) -> enlazarTeclado(actual));
+        contenedor3d
+                .sceneProperty()
+                .addListener((observable, anterior, actual) -> enlazarTeclado(actual));
     }
 
     private void enlazarTeclado(Scene escena) {
@@ -2328,17 +2469,12 @@ public class MaquetaController implements Refrescable {
         else volverAlEdificio();
     }
 
-    /**
-     * Entra al piso indicado: cambia los bloques 3D por la planta del piso y
-     * anima cámara y rotaciones hacia una vista casi cenital. Los demás pisos y
-     * la estructura se ocultan escalando Y hacia 0 y, recién al terminar, con
-     * setVisible(false): no se anima opacity de nodos 3D para evitar artefactos.
-     */
     private void entrarPiso(int nivel) {
         if (mundo == null || geometria == null || camara == null) return;
         if (transicionActiva() || nivelVista != NivelVista.EDIFICIO) return;
         if (!nivelVista.puedeIrA(NivelVista.PISO)) return;
-        if (!geometria.pisos().containsKey(nivel) || !gruposPiso.containsKey(nivel)
+        if (!geometria.pisos().containsKey(nivel)
+                || !gruposPiso.containsKey(nivel)
                 || !gruposPlanta.containsKey(nivel)
                 || !distribucionesPlanta.containsKey(nivel)) {
             return;
@@ -2362,42 +2498,44 @@ public class MaquetaController implements Refrescable {
         List<KeyValue> valores = new ArrayList<>();
         for (Map.Entry<Integer, Group> entrada : gruposPiso.entrySet()) {
             if (entrada.getKey() != nivel) {
-                valores.add(new KeyValue(entrada.getValue().scaleYProperty(),
-                        ESCALA_OCULTA, Interpolator.EASE_BOTH));
+                valores.add(
+                        new KeyValue(
+                                entrada.getValue().scaleYProperty(),
+                                ESCALA_OCULTA,
+                                Interpolator.EASE_BOTH));
             }
         }
         if (estructuraGeneral != null) {
-            valores.add(new KeyValue(estructuraGeneral.scaleYProperty(),
-                    ESCALA_OCULTA, Interpolator.EASE_BOTH));
+            valores.add(
+                    new KeyValue(
+                            estructuraGeneral.scaleYProperty(),
+                            ESCALA_OCULTA,
+                            Interpolator.EASE_BOTH));
         }
-        valores.add(new KeyValue(rotacionX.angleProperty(),
-                ANGULO_X_PISO, Interpolator.EASE_BOTH));
-        valores.add(new KeyValue(rotacionY.angleProperty(),
-                ANGULO_Y_PISO, Interpolator.EASE_BOTH));
+        valores.add(new KeyValue(rotacionX.angleProperty(), ANGULO_X_PISO, Interpolator.EASE_BOTH));
+        valores.add(new KeyValue(rotacionY.angleProperty(), ANGULO_Y_PISO, Interpolator.EASE_BOTH));
 
         PisoGeometria piso = geometria.pisos().get(nivel);
         PlantaPiso.Distribucion planta = distribucionesPlanta.get(nivel);
-        Encuadre encuadre = encuadreDePuntos(puntosPlanta(piso, planta),
-                ANGULO_X_PISO, ANGULO_Y_PISO);
+        Encuadre encuadre =
+                encuadreDePuntos(puntosPlanta(piso, planta), ANGULO_X_PISO, ANGULO_Y_PISO);
         valores.addAll(valoresCamara(encuadre));
 
-        iniciarTransicion(valores, () -> {
-            for (Map.Entry<Integer, Group> entrada : gruposPiso.entrySet()) {
-                if (entrada.getKey() != nivel) entrada.getValue().setVisible(false);
-            }
-            if (estructuraGeneral != null) estructuraGeneral.setVisible(false);
-            rotacionX.setAngle(ANGULO_X_PISO);
-            rotacionY.setAngle(ANGULO_Y_PISO);
-            aplicarReferenciaAutomatica(encuadre);
-            actualizarEtiquetasPiso();
-            actualizarEtiquetasUnidad();
-        });
+        iniciarTransicion(
+                valores,
+                () -> {
+                    for (Map.Entry<Integer, Group> entrada : gruposPiso.entrySet()) {
+                        if (entrada.getKey() != nivel) entrada.getValue().setVisible(false);
+                    }
+                    if (estructuraGeneral != null) estructuraGeneral.setVisible(false);
+                    rotacionX.setAngle(ANGULO_X_PISO);
+                    rotacionY.setAngle(ANGULO_Y_PISO);
+                    aplicarReferenciaAutomatica(encuadre);
+                    actualizarEtiquetasPiso();
+                    actualizarEtiquetasUnidad();
+                });
     }
 
-    /**
-     * Entra a la unidad elegida: genera su esquema referencial, muestra la vista
-     * 3D por defecto y abre el panel lateral con los datos reales.
-     */
     private void entrarUnidad(BloqueMaqueta bloque) {
         if (mundo == null || camara == null || nivelVista != NivelVista.PISO) return;
         if (transicionActiva() || bloque == null || nivelEnfocado == null) return;
@@ -2417,8 +2555,12 @@ public class MaquetaController implements Refrescable {
         if (estructuraGeneral != null) estructuraGeneral.setVisible(false);
 
         try {
-            esquemaActual = GeneradorEsquema.generar(bloque.areaM2(), bloque.dormitorios(),
-                    bloque.banos(), bloque.amoblado());
+            esquemaActual =
+                    GeneradorEsquema.generar(
+                            bloque.areaM2(),
+                            bloque.dormitorios(),
+                            bloque.banos(),
+                            bloque.amoblado());
             crearGrupoUnidad(bloque, esquemaActual);
             vistaPlano = false;
             zoomPlano = 1;
@@ -2433,22 +2575,30 @@ public class MaquetaController implements Refrescable {
             ocultarEtiquetasAmbiente();
 
             double anchoDisponible = anchoEncuadreDisponible();
-            Encuadre encuadre = encuadreDePuntos(puntosEsquema(esquemaActual),
-                    ANGULO_X_ESQUEMA, ANGULO_Y_ESQUEMA, anchoDisponible);
+            Encuadre encuadre =
+                    encuadreDePuntos(
+                            puntosEsquema(esquemaActual),
+                            ANGULO_X_ESQUEMA,
+                            ANGULO_Y_ESQUEMA,
+                            anchoDisponible);
             List<KeyValue> valores = new ArrayList<>();
-            valores.add(new KeyValue(rotacionX.angleProperty(),
-                    ANGULO_X_ESQUEMA, Interpolator.EASE_BOTH));
-            valores.add(new KeyValue(rotacionY.angleProperty(),
-                    ANGULO_Y_ESQUEMA, Interpolator.EASE_BOTH));
+            valores.add(
+                    new KeyValue(
+                            rotacionX.angleProperty(), ANGULO_X_ESQUEMA, Interpolator.EASE_BOTH));
+            valores.add(
+                    new KeyValue(
+                            rotacionY.angleProperty(), ANGULO_Y_ESQUEMA, Interpolator.EASE_BOTH));
             valores.addAll(valoresCamara(encuadre));
 
-            iniciarTransicion(valores, () -> {
-                rotacionX.setAngle(ANGULO_X_ESQUEMA);
-                rotacionY.setAngle(ANGULO_Y_ESQUEMA);
-                aplicarReferenciaAutomatica(encuadre);
-                actualizarEtiquetasAmbiente();
-                if (vistaPlano) dibujarPlano();
-            });
+            iniciarTransicion(
+                    valores,
+                    () -> {
+                        rotacionX.setAngle(ANGULO_X_ESQUEMA);
+                        rotacionY.setAngle(ANGULO_Y_ESQUEMA);
+                        aplicarReferenciaAutomatica(encuadre);
+                        actualizarEtiquetasAmbiente();
+                        if (vistaPlano) dibujarPlano();
+                    });
         } catch (RuntimeException error) {
             log.error("No se pudo dibujar el esquema de la unidad {}", bloque.id(), error);
             notificador.error("No se pudo dibujar el esquema de la unidad.");
@@ -2463,12 +2613,13 @@ public class MaquetaController implements Refrescable {
             actualizarResumen(bloquesActuales);
             actualizarEtiquetasPiso();
             ocultarEtiquetasUnidad();
-            mostrarMensajeEscena("No se pudo dibujar la unidad",
-                    "El esquema referencial no está disponible. Vuelve a intentarlo o elige otra unidad.");
+            mostrarMensajeEscena(
+                    "No se pudo dibujar la unidad",
+                    "El esquema referencial no está disponible. Vuelve a intentarlo o elige otra"
+                        + " unidad.");
         }
     }
 
-    /** Vuelve un nivel: de UNIDAD a la planta del piso. */
     private void volverAlPiso() {
         if (mundo == null || transicionActiva() || nivelVista != NivelVista.UNIDAD) return;
         Integer piso = nivelEnfocado;
@@ -2490,25 +2641,29 @@ public class MaquetaController implements Refrescable {
         PisoGeometria pisoGeometria = geometria == null ? null : geometria.pisos().get(piso);
         PlantaPiso.Distribucion distribucion = distribucionesPlanta.get(piso);
         if (pisoGeometria == null || distribucion == null) return;
-        Encuadre encuadre = encuadreDePuntos(puntosPlanta(pisoGeometria, distribucion),
-                ANGULO_X_PISO, anguloYPisoAntesUnidad);
+        Encuadre encuadre =
+                encuadreDePuntos(
+                        puntosPlanta(pisoGeometria, distribucion),
+                        ANGULO_X_PISO,
+                        anguloYPisoAntesUnidad);
         List<KeyValue> valores = new ArrayList<>();
-        valores.add(new KeyValue(rotacionX.angleProperty(),
-                ANGULO_X_PISO, Interpolator.EASE_BOTH));
-        valores.add(new KeyValue(rotacionY.angleProperty(),
-                anguloYPisoAntesUnidad, Interpolator.EASE_BOTH));
+        valores.add(new KeyValue(rotacionX.angleProperty(), ANGULO_X_PISO, Interpolator.EASE_BOTH));
+        valores.add(
+                new KeyValue(
+                        rotacionY.angleProperty(), anguloYPisoAntesUnidad, Interpolator.EASE_BOTH));
         valores.addAll(valoresCamara(encuadre));
 
-        iniciarTransicion(valores, () -> {
-            rotacionX.setAngle(ANGULO_X_PISO);
-            rotacionY.setAngle(anguloYPisoAntesUnidad);
-            aplicarReferenciaAutomatica(encuadre);
-            actualizarEtiquetasPiso();
-            actualizarEtiquetasUnidad();
-        });
+        iniciarTransicion(
+                valores,
+                () -> {
+                    rotacionX.setAngle(ANGULO_X_PISO);
+                    rotacionY.setAngle(anguloYPisoAntesUnidad);
+                    aplicarReferenciaAutomatica(encuadre);
+                    actualizarEtiquetasPiso();
+                    actualizarEtiquetasUnidad();
+                });
     }
 
-    /** Libera el esquema de la unidad y oculta todos sus elementos. */
     private void limpiarUnidad() {
         detenerTransicionVista();
         limpiarGrupoUnidad();
@@ -2555,10 +2710,9 @@ public class MaquetaController implements Refrescable {
         etiquetasAmbiente.clear();
     }
 
-    /** Desplaza la escena 3D y sus rótulos para dejar libre el panel lateral. */
     private void desplazarEscenaUnidad(boolean activa) {
-        double desplazamiento = activa
-                ? -(anchoPanelUnidadEfectivo() + MARGEN_PANEL_UNIDAD) / 2 : 0;
+        double desplazamiento =
+                activa ? -(anchoPanelUnidadEfectivo() + MARGEN_PANEL_UNIDAD) / 2 : 0;
         if (subEscena != null) subEscena.setTranslateX(desplazamiento);
         if (capaEtiquetas != null) capaEtiquetas.setTranslateX(desplazamiento);
     }
@@ -2593,38 +2747,43 @@ public class MaquetaController implements Refrescable {
         List<KeyValue> valores = new ArrayList<>();
         for (Map.Entry<Integer, Group> entrada : gruposPiso.entrySet()) {
             if (pisoSaliente != null && entrada.getKey().equals(pisoSaliente)) continue;
-            valores.add(new KeyValue(entrada.getValue().scaleYProperty(),
-                    ESCALA_VISIBLE, Interpolator.EASE_BOTH));
+            valores.add(
+                    new KeyValue(
+                            entrada.getValue().scaleYProperty(),
+                            ESCALA_VISIBLE,
+                            Interpolator.EASE_BOTH));
         }
         if (estructuraGeneral != null) {
-            valores.add(new KeyValue(estructuraGeneral.scaleYProperty(),
-                    ESCALA_VISIBLE, Interpolator.EASE_BOTH));
+            valores.add(
+                    new KeyValue(
+                            estructuraGeneral.scaleYProperty(),
+                            ESCALA_VISIBLE,
+                            Interpolator.EASE_BOTH));
         }
-        valores.add(new KeyValue(rotacionX.angleProperty(),
-                anguloXEdificio, Interpolator.EASE_BOTH));
-        valores.add(new KeyValue(rotacionY.angleProperty(),
-                anguloYEdificio, Interpolator.EASE_BOTH));
-        Encuadre encuadre = encuadreDePuntos(puntosEncuadre,
-                anguloXEdificio, anguloYEdificio);
+        valores.add(
+                new KeyValue(rotacionX.angleProperty(), anguloXEdificio, Interpolator.EASE_BOTH));
+        valores.add(
+                new KeyValue(rotacionY.angleProperty(), anguloYEdificio, Interpolator.EASE_BOTH));
+        Encuadre encuadre = encuadreDePuntos(puntosEncuadre, anguloXEdificio, anguloYEdificio);
         valores.addAll(valoresCamara(encuadre));
 
-        iniciarTransicion(valores, () -> {
-            rotacionX.setAngle(anguloXEdificio);
-            rotacionY.setAngle(anguloYEdificio);
-            aplicarReferenciaAutomatica(encuadre);
-            actualizarEtiquetasPiso();
-            actualizarEtiquetasUnidad();
-        });
+        iniciarTransicion(
+                valores,
+                () -> {
+                    rotacionX.setAngle(anguloXEdificio);
+                    rotacionY.setAngle(anguloYEdificio);
+                    aplicarReferenciaAutomatica(encuadre);
+                    actualizarEtiquetasPiso();
+                    actualizarEtiquetasUnidad();
+                });
     }
 
-    /** Cancela la navegación en curso y deja la escena completa en EDIFICIO. */
     private void reiniciarNavegacion() {
         boolean estabaFueraDelEdificio = nivelVista != NivelVista.EDIFICIO;
         detenerTransicion();
         ocultarMensajeEscena();
         limpiarUnidad();
-        if (estabaFueraDelEdificio
-                && rotacionX != null && rotacionY != null) {
+        if (estabaFueraDelEdificio && rotacionX != null && rotacionY != null) {
             rotacionX.setAngle(anguloXEdificio);
             rotacionY.setAngle(anguloYEdificio);
         }
@@ -2655,8 +2814,7 @@ public class MaquetaController implements Refrescable {
         barraNavegacion.setVisible(visible);
         barraNavegacion.setManaged(visible);
         if (alternadorVista != null) {
-            boolean enUnidad = visible && nivelVista == NivelVista.UNIDAD
-                    && bloqueUnidad != null;
+            boolean enUnidad = visible && nivelVista == NivelVista.UNIDAD && bloqueUnidad != null;
             alternadorVista.setVisible(enUnidad);
             alternadorVista.setManaged(enUnidad);
         }
@@ -2671,8 +2829,8 @@ public class MaquetaController implements Refrescable {
         String nivel = etiquetaNivel(nivelEnfocado);
         if (nivelVista == NivelVista.UNIDAD && bloqueUnidad != null) {
             if (migaNavegacion != null) {
-                migaNavegacion.setText("Edificio › " + nivel
-                        + " › Unidad " + numeroUnidad(bloqueUnidad));
+                migaNavegacion.setText(
+                        "Edificio › " + nivel + " › Unidad " + numeroUnidad(bloqueUnidad));
             }
             if (btnVolverEdificio != null) btnVolverEdificio.setText("Volver al piso");
             if (avisoEsquema != null) {
@@ -2697,13 +2855,15 @@ public class MaquetaController implements Refrescable {
 
     private void actualizarTextoAyuda() {
         if (ayuda == null) return;
-        ayuda.setText(switch (nivelVista) {
-            case EDIFICIO -> "Arrastra para rotar · Usa la rueda para acercar";
-            case PISO -> "Arrastra para girar la planta · Usa la rueda para acercar";
-            case UNIDAD -> vistaPlano
-                    ? "Vista de plano · Rueda para acercar · Cambia a 3D para girar"
-                    : "Arrastra para girar el esquema · Usa la rueda para acercar";
-        });
+        ayuda.setText(
+                switch (nivelVista) {
+                    case EDIFICIO -> "Arrastra para rotar · Usa la rueda para acercar";
+                    case PISO -> "Arrastra para girar la planta · Usa la rueda para acercar";
+                    case UNIDAD ->
+                            vistaPlano
+                                    ? "Vista de plano · Rueda para acercar · Cambia a 3D para girar"
+                                    : "Arrastra para girar el esquema · Usa la rueda para acercar";
+                });
     }
 
     private boolean transicionActiva() {
@@ -2723,45 +2883,35 @@ public class MaquetaController implements Refrescable {
             alTerminar.run();
             return;
         }
-        Timeline nueva = new Timeline(new KeyFrame(DURACION_TRANSICION,
-                valores.toArray(new KeyValue[0])));
+        Timeline nueva =
+                new Timeline(new KeyFrame(DURACION_TRANSICION, valores.toArray(new KeyValue[0])));
         transicion = nueva;
-        nueva.setOnFinished(evento -> {
-            if (transicion != nueva) return;
-            transicion = null;
-            alTerminar.run();
-        });
+        nueva.setOnFinished(
+                evento -> {
+                    if (transicion != nueva) return;
+                    transicion = null;
+                    alTerminar.run();
+                });
         nueva.play();
     }
 
-    private Encuadre encuadreDePuntos(List<Point3D> puntos) {
-        if (mundo == null || camara == null || subEscena == null || puntos.isEmpty()) return null;
-        double anchoVista = subEscena.getWidth();
-        double altoVista = subEscena.getHeight();
-        if (anchoVista < 60 || altoVista < 60) return null;
-        return calcularEncuadre(proyectarAlPadre(puntos), anchoVista, altoVista,
-                camara.getFieldOfView(), camara.getNearClip(), RELLENO_ENCUADRE);
+    private Encuadre encuadreDePuntos(List<Point3D> puntos, double anguloX, double anguloY) {
+        return encuadreDePuntos(
+                puntos, anguloX, anguloY, subEscena == null ? 0 : subEscena.getWidth());
     }
 
-    /**
-     * Encuadre calculado con la rotación final de la transición, no con la actual:
-     * la cámara y las rotaciones se animan a la vez.
-     */
-    private Encuadre encuadreDePuntos(List<Point3D> puntos,
-                                      double anguloX, double anguloY) {
-        return encuadreDePuntos(puntos, anguloX, anguloY,
-                subEscena == null ? 0 : subEscena.getWidth());
-    }
-
-    private Encuadre encuadreDePuntos(List<Point3D> puntos,
-                                      double anguloX, double anguloY,
-                                      double anchoDisponible) {
+    private Encuadre encuadreDePuntos(
+            List<Point3D> puntos, double anguloX, double anguloY, double anchoDisponible) {
         if (camara == null || subEscena == null || puntos.isEmpty()) return null;
         double altoVista = subEscena.getHeight();
         if (anchoDisponible < 60 || altoVista < 60) return null;
-        return calcularEncuadre(proyectarConRotacion(puntos, anguloX, anguloY),
-                anchoDisponible, altoVista, camara.getFieldOfView(),
-                camara.getNearClip(), RELLENO_ENCUADRE);
+        return calcularEncuadre(
+                proyectarConRotacion(puntos, anguloX, anguloY),
+                anchoDisponible,
+                altoVista,
+                camara.getFieldOfView(),
+                camara.getNearClip(),
+                RELLENO_ENCUADRE);
     }
 
     private List<KeyValue> valoresCamara(Encuadre encuadre) {
@@ -2770,12 +2920,18 @@ public class MaquetaController implements Refrescable {
         double altoVista = subEscena.getHeight();
         double foco = altoVista / (2 * Math.tan(Math.toRadians(camara.getFieldOfView() / 2)));
         return List.of(
-                new KeyValue(camara.translateXProperty(),
-                        encuadre.ojoX() - anchoVista / 2, Interpolator.EASE_BOTH),
-                new KeyValue(camara.translateYProperty(),
-                        encuadre.ojoY() - altoVista / 2, Interpolator.EASE_BOTH),
-                new KeyValue(camara.translateZProperty(),
-                        encuadre.centroZ() - encuadre.distancia() + foco, Interpolator.EASE_BOTH));
+                new KeyValue(
+                        camara.translateXProperty(),
+                        encuadre.ojoX() - anchoVista / 2,
+                        Interpolator.EASE_BOTH),
+                new KeyValue(
+                        camara.translateYProperty(),
+                        encuadre.ojoY() - altoVista / 2,
+                        Interpolator.EASE_BOTH),
+                new KeyValue(
+                        camara.translateZProperty(),
+                        encuadre.centroZ() - encuadre.distancia() + foco,
+                        Interpolator.EASE_BOTH));
     }
 
     @FXML
@@ -2814,10 +2970,8 @@ public class MaquetaController implements Refrescable {
         aplicarFiltroMateriales();
         actualizarResumen(bloquesActuales);
         configurarLeyenda();
-        if (nivelVista == NivelVista.UNIDAD && detalleUnidad != null
-                && cuerpoPanelUnidad != null) {
-            cuerpoPanelUnidad.getChildren().setAll(
-                    crearContenidoDetalle(detalleUnidad, true));
+        if (nivelVista == NivelVista.UNIDAD && detalleUnidad != null && cuerpoPanelUnidad != null) {
+            cuerpoPanelUnidad.getChildren().setAll(crearContenidoDetalle(detalleUnidad, true));
         }
     }
 
@@ -2842,28 +2996,41 @@ public class MaquetaController implements Refrescable {
 
     private void configurarLeyendaEstado() {
         leyenda.getChildren().add(tituloLeyenda("Estados"));
-        leyenda.getChildren().addAll(
-                itemLeyenda("Disponible", "maqueta-punto-disponible", claveEstado(DISPONIBLE)),
-                itemLeyenda("Alquilado", "maqueta-punto-alquilado", claveEstado(ALQUILADO)),
-                itemLeyenda("Mantenimiento", "maqueta-punto-mantenimiento",
-                        claveEstado(MANTENIMIENTO)),
-                itemLeyenda("Inactivo", "maqueta-punto-inactivo", claveEstado(INACTIVO)));
+        leyenda.getChildren()
+                .addAll(
+                        itemLeyenda(
+                                "Disponible", "maqueta-punto-disponible", claveEstado(DISPONIBLE)),
+                        itemLeyenda("Alquilado", "maqueta-punto-alquilado", claveEstado(ALQUILADO)),
+                        itemLeyenda(
+                                "Mantenimiento",
+                                "maqueta-punto-mantenimiento",
+                                claveEstado(MANTENIMIENTO)),
+                        itemLeyenda("Inactivo", "maqueta-punto-inactivo", claveEstado(INACTIVO)));
         Region espacio = new Region();
         HBox.setHgrow(espacio, Priority.ALWAYS);
         leyenda.getChildren().add(espacio);
         leyenda.getChildren().add(tituloLeyenda("Mora"));
-        leyenda.getChildren().addAll(
-                itemLeyenda("Atraso leve", "maqueta-punto-atraso",
-                        claveMora(BloqueMaqueta.CategoriaMora.ATRASO_LEVE)),
-                itemLeyenda("Moroso", "maqueta-punto-moroso",
-                        claveMora(BloqueMaqueta.CategoriaMora.MOROSO)));
+        leyenda.getChildren()
+                .addAll(
+                        itemLeyenda(
+                                "Atraso leve",
+                                "maqueta-punto-atraso",
+                                claveMora(BloqueMaqueta.CategoriaMora.ATRASO_LEVE)),
+                        itemLeyenda(
+                                "Moroso",
+                                "maqueta-punto-moroso",
+                                claveMora(BloqueMaqueta.CategoriaMora.MOROSO)));
     }
 
     private void configurarLeyendaMora() {
         leyenda.getChildren().add(tituloLeyenda("Mora"));
         for (BloqueMaqueta.CategoriaMora categoria : BloqueMaqueta.CategoriaMora.values()) {
-            leyenda.getChildren().add(itemLeyenda(categoria.getEtiqueta(),
-                    clasePuntoMora(categoria), claveMora(categoria)));
+            leyenda.getChildren()
+                    .add(
+                            itemLeyenda(
+                                    categoria.getEtiqueta(),
+                                    clasePuntoMora(categoria),
+                                    claveMora(categoria)));
         }
     }
 
@@ -2878,8 +3045,9 @@ public class MaquetaController implements Refrescable {
             return;
         }
         if (rentaMinima.compareTo(rentaMaxima) == 0) {
-            int tono = MaquetaService.tonoRenta(rentaMinima, rentaMinima, rentaMaxima,
-                    MaquetaService.TONOS_RENTA);
+            int tono =
+                    MaquetaService.tonoRenta(
+                            rentaMinima, rentaMinima, rentaMaxima, MaquetaService.TONOS_RENTA);
             leyenda.getChildren().add(itemRentaUnica(rentaMinima, tono));
             return;
         }
@@ -2895,22 +3063,30 @@ public class MaquetaController implements Refrescable {
             registrarItemLeyenda(celda, claveRenta(i));
             escala.getChildren().add(celda);
         }
-        Label etiquetas = new Label("Mín. " + Tablas.moneda(rentaMinima)
-                + "  ·  Máx. " + Tablas.moneda(rentaMaxima));
+        Label etiquetas =
+                new Label(
+                        "Mín. "
+                                + Tablas.moneda(rentaMinima)
+                                + "  ·  Máx. "
+                                + Tablas.moneda(rentaMaxima));
         etiquetas.getStyleClass().add("maqueta-leyenda-etiqueta");
         leyenda.getChildren().addAll(escala, etiquetas);
         if (hayBloquesSinRenta()) {
-            leyenda.getChildren().add(itemLeyenda("Sin renta", "maqueta-punto-sin-renta",
-                    claveRenta(null)));
+            leyenda.getChildren()
+                    .add(itemLeyenda("Sin renta", "maqueta-punto-sin-renta", claveRenta(null)));
         }
     }
 
     private void configurarLeyendaVencimiento() {
         leyenda.getChildren().add(tituloLeyenda("Vencimiento"));
-        for (BloqueMaqueta.CategoriaVencimiento categoria
-                : BloqueMaqueta.CategoriaVencimiento.values()) {
-            leyenda.getChildren().add(itemLeyenda(categoria.getEtiqueta(),
-                    clasePuntoVencimiento(categoria), claveVencimiento(categoria)));
+        for (BloqueMaqueta.CategoriaVencimiento categoria :
+                BloqueMaqueta.CategoriaVencimiento.values()) {
+            leyenda.getChildren()
+                    .add(
+                            itemLeyenda(
+                                    categoria.getEtiqueta(),
+                                    clasePuntoVencimiento(categoria),
+                                    claveVencimiento(categoria)));
         }
     }
 
@@ -2948,18 +3124,22 @@ public class MaquetaController implements Refrescable {
 
     private void registrarItemLeyenda(Node item, String clave) {
         itemsLeyenda.add(new ItemLeyenda(item, clave));
-        item.setOnMouseEntered(evento -> {
-            if (!filtroFijo) aplicarFiltro(clave, false);
-        });
-        item.setOnMouseExited(evento -> {
-            if (!filtroFijo) aplicarFiltro(null, false);
-        });
-        item.setOnMouseClicked(evento -> {
-            boolean mismoFiltroFijo = filtroFijo && filtroActivo && clave.equals(filtroClave);
-            if (mismoFiltroFijo) aplicarFiltro(null, false);
-            else aplicarFiltro(clave, true);
-            evento.consume();
-        });
+        item.setOnMouseEntered(
+                evento -> {
+                    if (!filtroFijo) aplicarFiltro(clave, false);
+                });
+        item.setOnMouseExited(
+                evento -> {
+                    if (!filtroFijo) aplicarFiltro(null, false);
+                });
+        item.setOnMouseClicked(
+                evento -> {
+                    boolean mismoFiltroFijo =
+                            filtroFijo && filtroActivo && clave.equals(filtroClave);
+                    if (mismoFiltroFijo) aplicarFiltro(null, false);
+                    else aplicarFiltro(clave, true);
+                    evento.consume();
+                });
     }
 
     private void aplicarFiltro(String clave, boolean fijo) {
@@ -2970,11 +3150,6 @@ public class MaquetaController implements Refrescable {
         actualizarEstiloLeyenda();
     }
 
-    /**
-     * Atenúa los bloques que no coinciden con el filtro cambiando su material por
-     * la versión precalculada con alfa. No se toca la opacidad del nodo: los bloques
-     * siguen participando del picking, del hover y del clic.
-     */
     private void aplicarFiltroMateriales() {
         Set<BloqueMaqueta> atenuados = new HashSet<>();
         for (BloqueMaqueta bloque : nodosPorBloque.keySet()) {
@@ -3016,9 +3191,7 @@ public class MaquetaController implements Refrescable {
         if (marcaPlanta != null) marcaPlanta.setVisible(mostrarMarca);
         Color color = colorMora(bloque.semaforo());
         if (color == null) return;
-        PhongMaterial materialMarca = coincide
-                ? materialMora(color)
-                : materialMoraAtenuado(color);
+        PhongMaterial materialMarca = coincide ? materialMora(color) : materialMoraAtenuado(color);
         if (materialMarca == null) return;
         if (marca != null) marca.setMaterial(materialMarca);
         if (marcaPlanta != null) marcaPlanta.setMaterial(materialMarca);
@@ -3026,9 +3199,10 @@ public class MaquetaController implements Refrescable {
 
     private PhongMaterial materialParaModo(BloqueMaqueta bloque, boolean coincide) {
         return switch (modoVista) {
-            case ESTADO -> coincide
-                    ? materialPara(bloque.estado())
-                    : materialAtenuadoPara(bloque.estado());
+            case ESTADO ->
+                    coincide
+                            ? materialPara(bloque.estado())
+                            : materialAtenuadoPara(bloque.estado());
             case MORA -> {
                 BloqueMaqueta.CategoriaMora categoria = bloque.categoriaMora();
                 yield coincide
@@ -3040,9 +3214,7 @@ public class MaquetaController implements Refrescable {
                 if (tono == null) {
                     yield coincide ? materialSinDato : materialSinDatoAtenuado;
                 }
-                yield coincide
-                        ? materialesRenta.get(tono)
-                        : materialesRentaAtenuados.get(tono);
+                yield coincide ? materialesRenta.get(tono) : materialesRentaAtenuados.get(tono);
             }
             case VENCIMIENTO -> {
                 BloqueMaqueta.CategoriaVencimiento categoria = bloque.categoriaVencimiento();
@@ -3055,8 +3227,12 @@ public class MaquetaController implements Refrescable {
 
     private Integer tonoRenta(BloqueMaqueta bloque) {
         if (bloque.rentaReferencial() == null) return null;
-        int tono = MaquetaService.tonoRenta(bloque.rentaReferencial(), rentaMinima, rentaMaxima,
-                MaquetaService.TONOS_RENTA);
+        int tono =
+                MaquetaService.tonoRenta(
+                        bloque.rentaReferencial(),
+                        rentaMinima,
+                        rentaMaxima,
+                        MaquetaService.TONOS_RENTA);
         return tono < 0 ? null : tono;
     }
 
@@ -3104,17 +3280,13 @@ public class MaquetaController implements Refrescable {
     }
 
     private static String colorHex(Color color) {
-        return String.format("#%02X%02X%02X",
+        return String.format(
+                "#%02X%02X%02X",
                 (int) Math.round(color.getRed() * 255),
                 (int) Math.round(color.getGreen() * 255),
                 (int) Math.round(color.getBlue() * 255));
     }
 
-    /**
-     * Los materiales atenuados son transparentes; dentro de cada piso se dibujan
-     * después de los opacos para reducir los artefactos de orden del búfer de
-     * profundidad, sin sacar los bloques de su grupo de piso.
-     */
     private void ordenarBloques(Set<BloqueMaqueta> atenuados) {
         if (atenuados.isEmpty()) return;
         Set<Node> nodosAtenuados = new HashSet<>();
@@ -3151,8 +3323,7 @@ public class MaquetaController implements Refrescable {
     private void actualizarResumen(List<BloqueMaqueta> bloques) {
         if (resumen == null) return;
         if (nivelVista == NivelVista.UNIDAD && bloqueUnidad != null) {
-            StringBuilder texto = new StringBuilder("Unidad ")
-                    .append(numeroUnidad(bloqueUnidad));
+            StringBuilder texto = new StringBuilder("Unidad ").append(numeroUnidad(bloqueUnidad));
             if (bloqueUnidad.tipo() != null && !bloqueUnidad.tipo().isBlank()) {
                 texto.append(" · ").append(bloqueUnidad.tipo());
             }
@@ -3178,14 +3349,18 @@ public class MaquetaController implements Refrescable {
             return;
         }
         List<BloqueMaqueta> ambito = bloquesEnAmbito(bloques);
-        String prefijo = nivelVista == NivelVista.PISO && nivelEnfocado != null
-                ? etiquetaNivel(nivelEnfocado) + " · " : "";
-        resumen.setText(prefijo + switch (modoVista) {
-            case ESTADO -> resumenEstado(ambito);
-            case MORA -> resumenMora(ambito);
-            case RENTA -> resumenRenta(ambito);
-            case VENCIMIENTO -> resumenVencimiento(ambito);
-        });
+        String prefijo =
+                nivelVista == NivelVista.PISO && nivelEnfocado != null
+                        ? etiquetaNivel(nivelEnfocado) + " · "
+                        : "";
+        resumen.setText(
+                prefijo
+                        + switch (modoVista) {
+                            case ESTADO -> resumenEstado(ambito);
+                            case MORA -> resumenMora(ambito);
+                            case RENTA -> resumenRenta(ambito);
+                            case VENCIMIENTO -> resumenVencimiento(ambito);
+                        });
     }
 
     private List<BloqueMaqueta> bloquesEnAmbito(List<BloqueMaqueta> bloques) {
@@ -3201,17 +3376,24 @@ public class MaquetaController implements Refrescable {
         long alquilados = bloques.stream().filter(b -> b.estado() == ALQUILADO).count();
         long mantenimiento = bloques.stream().filter(b -> b.estado() == MANTENIMIENTO).count();
         long inactivos = bloques.stream().filter(b -> b.estado() == INACTIVO).count();
-        long morosos = bloques.stream()
-                .filter(b -> b.semaforo() == SemaforoMorosidad.MOROSO).count();
-        long atraso = bloques.stream()
-                .filter(b -> b.semaforo() == SemaforoMorosidad.ATRASO_LEVE).count();
+        long morosos =
+                bloques.stream().filter(b -> b.semaforo() == SemaforoMorosidad.MOROSO).count();
+        long atraso =
+                bloques.stream().filter(b -> b.semaforo() == SemaforoMorosidad.ATRASO_LEVE).count();
         return contar(bloques.size(), "inmueble", "inmuebles")
-                + " · " + contar(disponibles, "disponible", "disponibles")
-                + " · " + contar(alquilados, "alquilado", "alquilados")
-                + " · " + mantenimiento + " en mantenimiento"
-                + " · " + contar(inactivos, "inactivo", "inactivos")
-                + " · " + contar(morosos, "moroso", "morosos")
-                + " · " + contar(atraso, "con atraso leve", "con atraso leve");
+                + " · "
+                + contar(disponibles, "disponible", "disponibles")
+                + " · "
+                + contar(alquilados, "alquilado", "alquilados")
+                + " · "
+                + mantenimiento
+                + " en mantenimiento"
+                + " · "
+                + contar(inactivos, "inactivo", "inactivos")
+                + " · "
+                + contar(morosos, "moroso", "morosos")
+                + " · "
+                + contar(atraso, "con atraso leve", "con atraso leve");
     }
 
     private String resumenMora(List<BloqueMaqueta> bloques) {
@@ -3220,17 +3402,22 @@ public class MaquetaController implements Refrescable {
         long morosos = contarCategoriaMora(bloques, BloqueMaqueta.CategoriaMora.MOROSO);
         long sinMora = contarCategoriaMora(bloques, BloqueMaqueta.CategoriaMora.SIN_MORA);
         return contar(bloques.size(), "inmueble", "inmuebles")
-                + " · " + contar(alDia, "al día", "al día")
-                + " · " + contar(atraso, "con atraso leve", "con atraso leve")
-                + " · " + contar(morosos, "moroso", "morosos")
-                + " · " + contar(sinMora, "sin mora", "sin mora");
+                + " · "
+                + contar(alDia, "al día", "al día")
+                + " · "
+                + contar(atraso, "con atraso leve", "con atraso leve")
+                + " · "
+                + contar(morosos, "moroso", "morosos")
+                + " · "
+                + contar(sinMora, "sin mora", "sin mora");
     }
 
     private String resumenRenta(List<BloqueMaqueta> bloques) {
-        List<BigDecimal> rentas = bloques.stream()
-                .map(BloqueMaqueta::rentaReferencial)
-                .filter(renta -> renta != null)
-                .toList();
+        List<BigDecimal> rentas =
+                bloques.stream()
+                        .map(BloqueMaqueta::rentaReferencial)
+                        .filter(renta -> renta != null)
+                        .toList();
         String base = contar(bloques.size(), "inmueble", "inmuebles");
         if (rentas.isEmpty()) return base + " · Sin rentas registradas";
 
@@ -3242,44 +3429,58 @@ public class MaquetaController implements Refrescable {
             if (renta.compareTo(maxima) > 0) maxima = renta;
             suma = suma.add(renta);
         }
-        BigDecimal promedio = suma.divide(BigDecimal.valueOf(rentas.size()), 2,
-                RoundingMode.HALF_UP);
+        BigDecimal promedio =
+                suma.divide(BigDecimal.valueOf(rentas.size()), 2, RoundingMode.HALF_UP);
         long sinRenta = bloques.size() - rentas.size();
-        String texto = base + " · " + contar(rentas.size(), "con renta", "con renta")
-                + " · Mín. " + Tablas.moneda(minima)
-                + " · Máx. " + Tablas.moneda(maxima)
-                + " · Prom. " + Tablas.moneda(promedio);
+        String texto =
+                base
+                        + " · "
+                        + contar(rentas.size(), "con renta", "con renta")
+                        + " · Mín. "
+                        + Tablas.moneda(minima)
+                        + " · Máx. "
+                        + Tablas.moneda(maxima)
+                        + " · Prom. "
+                        + Tablas.moneda(promedio);
         if (sinRenta > 0) texto += " · " + contar(sinRenta, "sin renta", "sin renta");
         return texto;
     }
 
     private String resumenVencimiento(List<BloqueMaqueta> bloques) {
-        long vencidos = contarCategoriaVencimiento(bloques,
-                BloqueMaqueta.CategoriaVencimiento.VENCIDO);
-        long hasta30 = contarCategoriaVencimiento(bloques,
-                BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS);
-        long entre31y90 = contarCategoriaVencimiento(bloques,
-                BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS);
-        long masDe90 = contarCategoriaVencimiento(bloques,
-                BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS);
-        long sinContrato = contarCategoriaVencimiento(bloques,
-                BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO);
+        long vencidos =
+                contarCategoriaVencimiento(bloques, BloqueMaqueta.CategoriaVencimiento.VENCIDO);
+        long hasta30 =
+                contarCategoriaVencimiento(
+                        bloques, BloqueMaqueta.CategoriaVencimiento.HASTA_30_DIAS);
+        long entre31y90 =
+                contarCategoriaVencimiento(
+                        bloques, BloqueMaqueta.CategoriaVencimiento.DE_31_A_90_DIAS);
+        long masDe90 =
+                contarCategoriaVencimiento(
+                        bloques, BloqueMaqueta.CategoriaVencimiento.MAS_DE_90_DIAS);
+        long sinContrato =
+                contarCategoriaVencimiento(
+                        bloques, BloqueMaqueta.CategoriaVencimiento.SIN_CONTRATO);
         return contar(bloques.size(), "inmueble", "inmuebles")
-                + " · " + contar(vencidos, "vencido", "vencidos")
-                + " · " + contar(hasta30, "vence en 30 días o menos",
-                        "vencen en 30 días o menos")
-                + " · " + contar(entre31y90, "entre 31 y 90 días", "entre 31 y 90 días")
-                + " · " + contar(masDe90, "con más de 90 días", "con más de 90 días")
-                + " · " + contar(sinContrato, "sin contrato", "sin contrato");
+                + " · "
+                + contar(vencidos, "vencido", "vencidos")
+                + " · "
+                + contar(hasta30, "vence en 30 días o menos", "vencen en 30 días o menos")
+                + " · "
+                + contar(entre31y90, "entre 31 y 90 días", "entre 31 y 90 días")
+                + " · "
+                + contar(masDe90, "con más de 90 días", "con más de 90 días")
+                + " · "
+                + contar(sinContrato, "sin contrato", "sin contrato");
     }
 
-    private long contarCategoriaMora(List<BloqueMaqueta> bloques,
-                                     BloqueMaqueta.CategoriaMora categoria) {
+    private long contarCategoriaMora(
+            List<BloqueMaqueta> bloques, BloqueMaqueta.CategoriaMora categoria) {
         return bloques.stream().filter(b -> b.categoriaMora() == categoria).count();
     }
 
-    private long contarCategoriaVencimiento(List<BloqueMaqueta> bloques,
-                                            BloqueMaqueta.CategoriaVencimiento categoria) {
+    private long contarCategoriaVencimiento(
+            List<BloqueMaqueta> bloques, BloqueMaqueta.CategoriaVencimiento categoria) {
         return bloques.stream().filter(b -> b.categoriaVencimiento() == categoria).count();
     }
 
@@ -3347,9 +3548,10 @@ public class MaquetaController implements Refrescable {
         if (avisoUbicacion == null) return;
         boolean visible = sinUbicacion > 0;
         if (visible) {
-            avisoUbicacion.setText(sinUbicacion == 1
-                    ? "1 inmueble sin ubicación no se muestra"
-                    : sinUbicacion + " inmuebles sin ubicación no se muestran");
+            avisoUbicacion.setText(
+                    sinUbicacion == 1
+                            ? "1 inmueble sin ubicación no se muestra"
+                            : sinUbicacion + " inmuebles sin ubicación no se muestran");
         }
         avisoUbicacion.setVisible(visible);
         avisoUbicacion.setManaged(visible);
@@ -3403,8 +3605,10 @@ public class MaquetaController implements Refrescable {
         Label titulo = new Label("La vista 3D no está disponible");
         titulo.getStyleClass().add("maqueta-aviso-titulo");
 
-        Label detalle = new Label("Esta computadora no tiene habilitados los gráficos 3D de JavaFX. "
-                + "Puedes seguir usando el resto del sistema normalmente.");
+        Label detalle =
+                new Label(
+                        "Esta computadora no tiene habilitados los gráficos 3D de JavaFX. "
+                                + "Puedes seguir usando el resto del sistema normalmente.");
         detalle.getStyleClass().add("maqueta-aviso-detalle");
         detalle.setWrapText(true);
         detalle.setMaxWidth(460);
@@ -3422,11 +3626,15 @@ public class MaquetaController implements Refrescable {
             texto.append(bloque.codigo()).append(" · ");
         }
         texto.append(bloque.nombre() == null ? "Sin nombre" : bloque.nombre())
-                .append(" · ").append(bloque.tipo() == null ? "Sin tipo" : bloque.tipo())
-                .append(" · ").append(etiquetaNivel(bloque.nivel()))
-                .append(" · ").append(bloque.estado().getEtiqueta());
+                .append(" · ")
+                .append(bloque.tipo() == null ? "Sin tipo" : bloque.tipo())
+                .append(" · ")
+                .append(etiquetaNivel(bloque.nivel()))
+                .append(" · ")
+                .append(bloque.estado().getEtiqueta());
         if (PlantaPiso.tieneArea(bloque)) {
-            texto.append(" · ").append(bloque.areaM2().stripTrailingZeros().toPlainString())
+            texto.append(" · ")
+                    .append(bloque.areaM2().stripTrailingZeros().toPlainString())
                     .append(" m²");
         }
         if (bloque.arrendatario() != null) texto.append(" · ").append(bloque.arrendatario());
@@ -3439,8 +3647,8 @@ public class MaquetaController implements Refrescable {
             }
             case MORA -> texto.append(" · Mora: ").append(textoMora(bloque));
             case RENTA -> texto.append(" · ").append(textoRenta(bloque.rentaReferencial()));
-            case VENCIMIENTO -> texto.append(" · ")
-                    .append(textoVencimiento(bloque.diasParaVencer()));
+            case VENCIMIENTO ->
+                    texto.append(" · ").append(textoVencimiento(bloque.diasParaVencer()));
         }
         return texto.toString();
     }
@@ -3459,11 +3667,14 @@ public class MaquetaController implements Refrescable {
                 if (detalle.contrato() == null) yield "Sin contrato vigente";
                 yield detalle.contrato().semaforo().getEtiqueta();
             }
-            case RENTA -> detalle.rentaReferencial() == null
-                    ? "Sin renta registrada" : Tablas.moneda(detalle.rentaReferencial());
-            case VENCIMIENTO -> detalle.contrato() == null
-                    ? "Sin contrato vigente"
-                    : textoVencimiento(detalle.contrato().diasParaVencer());
+            case RENTA ->
+                    detalle.rentaReferencial() == null
+                            ? "Sin renta registrada"
+                            : Tablas.moneda(detalle.rentaReferencial());
+            case VENCIMIENTO ->
+                    detalle.contrato() == null
+                            ? "Sin contrato vigente"
+                            : textoVencimiento(detalle.contrato().diasParaVencer());
         };
     }
 
@@ -3489,9 +3700,13 @@ public class MaquetaController implements Refrescable {
 
         private final String etiqueta;
 
-        ModoVista(String etiqueta) { this.etiqueta = etiqueta; }
+        ModoVista(String etiqueta) {
+            this.etiqueta = etiqueta;
+        }
 
-        String etiqueta() { return etiqueta; }
+        String etiqueta() {
+            return etiqueta;
+        }
 
         static List<String> etiquetas() {
             List<String> etiquetas = new ArrayList<>();
@@ -3520,38 +3735,40 @@ public class MaquetaController implements Refrescable {
         return Math.max(minimo, Math.min(maximo, valor));
     }
 
-    record FilaPiso(List<BloqueMaqueta> bloques, double z) {
-    }
+    record FilaPiso(List<BloqueMaqueta> bloques, double z) {}
 
-    record PisoGeometria(int nivel, double y, double ancho, double profundidad,
-                         List<FilaPiso> filas) {
-    }
+    record PisoGeometria(
+            int nivel, double y, double ancho, double profundidad, List<FilaPiso> filas) {}
 
-    record Geometria(double ancho, double profundidad, double alto,
-                     double anchoBase, double profundidadBase,
-                     double anchoTecho, double profundidadTecho,
-                     double desplazamientoY, Map<Integer, PisoGeometria> pisos,
-                     Map<Long, Point3D> posiciones) {
-    }
+    record Geometria(
+            double ancho,
+            double profundidad,
+            double alto,
+            double anchoBase,
+            double profundidadBase,
+            double anchoTecho,
+            double profundidadTecho,
+            double desplazamientoY,
+            Map<Integer, PisoGeometria> pisos,
+            Map<Long, Point3D> posiciones) {}
 
-    record Encuadre(double ojoX, double ojoY, double centroZ, double distancia) {
-    }
+    record Encuadre(double ojoX, double ojoY, double centroZ, double distancia) {}
 
-    private record EtiquetaPiso(int nivel, Label nodo, Point3D ancla) {
-    }
+    private record EtiquetaPiso(int nivel, Label nodo, Point3D ancla) {}
 
-    private record EtiquetaUnidad(BloqueMaqueta bloque, Label nodo,
-                                  Point3D anclaEdificio, Point3D anclaPlanta) {
-    }
+    private record EtiquetaUnidad(
+            BloqueMaqueta bloque, Label nodo, Point3D anclaEdificio, Point3D anclaPlanta) {}
 
-    private record EtiquetaAmbiente(Label nodo, Point3D ancla) {
-    }
+    private record EtiquetaAmbiente(Label nodo, Point3D ancla) {}
 
-    private record ItemLeyenda(Node nodo, String clave) {
-    }
+    private record ItemLeyenda(Node nodo, String clave) {}
 
-    private record Proyeccion(double ojoX, double ojoY, double ojoZ, double tanV,
-                              double aspecto, double ancho, double alto) {
-    }
-
+    private record Proyeccion(
+            double ojoX,
+            double ojoY,
+            double ojoZ,
+            double tanV,
+            double aspecto,
+            double ancho,
+            double alto) {}
 }
