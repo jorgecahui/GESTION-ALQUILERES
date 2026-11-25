@@ -108,9 +108,13 @@ public class MaquetaService {
                     arrendatario,
                     semaforo,
                     inconsistencia,
+                    inmueble.getAreaM2(),
                     inmueble.getRentaReferencial(),
                     fechaFin,
-                    diasParaVencer));
+                    diasParaVencer,
+                    inmueble.getDormitorios(),
+                    inmueble.getBanos(),
+                    inmueble.isAmoblado()));
         }
         return new ResultadoMaqueta(bloques, sinUbicacion);
     }

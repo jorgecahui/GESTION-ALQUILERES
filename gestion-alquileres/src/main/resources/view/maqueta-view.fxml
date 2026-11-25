@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
@@ -25,6 +26,9 @@
 
     <StackPane fx:id="contenedor3d" styleClass="maqueta-contenedor" VBox.vgrow="ALWAYS">
         <Pane fx:id="capaEtiquetas" pickOnBounds="false"/>
+        <Canvas fx:id="lienzoPlano" mouseTransparent="true" visible="false"/>
+        <Region fx:id="veloVista" styleClass="maqueta-velo" mouseTransparent="true"
+                visible="false" opacity="0.0"/>
         <HBox fx:id="barraNavegacion" styleClass="maqueta-navegacion" spacing="10"
               alignment="CENTER_LEFT" visible="false" managed="false"
               maxWidth="-Infinity" maxHeight="-Infinity"
@@ -32,10 +36,41 @@
             <StackPane.margin><Insets top="14.0" left="16.0" right="16.0"/></StackPane.margin>
             <Label fx:id="migaNavegacion" styleClass="maqueta-miga"/>
             <Button fx:id="btnVolverEdificio" text="Volver al edificio"
-                    onAction="#onVolverAlEdificio" styleClass="button-outlined">
+                    onAction="#onVolverNavegacion" styleClass="button-outlined">
                 <graphic><FontIcon iconLiteral="fth-arrow-left"/></graphic>
             </Button>
+            <HBox fx:id="alternadorVista" spacing="4" visible="false" managed="false"
+                  alignment="CENTER_LEFT">
+                <ToggleButton fx:id="btnPlano" text="Plano" onAction="#onVistaPlano"
+                              styleClass="maqueta-toggle-vista"/>
+                <ToggleButton fx:id="btnTresD" text="3D" onAction="#onVistaTresD"
+                              styleClass="maqueta-toggle-vista"/>
+            </HBox>
         </HBox>
+        <VBox fx:id="panelUnidad" styleClass="maqueta-panel-unidad" spacing="8"
+              visible="false" managed="false" maxWidth="440.0" prefWidth="440.0"
+              maxHeight="Infinity" StackPane.alignment="CENTER_RIGHT">
+            <StackPane.margin><Insets top="64.0" right="16.0" bottom="16.0"/></StackPane.margin>
+            <Label text="Datos de la unidad" styleClass="maqueta-panel-titulo"/>
+            <Label text="Esquema referencial: la distribución interior es generada por el sistema."
+                   styleClass="maqueta-panel-nota" wrapText="true"/>
+            <Label fx:id="avisosUnidad" styleClass="maqueta-panel-aviso"
+                   wrapText="true" visible="false" managed="false"/>
+            <ScrollPane fx:id="scrollPanelUnidad" fitToWidth="true" VBox.vgrow="ALWAYS"
+                        hbarPolicy="NEVER" styleClass="pagina-scroll">
+                <content>
+                    <VBox fx:id="cuerpoPanelUnidad" spacing="8"/>
+                </content>
+            </ScrollPane>
+            <Button fx:id="btnVerEnInmueblesUnidad" text="Ver en Inmuebles"
+                    onAction="#onVerEnInmueblesUnidad" styleClass="button-outlined"
+                    maxWidth="Infinity"/>
+        </VBox>
+        <Label fx:id="avisoEsquema" text="Esquema referencial"
+               styleClass="maqueta-esquema-aviso" visible="false" managed="false"
+               mouseTransparent="true" StackPane.alignment="TOP_LEFT">
+            <StackPane.margin><Insets top="14.0" left="16.0"/></StackPane.margin>
+        </Label>
         <Label fx:id="etiquetaHover" styleClass="maqueta-hover" visible="false"
                mouseTransparent="true" wrapText="true" maxWidth="420"
                StackPane.alignment="TOP_LEFT">

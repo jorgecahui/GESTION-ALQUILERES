@@ -81,6 +81,10 @@ class MaquetaServiceTest {
         assertEquals("Ana Pérez", b1.arrendatario());
         assertEquals(SemaforoMorosidad.AL_DIA, b1.semaforo());
         assertFalse(b1.inconsistencia());
+        assertEquals(new BigDecimal("55.00"), b1.areaM2());
+        assertEquals(2, b1.dormitorios());
+        assertEquals(1, b1.banos());
+        assertFalse(b1.amoblado());
         assertEquals(new BigDecimal("1200.00"), b1.rentaReferencial());
         assertEquals(LocalDate.of(2027, 1, 31), b1.fechaFinContrato());
         assertEquals(355L, b1.diasParaVencer());
@@ -281,6 +285,7 @@ class MaquetaServiceTest {
                               EstadoInmueble estado, Integer nivel, Integer orden) {
         return Inmueble.builder().id(id).codigo(codigo).nombre(nombre).tipo(tipo)
                 .estado(estado).nivel(nivel).orden(orden)
+                .areaM2(new BigDecimal("55.00")).dormitorios(2).banos(1).amoblado(false)
                 .rentaReferencial(new BigDecimal("1200.00")).build();
     }
 
