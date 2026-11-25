@@ -1810,8 +1810,6 @@
     -fx-text-fill: -color-fg-muted;
     -fx-font-size: 12px;
     -fx-min-height: 34;
-    -fx-pref-height: 34;
-    -fx-max-height: 34;
 }
 
 .maqueta-punto {

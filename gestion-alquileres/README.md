@@ -74,13 +74,25 @@ La carpeta de datos se puede cambiar con `-Dapp.data-dir=...`. Contiene `alquile
 - Bloqueo por inactividad configurable (0 = desactivado).
 - La autorización se valida en la UI **y** en los servicios.
 
+## Maqueta 3D
+
+La maqueta permite recorrer el edificio en tres niveles, siempre en modo lectura:
+
+- **Edificio:** torre con las unidades coloreadas según el modo **Ver por**.
+- **Piso:** al hacer clic en una losa o en su etiqueta, se enfoca la planta del piso con las unidades como recintos y un pasillo común. El resumen y la leyenda se adaptan al ámbito visible.
+- **Unidad:** al hacer clic en un recinto se muestra su **esquema referencial**, generado a partir de `areaM2`, `dormitorios`, `banos` y `amoblado`, con alternancia **Plano / 3D** y un panel lateral con los datos del inmueble y del contrato vigente.
+
+El selector **Ver por** ofrece Estado, Mora, Renta y Vencimiento; recolorea sin reconstruir la escena y recuerda la última elección con `java.util.prefs`. El botón **Restablecer vista** vuelve a `EDIFICIO` desde cualquier nivel. La tecla `Esc` y los botones de la barra permiten volver un nivel; la rueda mantiene el zoom en las vistas 3D.
+
+La distribución interior del esquema es una **aproximación generada por el sistema**, no un plano real del inmueble; por eso se rotula siempre **“Esquema referencial”**. No usa modelos, texturas ni librerías 3D externas.
+
 ## Pruebas
 
 ```powershell
 .\mvnw.cmd -q test
 ```
 
-La suite cubre catálogos, contratos, cobranza, mora, PDFs, Excel, recordatorios, configuración, autenticación, permisos, usuarios, auditoría y respaldos. Estado actual: **99 pruebas, 0 fallos**. Incluye pruebas de alta/renovación/finalización de contratos, reparación de cronogramas y detalles de pagos demo, preservación de personas inactivas y carga de humo de los FXML de contratos, inmuebles, pagos, mantenimiento, tipos de inmueble, personas y propietarios.
+La suite cubre catálogos, contratos, cobranza, mora, PDFs, Excel, recordatorios, configuración, autenticación, permisos, usuarios, auditoría, respaldos y la maqueta 3D (navegación, planta y esquema referencial). Estado actual: **174 pruebas, 0 fallos**. Incluye pruebas de alta/renovación/finalización de contratos, reparación de cronogramas y detalles de pagos demo, preservación de personas inactivas, carga de humo de los FXML y lógica pura de encuadres, distribución de planta y generación de esquemas.
 
 ## Empaquetado
 

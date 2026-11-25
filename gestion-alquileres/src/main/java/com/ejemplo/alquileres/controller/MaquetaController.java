@@ -165,7 +165,8 @@ public class MaquetaController implements Refrescable {
     private static final double GROSOR_PARED_ESQUEMA = 0.15 * ESCALA_ESQUEMA;
     private static final double ALTO_PLACA_ESQUEMA = 2;
     private static final double ANCHO_PANEL_UNIDAD = 440;
-    private static final double MARGEN_PANEL_UNIDAD = 24;
+    private static final double ANCHO_PANEL_UNIDAD_MINIMO = 360;
+    private static final double MARGEN_PANEL_UNIDAD = 56;
     private static final Duration DURACION_FUNDIDO = Duration.millis(160);
 
     private static final double RELLENO_ENCUADRE = 0.88;
@@ -293,7 +294,9 @@ public class MaquetaController implements Refrescable {
     private Group grupoUnidad;
     private GeneradorEsquema.Esquema esquemaActual;
     private BloqueMaqueta bloqueUnidad;
+    private MaquetaService.DetalleMaqueta detalleUnidad;
     private boolean vistaPlano;
+    private double zoomPlano = 1;
     private Timeline transicionVista;
     private double anguloYPisoAntesUnidad = ANGULO_Y_PISO;
 
@@ -569,7 +572,7 @@ public class MaquetaController implements Refrescable {
         materialEstructura = material(COLOR_ESTRUCTURA);
         materialPasillo = material(COLOR_PASILLO);
         materialLosa = material(COLOR_LOSA);
-        materialParedEsquema = material(COLOR_PARED_ESQUEMA);
+        materialParedEsquema = materialParedEsquema(COLOR_PARED_ESQUEMA);
         materialSeleccion = material(COLOR_SELECCION);
         materialHover = material(COLOR_HOVER);
         materialSueloClaro = materialSuelo(COLOR_SUELO_CLARO_CENTRO, COLOR_SUELO_CLARO_BORDE);
@@ -608,6 +611,15 @@ public class MaquetaController implements Refrescable {
         PhongMaterial material = new PhongMaterial(color);
         material.setSpecularColor(Color.rgb(178, 184, 194));
         material.setSpecularPower(18);
+        return material;
+    }
+
+    /** Paredes del esquema: una emisión tenue evita que queden negras en tema oscuro. */
+    private PhongMaterial materialParedEsquema(Color color) {
+        PhongMaterial material = material(color);
+        WritableImage emision = new WritableImage(1, 1);
+        emision.getPixelWriter().setColor(0, 0, Color.rgb(44, 48, 56));
+        material.setSelfIlluminationMap(emision);
         return material;
     }
 
@@ -1219,6 +1231,7 @@ public class MaquetaController implements Refrescable {
                 mostrarErrorPanel();
                 return;
             }
+            detalleUnidad = detalle;
             cuerpoPanelUnidad.getChildren().setAll(crearContenidoDetalle(detalle, true));
             cuerpoPanelUnidad.requestLayout();
         }, error -> {
@@ -1305,6 +1318,7 @@ public class MaquetaController implements Refrescable {
         if (vistaPlano) ocultarEtiquetasAmbiente();
         else actualizarEtiquetasAmbiente();
         actualizarBotonesVista();
+        actualizarTextoAyuda();
     }
 
     private void actualizarBotonesVista() {
@@ -1337,17 +1351,25 @@ public class MaquetaController implements Refrescable {
         }
 
         double anchoDisponible = anchoEncuadreDisponible();
-        double margen = 42;
-        double disponibleAncho = Math.max(80, anchoDisponible - 2 * margen);
-        double disponibleAlto = Math.max(80, alto - 2 * margen);
+        double margenLateral = 42;
+        double margenSuperior = 78;
+        double margenInferior = 40;
+        double disponibleAncho = Math.max(80, anchoDisponible - 2 * margenLateral);
+        double disponibleAlto = Math.max(80, alto - margenSuperior - margenInferior);
         double escala = Math.min(disponibleAncho / esquemaActual.ancho(),
-                disponibleAlto / esquemaActual.alto());
+                disponibleAlto / esquemaActual.alto()) * zoomPlano;
         if (!Double.isFinite(escala) || escala <= 0) return;
 
         double ox = (anchoDisponible - esquemaActual.ancho() * escala) / 2;
-        double oy = (alto - esquemaActual.alto() * escala) / 2;
+        double oy = margenSuperior
+                + (disponibleAlto - esquemaActual.alto() * escala) / 2;
         boolean oscuro = esTemaOscuro();
         Color linea = oscuro ? COLOR_LINEA_OSCURA : COLOR_LINEA_CLARA;
+
+        gc.save();
+        gc.beginPath();
+        gc.rect(0, 0, anchoDisponible, alto);
+        gc.clip();
 
         for (GeneradorEsquema.Recinto recinto : esquemaActual.recintos()) {
             double x = ox + recinto.x() * escala;
@@ -1405,6 +1427,7 @@ public class MaquetaController implements Refrescable {
         if (esquemaActual.areaEstimada()) medida += " · área estimada";
         if (esquemaActual.ajustado()) medida += " · distribución ajustada";
         gc.fillText(medida, ox, Math.max(12, oy - 12));
+        gc.restore();
     }
 
     private void limpiarLienzo() {
@@ -1787,6 +1810,12 @@ public class MaquetaController implements Refrescable {
 
     private void alDesplazar(ScrollEvent evento) {
         if (transicionActiva()) return;
+        if (nivelVista == NivelVista.UNIDAD && vistaPlano) {
+            zoomPlano = limitar(zoomPlano * (1 + evento.getDeltaY() * 0.0015), 0.6, 2.0);
+            dibujarPlano();
+            evento.consume();
+            return;
+        }
         if (camara == null || subEscena == null || distanciaAuto <= 0) return;
         double altoVista = subEscena.getHeight();
         if (altoVista <= 0) return;
@@ -1805,6 +1834,7 @@ public class MaquetaController implements Refrescable {
 
     private void actualizarEncuadreYEtiquetas() {
         if (transicionActiva()) return;
+        if (nivelVista == NivelVista.UNIDAD) ajustarPanelUnidad();
         encuadrarAutomatico();
         actualizarEtiquetasPiso();
         actualizarEtiquetasUnidad();
@@ -1834,9 +1864,29 @@ public class MaquetaController implements Refrescable {
     private double anchoEncuadreDisponible() {
         double ancho = subEscena == null ? 0 : subEscena.getWidth();
         if (nivelVista == NivelVista.UNIDAD && panelUnidad != null && panelUnidad.isVisible()) {
-            return Math.max(220, ancho - ANCHO_PANEL_UNIDAD - MARGEN_PANEL_UNIDAD);
+            return Math.max(220, ancho - anchoPanelUnidadEfectivo() - MARGEN_PANEL_UNIDAD);
         }
         return ancho;
+    }
+
+    /** Ajusta el panel a ventanas pequeñas sin dejar de ser legible. */
+    private void ajustarPanelUnidad() {
+        if (panelUnidad == null || subEscena == null) return;
+        double anchoEscena = subEscena.getWidth();
+        if (anchoEscena <= 0) return;
+        double ancho = Math.max(ANCHO_PANEL_UNIDAD_MINIMO,
+                Math.min(ANCHO_PANEL_UNIDAD, anchoEscena * 0.42));
+        panelUnidad.setPrefWidth(ancho);
+        if (nivelVista == NivelVista.UNIDAD) desplazarEscenaUnidad(true);
+    }
+
+    private double anchoPanelUnidadEfectivo() {
+        if (panelUnidad == null) return ANCHO_PANEL_UNIDAD;
+        double ancho = panelUnidad.getPrefWidth();
+        if (ancho <= 0) ancho = panelUnidad.getWidth();
+        if (ancho <= 0) ancho = ANCHO_PANEL_UNIDAD;
+        return Math.max(ANCHO_PANEL_UNIDAD_MINIMO,
+                Math.min(ANCHO_PANEL_UNIDAD, ancho));
     }
 
     /**
@@ -2296,6 +2346,7 @@ public class MaquetaController implements Refrescable {
 
         anguloXEdificio = rotacionX.getAngle();
         anguloYEdificio = rotacionY.getAngle();
+        ocultarMensajeEscena();
         nivelVista = NivelVista.PISO;
         nivelEnfocado = nivel;
         limpiarSeleccion();
@@ -2357,6 +2408,7 @@ public class MaquetaController implements Refrescable {
         nivelVista = NivelVista.UNIDAD;
         bloqueUnidad = bloque;
         detenerTransicionVista();
+        ocultarMensajeEscena();
         limpiarSeleccion();
         actualizarHover(null);
 
@@ -2364,36 +2416,56 @@ public class MaquetaController implements Refrescable {
         for (Group piso : gruposPiso.values()) piso.setVisible(false);
         if (estructuraGeneral != null) estructuraGeneral.setVisible(false);
 
-        esquemaActual = GeneradorEsquema.generar(bloque.areaM2(), bloque.dormitorios(),
-                bloque.banos(), bloque.amoblado());
-        crearGrupoUnidad(bloque, esquemaActual);
-        vistaPlano = false;
-        aplicarVistaUnidad();
-        mostrarPanelUnidad(bloque);
-        desplazarEscenaUnidad(true);
-        actualizarBarraNavegacion();
-        actualizarResumen(bloquesActuales);
-        actualizarEtiquetasPiso();
-        ocultarEtiquetasUnidad();
-        ocultarEtiquetasAmbiente();
+        try {
+            esquemaActual = GeneradorEsquema.generar(bloque.areaM2(), bloque.dormitorios(),
+                    bloque.banos(), bloque.amoblado());
+            crearGrupoUnidad(bloque, esquemaActual);
+            vistaPlano = false;
+            zoomPlano = 1;
+            aplicarVistaUnidad();
+            mostrarPanelUnidad(bloque);
+            ajustarPanelUnidad();
+            desplazarEscenaUnidad(true);
+            actualizarBarraNavegacion();
+            actualizarResumen(bloquesActuales);
+            actualizarEtiquetasPiso();
+            ocultarEtiquetasUnidad();
+            ocultarEtiquetasAmbiente();
 
-        double anchoDisponible = anchoEncuadreDisponible();
-        Encuadre encuadre = encuadreDePuntos(puntosEsquema(esquemaActual),
-                ANGULO_X_ESQUEMA, ANGULO_Y_ESQUEMA, anchoDisponible);
-        List<KeyValue> valores = new ArrayList<>();
-        valores.add(new KeyValue(rotacionX.angleProperty(),
-                ANGULO_X_ESQUEMA, Interpolator.EASE_BOTH));
-        valores.add(new KeyValue(rotacionY.angleProperty(),
-                ANGULO_Y_ESQUEMA, Interpolator.EASE_BOTH));
-        valores.addAll(valoresCamara(encuadre));
+            double anchoDisponible = anchoEncuadreDisponible();
+            Encuadre encuadre = encuadreDePuntos(puntosEsquema(esquemaActual),
+                    ANGULO_X_ESQUEMA, ANGULO_Y_ESQUEMA, anchoDisponible);
+            List<KeyValue> valores = new ArrayList<>();
+            valores.add(new KeyValue(rotacionX.angleProperty(),
+                    ANGULO_X_ESQUEMA, Interpolator.EASE_BOTH));
+            valores.add(new KeyValue(rotacionY.angleProperty(),
+                    ANGULO_Y_ESQUEMA, Interpolator.EASE_BOTH));
+            valores.addAll(valoresCamara(encuadre));
 
-        iniciarTransicion(valores, () -> {
-            rotacionX.setAngle(ANGULO_X_ESQUEMA);
-            rotacionY.setAngle(ANGULO_Y_ESQUEMA);
-            aplicarReferenciaAutomatica(encuadre);
-            actualizarEtiquetasAmbiente();
-            if (vistaPlano) dibujarPlano();
-        });
+            iniciarTransicion(valores, () -> {
+                rotacionX.setAngle(ANGULO_X_ESQUEMA);
+                rotacionY.setAngle(ANGULO_Y_ESQUEMA);
+                aplicarReferenciaAutomatica(encuadre);
+                actualizarEtiquetasAmbiente();
+                if (vistaPlano) dibujarPlano();
+            });
+        } catch (RuntimeException error) {
+            log.error("No se pudo dibujar el esquema de la unidad {}", bloque.id(), error);
+            notificador.error("No se pudo dibujar el esquema de la unidad.");
+            limpiarUnidad();
+            nivelVista = NivelVista.PISO;
+            if (nivelEnfocado != null && gruposPlanta.containsKey(nivelEnfocado)) {
+                gruposPlanta.get(nivelEnfocado).setVisible(true);
+            }
+            for (Group piso : gruposPiso.values()) piso.setVisible(false);
+            if (estructuraGeneral != null) estructuraGeneral.setVisible(false);
+            actualizarBarraNavegacion();
+            actualizarResumen(bloquesActuales);
+            actualizarEtiquetasPiso();
+            ocultarEtiquetasUnidad();
+            mostrarMensajeEscena("No se pudo dibujar la unidad",
+                    "El esquema referencial no está disponible. Vuelve a intentarlo o elige otra unidad.");
+        }
     }
 
     /** Vuelve un nivel: de UNIDAD a la planta del piso. */
@@ -2403,6 +2475,7 @@ public class MaquetaController implements Refrescable {
         if (piso == null || !gruposPlanta.containsKey(piso)) return;
 
         detenerTransicionVista();
+        ocultarMensajeEscena();
         limpiarUnidad();
         nivelVista = NivelVista.PISO;
         for (Group pisoGrupo : gruposPiso.values()) pisoGrupo.setVisible(false);
@@ -2442,7 +2515,9 @@ public class MaquetaController implements Refrescable {
         desplazarEscenaUnidad(false);
         bloqueUnidad = null;
         esquemaActual = null;
+        detalleUnidad = null;
         vistaPlano = false;
+        zoomPlano = 1;
         if (lienzoPlano != null) {
             lienzoPlano.setVisible(false);
             limpiarLienzo();
@@ -2483,7 +2558,7 @@ public class MaquetaController implements Refrescable {
     /** Desplaza la escena 3D y sus rótulos para dejar libre el panel lateral. */
     private void desplazarEscenaUnidad(boolean activa) {
         double desplazamiento = activa
-                ? -(ANCHO_PANEL_UNIDAD + MARGEN_PANEL_UNIDAD) / 2 : 0;
+                ? -(anchoPanelUnidadEfectivo() + MARGEN_PANEL_UNIDAD) / 2 : 0;
         if (subEscena != null) subEscena.setTranslateX(desplazamiento);
         if (capaEtiquetas != null) capaEtiquetas.setTranslateX(desplazamiento);
     }
@@ -2493,6 +2568,7 @@ public class MaquetaController implements Refrescable {
         if (nivelVista == NivelVista.EDIFICIO) return;
         if (!nivelVista.puedeIrA(NivelVista.EDIFICIO)) return;
         if (nivelVista == NivelVista.UNIDAD) limpiarUnidad();
+        ocultarMensajeEscena();
 
         Integer pisoSaliente = nivelEnfocado;
         nivelVista = NivelVista.EDIFICIO;
@@ -2545,6 +2621,7 @@ public class MaquetaController implements Refrescable {
     private void reiniciarNavegacion() {
         boolean estabaFueraDelEdificio = nivelVista != NivelVista.EDIFICIO;
         detenerTransicion();
+        ocultarMensajeEscena();
         limpiarUnidad();
         if (estabaFueraDelEdificio
                 && rotacionX != null && rotacionY != null) {
@@ -2588,6 +2665,7 @@ public class MaquetaController implements Refrescable {
                 avisoEsquema.setVisible(false);
                 avisoEsquema.setManaged(false);
             }
+            actualizarTextoAyuda();
             return;
         }
         String nivel = etiquetaNivel(nivelEnfocado);
@@ -2614,6 +2692,18 @@ public class MaquetaController implements Refrescable {
                 avisoEsquema.setManaged(false);
             }
         }
+        actualizarTextoAyuda();
+    }
+
+    private void actualizarTextoAyuda() {
+        if (ayuda == null) return;
+        ayuda.setText(switch (nivelVista) {
+            case EDIFICIO -> "Arrastra para rotar · Usa la rueda para acercar";
+            case PISO -> "Arrastra para girar la planta · Usa la rueda para acercar";
+            case UNIDAD -> vistaPlano
+                    ? "Vista de plano · Rueda para acercar · Cambia a 3D para girar"
+                    : "Arrastra para girar el esquema · Usa la rueda para acercar";
+        });
     }
 
     private boolean transicionActiva() {
@@ -2692,6 +2782,7 @@ public class MaquetaController implements Refrescable {
     private void onRestablecerVista() {
         if (rotacionX == null || rotacionY == null || camara == null) return;
         detenerTransicion();
+        ocultarMensajeEscena();
         limpiarUnidad();
         nivelVista = NivelVista.EDIFICIO;
         nivelEnfocado = null;
@@ -2723,6 +2814,11 @@ public class MaquetaController implements Refrescable {
         aplicarFiltroMateriales();
         actualizarResumen(bloquesActuales);
         configurarLeyenda();
+        if (nivelVista == NivelVista.UNIDAD && detalleUnidad != null
+                && cuerpoPanelUnidad != null) {
+            cuerpoPanelUnidad.getChildren().setAll(
+                    crearContenidoDetalle(detalleUnidad, true));
+        }
     }
 
     private void configurarSelectorModo() {
