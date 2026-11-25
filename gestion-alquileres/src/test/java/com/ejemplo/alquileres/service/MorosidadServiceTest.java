@@ -18,41 +18,41 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 class MorosidadServiceTest {
-    private final MorosidadService servicio = servicio();
+    private final JlccMorosidadService servicio = servicio();
 
     @Test
     void quedaAlDiaSinCuotasVencidas() {
         assertEquals(
                 SemaforoMorosidad.AL_DIA,
-                servicio.semaforo(contrato(cuota(LocalDate.of(2026, 1, 19)))));
+                servicio.jlccSemaforo(contrato(cuota(LocalDate.of(2026, 1, 19)))));
     }
 
     @Test
     void marcaAtrasoLeveDentroDelUmbral() {
         assertEquals(
                 SemaforoMorosidad.ATRASO_LEVE,
-                servicio.semaforo(contrato(cuota(LocalDate.of(2026, 1, 10)))));
+                servicio.jlccSemaforo(contrato(cuota(LocalDate.of(2026, 1, 10)))));
     }
 
     @Test
     void marcaMorosoPorDiasOPorCantidadDeCuotas() {
         assertEquals(
                 SemaforoMorosidad.MOROSO,
-                servicio.semaforo(contrato(cuota(LocalDate.of(2025, 12, 20)))));
+                servicio.jlccSemaforo(contrato(cuota(LocalDate.of(2025, 12, 20)))));
         assertEquals(
                 SemaforoMorosidad.MOROSO,
-                servicio.semaforo(
+                servicio.jlccSemaforo(
                         contrato(
                                 cuota(LocalDate.of(2026, 1, 10)),
                                 cuota(LocalDate.of(2026, 1, 11)))));
     }
 
-    private MorosidadService servicio() {
+    private JlccMorosidadService servicio() {
         AppProperties propiedades = new AppProperties();
         propiedades.getMorosidad().setUmbralLeveDias(15);
         propiedades.getMorosidad().setCuotasRojo(2);
         Clock clock = Clock.fixed(Instant.parse("2026-01-20T12:00:00Z"), ZoneOffset.UTC);
-        return new MorosidadService(DatosFase6.servicioConfiguracion(propiedades), clock);
+        return new JlccMorosidadService(DatosFase6.servicioConfiguracion(propiedades), clock);
     }
 
     private Contrato contrato(Cuota... cuotas) {

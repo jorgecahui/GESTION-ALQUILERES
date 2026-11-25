@@ -9,7 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.CuotaRepository;
@@ -30,23 +30,23 @@ class ContratoServiceTest {
     private final CuotaRepository cuotas = Mockito.mock(CuotaRepository.class);
     private final InmuebleRepository inmuebles = Mockito.mock(InmuebleRepository.class);
     private final PersonaRepository personas = Mockito.mock(PersonaRepository.class);
-    private final SecuenciaService secuencias = Mockito.mock(SecuenciaService.class);
-    private final AuditoriaService auditoria = DatosFase6.auditoria();
+    private final JlccSecuenciaService secuencias = Mockito.mock(JlccSecuenciaService.class);
+    private final JlccAuditoriaService auditoria = DatosFase6.auditoria();
     private final Clock clock = DatosFase6.CLOCK;
-    private ContratoService servicio;
+    private JlccContratoService servicio;
     private Inmueble inmueble;
     private Persona arrendatario;
 
     @BeforeEach
     void preparar() {
         servicio =
-                new ContratoService(
+                new JlccContratoService(
                         contratos,
                         cuotas,
                         inmuebles,
                         personas,
                         secuencias,
-                        new CronogramaGenerador(),
+                        new JlccCronogramaGenerador(),
                         DatosFase6.servicioConfiguracion(),
                         DatosFase6.permisosAdmin(),
                         auditoria,
@@ -60,14 +60,14 @@ class ContratoServiceTest {
         when(contratos.existeTraslape(any(), any(), any(), any())).thenReturn(false);
         when(contratos.save(any(Contrato.class)))
                 .thenAnswer(invocacion -> invocacion.getArgument(0));
-        when(secuencias.siguiente("CONTRATO")).thenReturn(1L);
-        when(secuencias.formatear("CTR-", 1L, 6)).thenReturn("CTR-000001");
+        when(secuencias.jlccSiguiente("CONTRATO")).thenReturn(1L);
+        when(secuencias.jlccFormatear("CTR-", 1L, 6)).thenReturn("CTR-000001");
     }
 
     @Test
     void creaContratoGeneraCronogramaYAlquilaElInmueble() {
         Contrato contrato =
-                servicio.crear(solicitud(LocalDate.of(2026, 3, 1), 12, new BigDecimal("1000")));
+                servicio.jlccCrear(solicitud(LocalDate.of(2026, 3, 1), 12, new BigDecimal("1000")));
 
         assertEquals("CTR-000001", contrato.getCodigo());
         assertEquals(12, contrato.getCuotas().size());
@@ -76,14 +76,14 @@ class ContratoServiceTest {
         assertEquals(EstadoInmueble.ALQUILADO, inmueble.getEstado());
         assertEquals(GarantiaEstado.RECIBIDA, contrato.getGarantiaEstado());
         verify(auditoria)
-                .registrar(
+                .jlccRegistrar(
                         AccionAuditoria.CREACION_CONTRATO, "Contrato", null, "Código CTR-000001");
     }
 
     @Test
     void rechazaGaranteIgualAlArrendatario() {
-        ContratoService.Solicitud solicitud =
-                new ContratoService.Solicitud(
+        JlccContratoService.Solicitud solicitud =
+                new JlccContratoService.Solicitud(
                         1L,
                         1L,
                         1L,
@@ -99,7 +99,7 @@ class ContratoServiceTest {
                         new BigDecimal("0.10"),
                         null);
 
-        assertThrows(NegocioException.class, () -> servicio.crear(solicitud));
+        assertThrows(JlccNegocioException.class, () -> servicio.jlccCrear(solicitud));
     }
 
     @Test
@@ -114,9 +114,9 @@ class ContratoServiceTest {
         when(contratos.detalle(1L)).thenReturn(Optional.of(anterior));
 
         Contrato nuevo =
-                servicio.renovar(
+                servicio.jlccRenovar(
                         1L,
-                        new ContratoService.Solicitud(
+                        new JlccContratoService.Solicitud(
                                 1L,
                                 1L,
                                 null,
@@ -149,7 +149,7 @@ class ContratoServiceTest {
         contrato.setGarantiaMonto(new BigDecimal("1200.00"));
         when(contratos.detalle(1L)).thenReturn(Optional.of(contrato));
 
-        servicio.terminar(
+        servicio.jlccTerminar(
                 1L,
                 LocalDate.of(2026, 6, 30),
                 "Fin del plazo",
@@ -175,9 +175,9 @@ class ContratoServiceTest {
         when(contratos.detalle(1L)).thenReturn(Optional.of(contrato));
 
         assertThrows(
-                NegocioException.class,
+                JlccNegocioException.class,
                 () ->
-                        servicio.terminar(
+                        servicio.jlccTerminar(
                                 1L,
                                 LocalDate.of(2026, 6, 30),
                                 " ",
@@ -186,9 +186,9 @@ class ContratoServiceTest {
                                 BigDecimal.ZERO,
                                 null));
         assertThrows(
-                NegocioException.class,
+                JlccNegocioException.class,
                 () ->
-                        servicio.terminar(
+                        servicio.jlccTerminar(
                                 1L,
                                 LocalDate.of(2026, 6, 30),
                                 "Acuerdo",
@@ -200,8 +200,8 @@ class ContratoServiceTest {
         assertNotNull(contrato.getEstado());
     }
 
-    private ContratoService.Solicitud solicitud(LocalDate inicio, int meses, BigDecimal renta) {
-        return new ContratoService.Solicitud(
+    private JlccContratoService.Solicitud solicitud(LocalDate inicio, int meses, BigDecimal renta) {
+        return new JlccContratoService.Solicitud(
                 1L,
                 1L,
                 null,

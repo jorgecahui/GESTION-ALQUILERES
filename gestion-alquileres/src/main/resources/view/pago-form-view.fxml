@@ -4,7 +4,7 @@
 <HBox
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.PagoFormController"
+    fx:controller="com.ejemplo.alquileres.controller.JlccPagoFormController"
     spacing="18"
     styleClass="pagina">
     <VBox spacing="16" HBox.hgrow="ALWAYS">
@@ -32,15 +32,15 @@
                         styleClass="pagina-subtitulo"/>
                 </VBox>
                 <TextField fx:id="montoRecibido" promptText="Monto recibido (S/)" prefWidth="150"/>
-                <Button text="Aplicar monto" onAction="#onAplicarMonto" styleClass="requiere-gestion"/>
-                <Button text="Pagar todo" onAction="#onPagarTodo" styleClass="requiere-gestion"/>
+                <Button text="Aplicar monto" onAction="#jlccOnAplicarMonto" styleClass="requiere-gestion"/>
+                <Button text="Pagar todo" onAction="#jlccOnPagarTodo" styleClass="requiere-gestion"/>
             </HBox>
             <HBox spacing="12">
-                <CheckBox fx:id="permitirAdelantos" text="Permitir adelantos" onAction="#onCambiarCondonacion"/>
+                <CheckBox fx:id="permitirAdelantos" text="Permitir adelantos" onAction="#jlccOnCambiarCondonacion"/>
                 <CheckBox
                     fx:id="condonarMora"
                     text="Condonar mora de las cuotas imputadas"
-                    onAction="#onCambiarCondonacion"
+                    onAction="#jlccOnCambiarCondonacion"
                     styleClass="requiere-admin"/>
                 <TextField
                     fx:id="motivoCondonacion"
@@ -93,10 +93,10 @@
             <Region HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
             <Label fx:id="totalPago" text="S/ 0.00" styleClass="pago-resumen-total-valor"/>
         </HBox>
-        <Button text="Estado de cuenta" onAction="#onEstadoCuenta" maxWidth="Infinity"/>
+        <Button text="Estado de cuenta" onAction="#jlccOnEstadoCuenta" maxWidth="Infinity"/>
         <Button
             text="Registrar pago"
-            onAction="#onRegistrar"
+            onAction="#jlccOnRegistrar"
             maxWidth="Infinity"
             styleClass="boton-primario,requiere-gestion"/>
     </VBox>

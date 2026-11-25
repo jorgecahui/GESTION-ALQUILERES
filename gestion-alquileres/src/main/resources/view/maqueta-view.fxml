@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.ejemplo.alquileres.controller.MaquetaController"
+      fx:controller="com.ejemplo.alquileres.controller.JlccMaquetaController"
       styleClass="pagina" spacing="16" maxWidth="Infinity" maxHeight="Infinity">
     <HBox styleClass="pagina-cabecera">
         <VBox HBox.hgrow="ALWAYS" spacing="2">
@@ -15,9 +15,9 @@
         </VBox>
         <HBox spacing="10" alignment="CENTER_RIGHT">
             <Label text="Ver por" styleClass="maqueta-selector-etiqueta"/>
-            <ComboBox fx:id="selectorModo" onAction="#onCambiarModo"
+            <ComboBox fx:id="selectorModo" onAction="#jlccOnCambiarModo"
                       styleClass="maqueta-selector" prefWidth="150"/>
-            <Button fx:id="btnRestablecer" text="Restablecer vista" onAction="#onRestablecerVista"
+            <Button fx:id="btnRestablecer" text="Restablecer vista" onAction="#jlccOnRestablecerVista"
                     styleClass="button-outlined">
                 <graphic><FontIcon iconLiteral="fth-rotate-ccw"/></graphic>
             </Button>
@@ -36,14 +36,14 @@
             <StackPane.margin><Insets top="14.0" left="16.0" right="16.0"/></StackPane.margin>
             <Label fx:id="migaNavegacion" styleClass="maqueta-miga"/>
             <Button fx:id="btnVolverEdificio" text="Volver al edificio"
-                    onAction="#onVolverNavegacion" styleClass="button-outlined">
+                    onAction="#jlccOnVolverNavegacion" styleClass="button-outlined">
                 <graphic><FontIcon iconLiteral="fth-arrow-left"/></graphic>
             </Button>
             <HBox fx:id="alternadorVista" spacing="4" visible="false" managed="false"
                   alignment="CENTER_LEFT">
-                <ToggleButton fx:id="btnPlano" text="Plano" onAction="#onVistaPlano"
+                <ToggleButton fx:id="btnPlano" text="Plano" onAction="#jlccOnVistaPlano"
                               styleClass="maqueta-toggle-vista"/>
-                <ToggleButton fx:id="btnTresD" text="3D" onAction="#onVistaTresD"
+                <ToggleButton fx:id="btnTresD" text="3D" onAction="#jlccOnVistaTresD"
                               styleClass="maqueta-toggle-vista"/>
             </HBox>
         </HBox>
@@ -63,7 +63,7 @@
                 </content>
             </ScrollPane>
             <Button fx:id="btnVerEnInmueblesUnidad" text="Ver en Inmuebles"
-                    onAction="#onVerEnInmueblesUnidad" styleClass="button-outlined"
+                    onAction="#jlccOnVerEnInmueblesUnidad" styleClass="button-outlined"
                     maxWidth="Infinity"/>
         </VBox>
         <Label fx:id="avisoEsquema" text="Esquema referencial"

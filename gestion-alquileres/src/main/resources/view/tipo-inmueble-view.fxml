@@ -5,7 +5,7 @@
 <StackPane
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.TipoInmuebleController">
+    fx:controller="com.ejemplo.alquileres.controller.JlccTipoInmuebleController">
     <HBox spacing="18" styleClass="pagina">
         <VBox spacing="16" HBox.hgrow="ALWAYS">
             <HBox>
@@ -13,22 +13,22 @@
                     <Label text="Tipos de inmueble" styleClass="pagina-titulo"/>
                     <Label text="Clasifica los inmuebles del catálogo." styleClass="pagina-subtitulo"/>
                 </VBox>
-                <Button text="Nuevo tipo" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
+                <Button text="Nuevo tipo" onAction="#jlccOnNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar por nombre o código" HBox.hgrow="ALWAYS"/>
-                <Button text="Editar" onAction="#onEditar" styleClass="requiere-gestion"/>
+                <Button text="Editar" onAction="#jlccOnEditar" styleClass="requiere-gestion"/>
                 <Button
                     fx:id="btnEliminarDesactivar"
                     text="Eliminar / desactivar"
-                    onAction="#onEliminar"
+                    onAction="#jlccOnEliminar"
                     styleClass="requiere-gestion"
                     visible="false"
                     managed="false"/>
                 <Button
                     fx:id="btnReactivar"
                     text="Reactivar"
-                    onAction="#onReactivar"
+                    onAction="#jlccOnReactivar"
                     styleClass="requiere-gestion"
                     visible="false"
                     managed="false"/>
@@ -48,7 +48,7 @@
         managed="false"
         pickOnBounds="true"
         styleClass="overlay"
-        onMouseClicked="#onCerrar"/>
+        onMouseClicked="#jlccOnCerrar"/>
     <VBox
         fx:id="drawer"
         visible="false"
@@ -64,7 +64,7 @@
                 <Label fx:id="titulo" styleClass="drawer-titulo"/>
                 <Label text="Clasifica los inmuebles del catálogo" styleClass="drawer-subtitulo"/>
             </VBox>
-            <Button onAction="#onCerrar" styleClass="drawer-cerrar" focusTraversable="false">
+            <Button onAction="#jlccOnCerrar" styleClass="drawer-cerrar" focusTraversable="false">
                 <graphic>
                     <FontIcon iconLiteral="fth-x"/>
                 </graphic>
@@ -114,8 +114,8 @@
             </VBox>
         </ScrollPane>
         <HBox styleClass="drawer-footer">
-            <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
-            <Button text="Guardar tipo" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>
+            <Button text="Cancelar" onAction="#jlccOnCerrar" styleClass="button-outlined"/>
+            <Button text="Guardar tipo" onAction="#jlccOnGuardar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
     </VBox>
 </StackPane>

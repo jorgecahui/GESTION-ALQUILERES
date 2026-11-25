@@ -2,11 +2,11 @@ package com.ejemplo.alquileres;
 
 import com.ejemplo.alquileres.config.DirectorioDatosInitializer;
 import com.ejemplo.alquileres.config.VerificacionIntegridad;
-import com.ejemplo.alquileres.service.AutenticacionService;
-import com.ejemplo.alquileres.service.RespaldoService;
-import com.ejemplo.alquileres.ui.AplicacionUi;
-import com.ejemplo.alquileres.ui.Exportador;
-import com.ejemplo.alquileres.ui.ManejadorErrores;
+import com.ejemplo.alquileres.service.JlccAutenticacionService;
+import com.ejemplo.alquileres.service.JlccRespaldoService;
+import com.ejemplo.alquileres.ui.JlccAplicacionUi;
+import com.ejemplo.alquileres.ui.JlccExportador;
+import com.ejemplo.alquileres.ui.JlccManejadorErrores;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -31,14 +31,14 @@ public class JavaFxApplication extends Application {
                         .web(WebApplicationType.NONE)
                         .initializers(new DirectorioDatosInitializer())
                         .run();
-        hayUsuarios = context.getBean(AutenticacionService.class).hayUsuarios();
+        hayUsuarios = context.getBean(JlccAutenticacionService.class).jlccHayUsuarios();
     }
 
     @Override
     public void start(Stage stage) {
-        context.getBean(ManejadorErrores.class).instalarGlobal();
-        context.getBean(Exportador.class).setHostServices(getHostServices());
-        context.getBean(AplicacionUi.class).iniciar(stage, hayUsuarios);
+        context.getBean(JlccManejadorErrores.class).jlccInstalarGlobal();
+        context.getBean(JlccExportador.class).jlccSetHostServices(getHostServices());
+        context.getBean(JlccAplicacionUi.class).jlccIniciar(stage, hayUsuarios);
         VerificacionIntegridad integridad = context.getBean(VerificacionIntegridad.class);
         if (!integridad.correcta()) {
             Alert aviso =
@@ -59,7 +59,7 @@ public class JavaFxApplication extends Application {
     public void stop() {
         if (context == null) return;
         try {
-            context.getBean(RespaldoService.class).respaldoAutomatico();
+            context.getBean(JlccRespaldoService.class).jlccRespaldoAutomatico();
         } catch (Exception e) {
             log.warn("No se pudo crear el respaldo automático al cerrar.", e);
         }

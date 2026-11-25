@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.ejemplo.alquileres.controller.BloqueoController"
+      fx:controller="com.ejemplo.alquileres.controller.JlccBloqueoController"
       styleClass="app bloqueo" alignment="CENTER" spacing="0">
     <VBox spacing="14" styleClass="tarjeta login-tarjeta" maxWidth="380" maxHeight="-Infinity">
         <HBox spacing="12" alignment="CENTER_LEFT">
@@ -18,9 +18,9 @@
             <Label text="Ingresa tu contraseña para continuar." styleClass="pagina-subtitulo" wrapText="true"/>
         </VBox>
         <VBox spacing="5" styleClass="campo"><Label text="Contraseña" styleClass="campo-label"/>
-            <PasswordField fx:id="password" onAction="#onDesbloquear"/></VBox>
+            <PasswordField fx:id="password" onAction="#jlccOnDesbloquear"/></VBox>
         <Label fx:id="mensaje" styleClass="campo-error" wrapText="true"/>
-        <Button text="Desbloquear" onAction="#onDesbloquear" styleClass="boton-primario" maxWidth="Infinity"/>
-        <Button text="Cerrar sesión" onAction="#onCerrarSesion" maxWidth="Infinity"/>
+        <Button text="Desbloquear" onAction="#jlccOnDesbloquear" styleClass="boton-primario" maxWidth="Infinity"/>
+        <Button text="Cerrar sesión" onAction="#jlccOnCerrarSesion" maxWidth="Infinity"/>
     </VBox>
 </VBox>

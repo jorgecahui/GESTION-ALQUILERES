@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ejemplo.alquileres.config.AppProperties;
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.Configuracion;
 import com.ejemplo.alquileres.repository.ConfiguracionRepository;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
@@ -18,47 +18,47 @@ import org.mockito.Mockito;
 class PermisosTest {
     @Test
     void matrizDeRoles() {
-        Permisos admin = DatosFase6.permisosAdmin();
-        Permisos operador = DatosFase6.permisosOperador();
-        Permisos consulta = DatosFase6.permisosConsulta();
+        JlccPermisos admin = DatosFase6.permisosAdmin();
+        JlccPermisos operador = DatosFase6.permisosOperador();
+        JlccPermisos consulta = DatosFase6.permisosConsulta();
 
-        assertTrue(admin.esAdmin());
-        assertTrue(admin.puedeGestionar());
-        assertFalse(operador.esAdmin());
-        assertTrue(operador.puedeGestionar());
-        assertFalse(consulta.puedeGestionar());
-        assertTrue(consulta.puedeConsultar());
+        assertTrue(admin.jlccEsAdmin());
+        assertTrue(admin.jlccPuedeGestionar());
+        assertFalse(operador.jlccEsAdmin());
+        assertTrue(operador.jlccPuedeGestionar());
+        assertFalse(consulta.jlccPuedeGestionar());
+        assertTrue(consulta.jlccPuedeConsultar());
     }
 
     @Test
     void operadorNoPuedeCambiarConfiguracion() {
-        ConfiguracionService servicio =
-                new ConfiguracionService(
+        JlccConfiguracionService servicio =
+                new JlccConfiguracionService(
                         Mockito.mock(ConfiguracionRepository.class),
                         new AppProperties(),
                         DatosFase6.permisosOperador(),
                         DatosFase6.auditoria());
 
-        NegocioException error =
+        JlccNegocioException error =
                 assertThrows(
-                        NegocioException.class,
-                        () -> servicio.guardar(Configuracion.builder().id(1L).build()));
+                        JlccNegocioException.class,
+                        () -> servicio.jlccGuardar(Configuracion.builder().id(1L).build()));
         assertTrue(error.getMessage().contains("permiso"));
     }
 
     @Test
     void consultaNoPuedeCrearCatalogos() {
-        TipoInmuebleService servicio =
-                new TipoInmuebleService(
+        JlccTipoInmuebleService servicio =
+                new JlccTipoInmuebleService(
                         Mockito.mock(TipoInmuebleRepository.class),
                         Mockito.mock(InmuebleRepository.class),
                         DatosFase6.permisosConsulta(),
                         DatosFase6.auditoria());
 
         assertThrows(
-                NegocioException.class,
+                JlccNegocioException.class,
                 () ->
-                        servicio.guardar(
+                        servicio.jlccGuardar(
                                 com.ejemplo.alquileres.model.TipoInmueble.builder()
                                         .codigo("DEP")
                                         .nombre("Departamento")
@@ -72,21 +72,21 @@ class PermisosTest {
                 .thenReturn(java.util.Optional.empty());
         Mockito.when(repo.save(Mockito.any(Configuracion.class))).thenAnswer(i -> i.getArgument(0));
         AppProperties propiedades = DatosFase6.propiedades();
-        ConfiguracionService servicio =
-                new ConfiguracionService(
+        JlccConfiguracionService servicio =
+                new JlccConfiguracionService(
                         repo, propiedades, DatosFase6.permisosAdmin(), DatosFase6.auditoria());
-        Configuracion cambios = servicio.actual();
+        Configuracion cambios = servicio.jlccActual();
 
-        assertDoesNotThrow(() -> servicio.guardar(cambios));
+        assertDoesNotThrow(() -> servicio.jlccGuardar(cambios));
     }
 
     @Test
     void sinSesionNoHayPermisos() {
-        SesionActual sesion = new SesionActual();
-        Permisos permisos = new Permisos(sesion);
-        assertFalse(permisos.esAdmin());
-        assertFalse(permisos.puedeGestionar());
-        assertThrows(NegocioException.class, permisos::exigirGestion);
-        assertThrows(NegocioException.class, permisos::exigirAdmin);
+        JlccSesionActual sesion = new JlccSesionActual();
+        JlccPermisos permisos = new JlccPermisos(sesion);
+        assertFalse(permisos.jlccEsAdmin());
+        assertFalse(permisos.jlccPuedeGestionar());
+        assertThrows(JlccNegocioException.class, permisos::jlccExigirGestion);
+        assertThrows(JlccNegocioException.class, permisos::jlccExigirAdmin);
     }
 }

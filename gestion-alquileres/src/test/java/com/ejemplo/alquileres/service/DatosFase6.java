@@ -43,39 +43,39 @@ final class DatosFase6 {
                 .alertaRecordatorioDias(3)
                 .semaforoUmbralLeveDias(15)
                 .semaforoCuotasRojo(2)
-                .plantillaPreventivo(PlantillasMensaje.PREVENTIVO)
-                .plantillaVencido(PlantillasMensaje.VENCIDO)
-                .plantillaFinContrato(PlantillasMensaje.FIN_CONTRATO)
+                .plantillaPreventivo(JlccPlantillasMensaje.JLCC_PREVENTIVO)
+                .plantillaVencido(JlccPlantillasMensaje.JLCC_VENCIDO)
+                .plantillaFinContrato(JlccPlantillasMensaje.JLCC_FIN_CONTRATO)
                 .build();
     }
 
-    static ConfiguracionService servicioConfiguracion() {
+    static JlccConfiguracionService servicioConfiguracion() {
         return servicioConfiguracion(propiedades());
     }
 
-    static ConfiguracionService servicioConfiguracion(AppProperties propiedades) {
+    static JlccConfiguracionService servicioConfiguracion(AppProperties propiedades) {
         ConfiguracionRepository repositorio = Mockito.mock(ConfiguracionRepository.class);
         Mockito.when(repositorio.findById(Configuracion.FILA_UNICA)).thenReturn(Optional.empty());
         Mockito.when(repositorio.save(Mockito.any(Configuracion.class)))
                 .thenAnswer(invocacion -> invocacion.getArgument(0));
-        return new ConfiguracionService(repositorio, propiedades, permisosAdmin(), auditoria());
+        return new JlccConfiguracionService(repositorio, propiedades, permisosAdmin(), auditoria());
     }
 
-    static Permisos permisosAdmin() {
+    static JlccPermisos permisosAdmin() {
         return permisos(RolUsuario.ADMIN);
     }
 
-    static Permisos permisosOperador() {
+    static JlccPermisos permisosOperador() {
         return permisos(RolUsuario.OPERADOR);
     }
 
-    static Permisos permisosConsulta() {
+    static JlccPermisos permisosConsulta() {
         return permisos(RolUsuario.CONSULTA);
     }
 
-    static Permisos permisos(RolUsuario rol) {
-        SesionActual sesion = new SesionActual();
-        sesion.iniciar(
+    static JlccPermisos permisos(RolUsuario rol) {
+        JlccSesionActual sesion = new JlccSesionActual();
+        sesion.jlccIniciar(
                 Usuario.builder()
                         .id(1L)
                         .username("prueba")
@@ -83,11 +83,11 @@ final class DatosFase6 {
                         .rol(rol)
                         .activo(true)
                         .build());
-        return new Permisos(sesion);
+        return new JlccPermisos(sesion);
     }
 
-    static AuditoriaService auditoria() {
-        return Mockito.mock(AuditoriaService.class);
+    static JlccAuditoriaService auditoria() {
+        return Mockito.mock(JlccAuditoriaService.class);
     }
 
     static AppProperties propiedades() {
@@ -215,9 +215,9 @@ final class DatosFase6 {
         return pago;
     }
 
-    static RentabilidadService.Resumen rentabilidad() {
-        RentabilidadService.Fila fila =
-                new RentabilidadService.Fila(
+    static JlccRentabilidadService.Resumen rentabilidad() {
+        JlccRentabilidadService.Fila fila =
+                new JlccRentabilidadService.Fila(
                         1L,
                         "INM-0001",
                         "Departamento 101",
@@ -229,7 +229,7 @@ final class DatosFase6 {
                         new BigDecimal("83.74"),
                         31,
                         new BigDecimal("100.00"));
-        return new RentabilidadService.Resumen(
+        return new JlccRentabilidadService.Resumen(
                 List.of(fila),
                 new BigDecimal("1230.00"),
                 new BigDecimal("200.00"),

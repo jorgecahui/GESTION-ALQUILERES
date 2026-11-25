@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ejemplo.alquileres.config.AppProperties;
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.Configuracion;
 import com.ejemplo.alquileres.model.EstadoInmueble;
 import com.ejemplo.alquileres.model.Inmueble;
@@ -38,9 +38,9 @@ class ConfiguracionServiceTest {
 
     @Test
     void construyeValoresPorDefectoDesdeLasPropiedades() {
-        ConfiguracionService servicio = servicio(propiedades());
+        JlccConfiguracionService servicio = servicio(propiedades());
 
-        Configuracion c = servicio.actual();
+        Configuracion c = servicio.jlccActual();
 
         assertEquals("ARRENDADOR DE PRUEBA", c.getArrendadorRazonSocial());
         assertEquals("R001", c.getReciboSerie());
@@ -49,40 +49,40 @@ class ConfiguracionServiceTest {
         assertEquals(3, c.getMoraDiasGracia());
         assertEquals(60, c.getAlertasDiasVencimiento());
         assertEquals(15, c.getSemaforoUmbralLeveDias());
-        assertEquals(2, servicio.cuotasRojo());
+        assertEquals(2, servicio.jlccCuotasRojo());
         assertNotNull(c.getPlantillaPreventivo());
     }
 
     @Test
     void guardaEInvalidaLaCacheSinVolverALaBase() {
         ConfiguracionRepository repo = repositorio();
-        ConfiguracionService servicio =
-                new ConfiguracionService(
+        JlccConfiguracionService servicio =
+                new JlccConfiguracionService(
                         repo, propiedades(), DatosFase6.permisosAdmin(), DatosFase6.auditoria());
-        Configuracion cambios = servicio.actual();
+        Configuracion cambios = servicio.jlccActual();
         cambios.setArrendadorRazonSocial("NUEVA INMOBILIARIA S.A.C.");
         cambios.setReciboSerie("r002");
         cambios.setMoraValor(new BigDecimal("0.25"));
 
-        Configuracion guardada = servicio.guardar(cambios);
+        Configuracion guardada = servicio.jlccGuardar(cambios);
 
         assertEquals("NUEVA INMOBILIARIA S.A.C.", guardada.getArrendadorRazonSocial());
         assertEquals("R002", guardada.getReciboSerie());
         assertEquals(new BigDecimal("0.2500"), guardada.getMoraValor());
-        assertEquals("NUEVA INMOBILIARIA S.A.C.", servicio.actual().getArrendadorRazonSocial());
+        assertEquals("NUEVA INMOBILIARIA S.A.C.", servicio.jlccActual().getArrendadorRazonSocial());
         verify(repo, times(1)).findById(Configuracion.FILA_UNICA);
     }
 
     @Test
     void rechazaSerieInvalidaYNoGuarda() {
         ConfiguracionRepository repo = repositorio();
-        ConfiguracionService servicio =
-                new ConfiguracionService(
+        JlccConfiguracionService servicio =
+                new JlccConfiguracionService(
                         repo, propiedades(), DatosFase6.permisosAdmin(), DatosFase6.auditoria());
-        Configuracion cambios = servicio.actual();
+        Configuracion cambios = servicio.jlccActual();
         cambios.setReciboSerie("R 001!");
 
-        assertThrows(NegocioException.class, () -> servicio.guardar(cambios));
+        assertThrows(JlccNegocioException.class, () -> servicio.jlccGuardar(cambios));
     }
 
     @Test
@@ -91,12 +91,12 @@ class ConfiguracionServiceTest {
         propiedades.getMora().setTipo("MONTO_DIARIO");
         propiedades.getMora().setValor(new BigDecimal("2.50"));
         propiedades.getMora().setDiasGracia(5);
-        ConfiguracionService configuracion = servicio(propiedades);
+        JlccConfiguracionService configuracion = servicio(propiedades);
 
         ContratoRepository contratos = mock(ContratoRepository.class);
         InmuebleRepository inmuebles = mock(InmuebleRepository.class);
         PersonaRepository personas = mock(PersonaRepository.class);
-        SecuenciaService secuencias = mock(SecuenciaService.class);
+        JlccSecuenciaService secuencias = mock(JlccSecuenciaService.class);
         when(contratos.existeTraslape(any(), any(), any(), any())).thenReturn(false);
         when(contratos.save(any())).thenAnswer(i -> i.getArgument(0));
         when(inmuebles.findById(1L))
@@ -118,24 +118,24 @@ class ConfiguracionServiceTest {
                                         .numeroDocumento("12345678")
                                         .activo(true)
                                         .build()));
-        when(secuencias.siguiente("CONTRATO")).thenReturn(1L);
-        when(secuencias.formatear("CTR-", 1L, 6)).thenReturn("CTR-000001");
-        ContratoService contratosService =
-                new ContratoService(
+        when(secuencias.jlccSiguiente("CONTRATO")).thenReturn(1L);
+        when(secuencias.jlccFormatear("CTR-", 1L, 6)).thenReturn("CTR-000001");
+        JlccContratoService contratosService =
+                new JlccContratoService(
                         contratos,
                         mock(CuotaRepository.class),
                         inmuebles,
                         personas,
                         secuencias,
-                        new CronogramaGenerador(),
+                        new JlccCronogramaGenerador(),
                         configuracion,
                         DatosFase6.permisosAdmin(),
                         DatosFase6.auditoria(),
                         CLOCK);
 
         var contrato =
-                contratosService.crear(
-                        new ContratoService.Solicitud(
+                contratosService.jlccCrear(
+                        new JlccContratoService.Solicitud(
                                 1L,
                                 2L,
                                 null,
@@ -156,8 +156,8 @@ class ConfiguracionServiceTest {
         assertEquals(5, contrato.getDiasGracia());
     }
 
-    private ConfiguracionService servicio(AppProperties propiedades) {
-        return new ConfiguracionService(
+    private JlccConfiguracionService servicio(AppProperties propiedades) {
+        return new JlccConfiguracionService(
                 repositorio(), propiedades, DatosFase6.permisosAdmin(), DatosFase6.auditoria());
     }
 

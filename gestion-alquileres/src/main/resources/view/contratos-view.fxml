@@ -5,7 +5,7 @@
 <VBox
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.ContratoController"
+    fx:controller="com.ejemplo.alquileres.controller.JlccContratoController"
     spacing="16"
     styleClass="pagina">
     <HBox>
@@ -13,8 +13,8 @@
             <Label text="Contratos" styleClass="pagina-titulo"/>
             <Label text="Vigencia, cronograma y garantías." styleClass="pagina-subtitulo"/>
         </VBox>
-        <Button text="Exportar Excel" onAction="#onExportar"/>
-        <Button text="Nuevo contrato" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
+        <Button text="Exportar Excel" onAction="#jlccOnExportar"/>
+        <Button text="Nuevo contrato" onAction="#jlccOnNuevo" styleClass="boton-primario,requiere-gestion"/>
     </HBox>
     <HBox spacing="12">
         <TextField fx:id="buscar" promptText="Buscar código, inmueble o arrendatario" HBox.hgrow="ALWAYS"/>
@@ -71,7 +71,7 @@
                     <Label fx:id="detalleSubtitulo" styleClass="detalle-subtitulo" wrapText="true"/>
                 </VBox>
                 <Label fx:id="detalleEstado" styleClass="chip,neutro"/>
-                <Button onAction="#onCerrarDetalle" styleClass="drawer-cerrar" focusTraversable="false">
+                <Button onAction="#jlccOnCerrarDetalle" styleClass="drawer-cerrar" focusTraversable="false">
                     <graphic>
                         <FontIcon iconLiteral="fth-x"/>
                     </graphic>
@@ -121,13 +121,13 @@
                     <HBox spacing="8">
                         <Button
                             text="Estado de cuenta"
-                            onAction="#onEstadoCuenta"
+                            onAction="#jlccOnEstadoCuenta"
                             styleClass="button-outlined"
                             maxWidth="Infinity"
                             HBox.hgrow="ALWAYS"/>
                         <Button
                             text="Hoja de contrato"
-                            onAction="#onHojaContrato"
+                            onAction="#jlccOnHojaContrato"
                             styleClass="button-outlined"
                             maxWidth="Infinity"
                             HBox.hgrow="ALWAYS"/>
@@ -135,25 +135,25 @@
                     <HBox spacing="8">
                         <Button
                             text="Renovar"
-                            onAction="#onRenovar"
+                            onAction="#jlccOnRenovar"
                             styleClass="button-outlined,requiere-gestion"
                             maxWidth="Infinity"
                             HBox.hgrow="ALWAYS"/>
                         <Button
                             text="Avisar fin"
-                            onAction="#onAvisarFin"
+                            onAction="#jlccOnAvisarFin"
                             styleClass="button-outlined,requiere-gestion"
                             maxWidth="Infinity"
                             HBox.hgrow="ALWAYS"/>
                         <Button
                             text="Finalizar"
-                            onAction="#onFinalizar"
+                            onAction="#jlccOnFinalizar"
                             styleClass="button-outlined,requiere-admin"
                             maxWidth="Infinity"
                             HBox.hgrow="ALWAYS"/>
                         <Button
                             text="Rescindir"
-                            onAction="#onRescindir"
+                            onAction="#jlccOnRescindir"
                             styleClass="button-outlined,requiere-admin"
                             maxWidth="Infinity"
                             HBox.hgrow="ALWAYS"/>

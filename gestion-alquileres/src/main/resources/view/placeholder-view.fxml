@@ -7,7 +7,7 @@
     xmlns:fx="http://javafx.com/fxml/1"
     fitToWidth="true"
     styleClass="pagina-scroll"
-    fx:controller="com.ejemplo.alquileres.controller.PlaceholderController">
+    fx:controller="com.ejemplo.alquileres.controller.JlccPlaceholderController">
     <content>
         <VBox styleClass="pagina" alignment="CENTER">
             <VBox styleClass="tarjeta placeholder" alignment="CENTER" maxWidth="560.0" spacing="14.0">

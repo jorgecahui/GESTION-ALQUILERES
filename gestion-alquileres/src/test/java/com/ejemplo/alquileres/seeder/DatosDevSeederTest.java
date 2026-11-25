@@ -13,7 +13,7 @@ import com.ejemplo.alquileres.model.SemaforoMorosidad;
 import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
 import com.ejemplo.alquileres.repository.MantenimientoRepository;
-import com.ejemplo.alquileres.service.MorosidadService;
+import com.ejemplo.alquileres.service.JlccMorosidadService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,11 +62,11 @@ class DatosDevSeederTest {
         registro.add("app.data-dir", DIRECTORIO::toString);
     }
 
-    @Autowired private DatabaseSeeder seeder;
+    @Autowired private JlccDatabaseSeeder seeder;
     @Autowired private InmuebleRepository inmuebles;
     @Autowired private ContratoRepository contratos;
     @Autowired private MantenimientoRepository mantenimientos;
-    @Autowired private MorosidadService morosidad;
+    @Autowired private JlccMorosidadService morosidad;
     @Autowired private Clock clock;
 
     @Test
@@ -112,13 +112,13 @@ class DatosDevSeederTest {
 
         Map<SemaforoMorosidad, Long> reparto =
                 vigentes.stream()
-                        .collect(Collectors.groupingBy(morosidad::semaforo, Collectors.counting()));
+                        .collect(Collectors.groupingBy(morosidad::jlccSemaforo, Collectors.counting()));
         assertEquals(6L, reparto.getOrDefault(SemaforoMorosidad.AL_DIA, 0L));
         assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.ATRASO_LEVE, 0L));
         assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.MOROSO, 0L));
         for (Contrato contrato : vigentes) {
-            long vencidas = morosidad.vencidas(contrato).size();
-            switch (morosidad.semaforo(contrato)) {
+            long vencidas = morosidad.jlccVencidas(contrato).size();
+            switch (morosidad.jlccSemaforo(contrato)) {
                 case AL_DIA -> assertEquals(0, vencidas, contrato.getCodigo());
                 case ATRASO_LEVE -> assertEquals(1, vencidas, contrato.getCodigo());
                 case MOROSO -> assertEquals(2, vencidas, contrato.getCodigo());
@@ -146,13 +146,13 @@ class DatosDevSeederTest {
                 vigentes.stream()
                         .anyMatch(
                                 contrato ->
-                                        morosidad.semaforo(contrato) == SemaforoMorosidad.MOROSO
+                                        morosidad.jlccSemaforo(contrato) == SemaforoMorosidad.MOROSO
                                                 && diasParaVencer(contrato, hoy) > 90));
         assertTrue(
                 vigentes.stream()
                         .anyMatch(
                                 contrato ->
-                                        morosidad.semaforo(contrato) == SemaforoMorosidad.AL_DIA
+                                        morosidad.jlccSemaforo(contrato) == SemaforoMorosidad.AL_DIA
                                                 && diasParaVencer(contrato, hoy) >= 0
                                                 && diasParaVencer(contrato, hoy) <= 30));
 

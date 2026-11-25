@@ -11,23 +11,23 @@ class MaquetaControllerModoTest {
     @Test
     void preferenciaInvalidaVuelveAEstado() {
         assertEquals(
-                MaquetaController.ModoVista.ESTADO,
-                MaquetaController.ModoVista.desdePreferencia("NO_EXISTE"));
+                JlccMaquetaController.JlccModoVista.ESTADO,
+                JlccMaquetaController.JlccModoVista.jlccDesdePreferencia("NO_EXISTE"));
         assertEquals(
-                MaquetaController.ModoVista.ESTADO,
-                MaquetaController.ModoVista.desdePreferencia(null));
+                JlccMaquetaController.JlccModoVista.ESTADO,
+                JlccMaquetaController.JlccModoVista.jlccDesdePreferencia(null));
         assertEquals(
-                MaquetaController.ModoVista.ESTADO,
-                MaquetaController.ModoVista.desdePreferencia(" "));
+                JlccMaquetaController.JlccModoVista.ESTADO,
+                JlccMaquetaController.JlccModoVista.jlccDesdePreferencia(" "));
         assertEquals(
-                MaquetaController.ModoVista.RENTA,
-                MaquetaController.ModoVista.desdePreferencia("RENTA"));
+                JlccMaquetaController.JlccModoVista.RENTA,
+                JlccMaquetaController.JlccModoVista.jlccDesdePreferencia("RENTA"));
     }
 
     @Test
     void etiquetasDelSelectorSonLasEsperadas() {
         assertEquals(
                 List.of("Estado", "Mora", "Renta", "Vencimiento"),
-                MaquetaController.ModoVista.etiquetas());
+                JlccMaquetaController.JlccModoVista.jlccEtiquetas());
     }
 }

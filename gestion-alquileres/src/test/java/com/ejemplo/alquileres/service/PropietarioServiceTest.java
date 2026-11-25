@@ -11,7 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.Propietario;
 import com.ejemplo.alquileres.model.TipoDocumento;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
@@ -25,12 +25,12 @@ import java.util.Optional;
 class PropietarioServiceTest {
     private final PropietarioRepository repo = mock(PropietarioRepository.class);
     private final InmuebleRepository inmuebles = mock(InmuebleRepository.class);
-    private final AuditoriaService auditoria = mock(AuditoriaService.class);
-    private final PropietarioService service =
-            new PropietarioService(
+    private final JlccAuditoriaService auditoria = mock(JlccAuditoriaService.class);
+    private final JlccPropietarioService service =
+            new JlccPropietarioService(
                     repo,
                     inmuebles,
-                    new ValidadorDocumento(),
+                    new JlccValidadorDocumento(),
                     DatosFase6.permisosAdmin(),
                     Clock.systemUTC(),
                     auditoria);
@@ -51,12 +51,12 @@ class PropietarioServiceTest {
         when(repo.findById(1L)).thenReturn(Optional.of(p));
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.desactivar(1L);
+        service.jlccDesactivar(1L);
         assertFalse(p.isActivo());
 
-        service.reactivar(1L);
+        service.jlccReactivar(1L);
         assertTrue(p.isActivo());
-        verify(auditoria, times(2)).registrar(any(), any(), any(), any());
+        verify(auditoria, times(2)).jlccRegistrar(any(), any(), any(), any());
     }
 
     @Test
@@ -64,7 +64,7 @@ class PropietarioServiceTest {
         Propietario p = propietario();
         when(repo.findById(1L)).thenReturn(Optional.of(p));
 
-        NegocioException error = assertThrows(NegocioException.class, () -> service.reactivar(1L));
+        JlccNegocioException error = assertThrows(JlccNegocioException.class, () -> service.jlccReactivar(1L));
 
         assertTrue(error.getMessage().contains("ya está activo"));
         verify(repo, never()).save(any());
@@ -72,17 +72,17 @@ class PropietarioServiceTest {
 
     @Test
     void consultaNoPuedeReactivarPropietarios() {
-        PropietarioService soloConsulta =
-                new PropietarioService(
+        JlccPropietarioService soloConsulta =
+                new JlccPropietarioService(
                         repo,
                         inmuebles,
-                        new ValidadorDocumento(),
+                        new JlccValidadorDocumento(),
                         DatosFase6.permisosConsulta(),
                         Clock.systemUTC(),
                         auditoria);
 
-        NegocioException error =
-                assertThrows(NegocioException.class, () -> soloConsulta.reactivar(1L));
+        JlccNegocioException error =
+                assertThrows(JlccNegocioException.class, () -> soloConsulta.jlccReactivar(1L));
 
         assertTrue(error.getMessage().contains("permiso"));
         verify(repo, never()).findById(any());
@@ -91,10 +91,10 @@ class PropietarioServiceTest {
     @Test
     void informaSiTieneReferencias() {
         when(inmuebles.existsByPropietarioId(1L)).thenReturn(true);
-        assertTrue(service.tieneReferencias(1L));
+        assertTrue(service.jlccTieneReferencias(1L));
 
         when(inmuebles.existsByPropietarioId(1L)).thenReturn(false);
-        assertFalse(service.tieneReferencias(1L));
+        assertFalse(service.jlccTieneReferencias(1L));
     }
 
     @Test
@@ -103,10 +103,10 @@ class PropietarioServiceTest {
         when(repo.findById(1L)).thenReturn(Optional.of(p));
         when(inmuebles.existsByPropietarioId(1L)).thenReturn(false);
 
-        service.eliminar(1L);
+        service.jlccEliminar(1L);
 
         verify(repo).deleteById(1L);
-        verify(auditoria).registrar(any(), any(), any(), contains("Eliminación definitiva"));
+        verify(auditoria).jlccRegistrar(any(), any(), any(), contains("Eliminación definitiva"));
     }
 
     @Test
@@ -116,7 +116,7 @@ class PropietarioServiceTest {
         when(inmuebles.existsByPropietarioId(1L)).thenReturn(true);
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.eliminar(1L);
+        service.jlccEliminar(1L);
 
         assertFalse(p.isActivo());
         verify(repo, never()).deleteById(any());

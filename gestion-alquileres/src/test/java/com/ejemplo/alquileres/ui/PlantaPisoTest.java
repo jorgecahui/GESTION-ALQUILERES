@@ -17,48 +17,48 @@ class PlantaPisoTest {
 
     @Test
     void areaNulaOInvalidaUsaElAnchoPorDefecto() {
-        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO, PlantaPiso.anchoPara(null), 0.001);
-        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO, PlantaPiso.anchoPara(BigDecimal.ZERO), 0.001);
+        assertEquals(JlccPlantaPiso.JLCC_ANCHO_POR_DEFECTO, JlccPlantaPiso.jlccAnchoPara(null), 0.001);
+        assertEquals(JlccPlantaPiso.JLCC_ANCHO_POR_DEFECTO, JlccPlantaPiso.jlccAnchoPara(BigDecimal.ZERO), 0.001);
         assertEquals(
-                PlantaPiso.ANCHO_POR_DEFECTO, PlantaPiso.anchoPara(new BigDecimal("-10")), 0.001);
+                JlccPlantaPiso.JLCC_ANCHO_POR_DEFECTO, JlccPlantaPiso.jlccAnchoPara(new BigDecimal("-10")), 0.001);
     }
 
     @Test
     void elAnchoRespetaElMinimoYElMaximo() {
-        assertEquals(PlantaPiso.ANCHO_MINIMO, PlantaPiso.anchoPara(BigDecimal.ONE), 0.001);
-        assertEquals(PlantaPiso.ANCHO_MAXIMO, PlantaPiso.anchoPara(new BigDecimal("500")), 0.001);
+        assertEquals(JlccPlantaPiso.JLCC_ANCHO_MINIMO, JlccPlantaPiso.jlccAnchoPara(BigDecimal.ONE), 0.001);
+        assertEquals(JlccPlantaPiso.JLCC_ANCHO_MAXIMO, JlccPlantaPiso.jlccAnchoPara(new BigDecimal("500")), 0.001);
     }
 
     @Test
     void elAnchoEsProporcionalDentroDelRango() {
-        double cincuenta = PlantaPiso.anchoPara(new BigDecimal("50"));
-        double setenta = PlantaPiso.anchoPara(new BigDecimal("70"));
+        double cincuenta = JlccPlantaPiso.jlccAnchoPara(new BigDecimal("50"));
+        double setenta = JlccPlantaPiso.jlccAnchoPara(new BigDecimal("70"));
 
-        assertEquals(50 * PlantaPiso.ANCHO_POR_M2, cincuenta, 0.001);
-        assertEquals(70 * PlantaPiso.ANCHO_POR_M2, setenta, 0.001);
+        assertEquals(50 * JlccPlantaPiso.JLCC_ANCHO_POR_M2, cincuenta, 0.001);
+        assertEquals(70 * JlccPlantaPiso.JLCC_ANCHO_POR_M2, setenta, 0.001);
         assertTrue(setenta > cincuenta);
     }
 
     @Test
     void cincoUnidadesQuedanEnUnaHileraCentradaConPasilloAlFrente() {
-        PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(2, unidades(5));
+        JlccPlantaPiso.Distribucion distribucion = JlccPlantaPiso.jlccCalcular(2, unidades(5));
 
         assertEquals(1, distribucion.filas());
         assertEquals(5, distribucion.recintos().size());
         assertEquals(0.0, centroX(distribucion), 0.001);
-        for (PlantaPiso.Recinto recinto : distribucion.recintos()) {
+        for (JlccPlantaPiso.Recinto recinto : distribucion.recintos()) {
             assertEquals(0, recinto.fila());
-            assertEquals(-PlantaPiso.ANCHO_PASILLO / 2, recinto.z(), 0.001);
+            assertEquals(-JlccPlantaPiso.JLCC_ANCHO_PASILLO / 2, recinto.z(), 0.001);
         }
         assertEquals(
-                distribucion.profundidad() / 2 - PlantaPiso.ANCHO_PASILLO / 2,
+                distribucion.profundidad() / 2 - JlccPlantaPiso.JLCC_ANCHO_PASILLO / 2,
                 distribucion.pasilloZ(),
                 0.001);
     }
 
     @Test
     void ochoUnidadesSeRepartenEnDosHilerasEnfrentadas() {
-        PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(3, unidades(8));
+        JlccPlantaPiso.Distribucion distribucion = JlccPlantaPiso.jlccCalcular(3, unidades(8));
 
         assertEquals(2, distribucion.filas());
         assertEquals(8, distribucion.recintos().size());
@@ -70,11 +70,11 @@ class PlantaPisoTest {
         assertEquals(4, segunda);
         assertEquals(0.0, distribucion.pasilloZ(), 0.001);
 
-        for (PlantaPiso.Recinto recinto : distribucion.recintos()) {
+        for (JlccPlantaPiso.Recinto recinto : distribucion.recintos()) {
             double zEsperada =
                     recinto.fila() == 0
-                            ? -(PlantaPiso.PROFUNDIDAD_RECINTO / 2 + PlantaPiso.ANCHO_PASILLO / 2)
-                            : PlantaPiso.PROFUNDIDAD_RECINTO / 2 + PlantaPiso.ANCHO_PASILLO / 2;
+                            ? -(JlccPlantaPiso.JLCC_PROFUNDIDAD_RECINTO / 2 + JlccPlantaPiso.JLCC_ANCHO_PASILLO / 2)
+                            : JlccPlantaPiso.JLCC_PROFUNDIDAD_RECINTO / 2 + JlccPlantaPiso.JLCC_ANCHO_PASILLO / 2;
             assertEquals(zEsperada, recinto.z(), 0.001);
         }
         assertEquals(0.0, centroXFila(distribucion, 0), 0.001);
@@ -83,8 +83,8 @@ class PlantaPisoTest {
 
     @Test
     void losRecintosDeUnaHileraNoSeSolapan() {
-        PlantaPiso.Distribucion distribucion =
-                PlantaPiso.calcular(
+        JlccPlantaPiso.Distribucion distribucion =
+                JlccPlantaPiso.jlccCalcular(
                         1,
                         unidadesConAreas(
                                 new BigDecimal("25"),
@@ -92,13 +92,13 @@ class PlantaPisoTest {
                                 new BigDecimal("90"),
                                 new BigDecimal("40")));
 
-        List<PlantaPiso.Recinto> recintos = distribucion.recintos();
+        List<JlccPlantaPiso.Recinto> recintos = distribucion.recintos();
         for (int i = 1; i < recintos.size(); i++) {
-            PlantaPiso.Recinto anterior = recintos.get(i - 1);
-            PlantaPiso.Recinto actual = recintos.get(i);
+            JlccPlantaPiso.Recinto anterior = recintos.get(i - 1);
+            JlccPlantaPiso.Recinto actual = recintos.get(i);
             double bordeAnterior = anterior.x() + anterior.ancho() / 2;
             double bordeActual = actual.x() - actual.ancho() / 2;
-            assertEquals(PlantaPiso.SEPARACION_RECINTOS, bordeActual - bordeAnterior, 0.001);
+            assertEquals(JlccPlantaPiso.JLCC_SEPARACION_RECINTOS, bordeActual - bordeAnterior, 0.001);
         }
     }
 
@@ -108,22 +108,22 @@ class PlantaPisoTest {
         List<BloqueMaqueta> desordenadas = new ArrayList<>(unidades);
         Collections.reverse(desordenadas);
 
-        assertEquals(PlantaPiso.calcular(4, unidades), PlantaPiso.calcular(4, desordenadas));
+        assertEquals(JlccPlantaPiso.jlccCalcular(4, unidades), JlccPlantaPiso.jlccCalcular(4, desordenadas));
     }
 
     @Test
     void unidadSinAreaSeRotulaSinMetrosYUsaElAnchoPorDefecto() {
         BloqueMaqueta bloque = bloque(1L, 1, null);
-        PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(1, List.of(bloque));
+        JlccPlantaPiso.Distribucion distribucion = JlccPlantaPiso.jlccCalcular(1, List.of(bloque));
 
-        assertEquals(PlantaPiso.ANCHO_POR_DEFECTO, distribucion.recintos().get(0).ancho(), 0.001);
-        assertFalse(PlantaPiso.tieneArea(bloque));
-        assertTrue(PlantaPiso.tieneArea(bloque(2L, 1, new BigDecimal("45"))));
+        assertEquals(JlccPlantaPiso.JLCC_ANCHO_POR_DEFECTO, distribucion.recintos().get(0).ancho(), 0.001);
+        assertFalse(JlccPlantaPiso.jlccTieneArea(bloque));
+        assertTrue(JlccPlantaPiso.jlccTieneArea(bloque(2L, 1, new BigDecimal("45"))));
     }
 
     @Test
     void unPisoSinUnidadesNoGeneraRecintos() {
-        PlantaPiso.Distribucion distribucion = PlantaPiso.calcular(5, List.of());
+        JlccPlantaPiso.Distribucion distribucion = JlccPlantaPiso.jlccCalcular(5, List.of());
 
         assertTrue(distribucion.recintos().isEmpty());
         assertEquals(0, distribucion.filas());
@@ -165,11 +165,11 @@ class PlantaPisoTest {
                 null);
     }
 
-    private double centroX(PlantaPiso.Distribucion distribucion) {
+    private double centroX(JlccPlantaPiso.Distribucion distribucion) {
         return centroXFila(distribucion, 0);
     }
 
-    private double centroXFila(PlantaPiso.Distribucion distribucion, int fila) {
+    private double centroXFila(JlccPlantaPiso.Distribucion distribucion, int fila) {
         double izquierda =
                 distribucion.recintos().stream()
                         .filter(recinto -> recinto.fila() == fila)

@@ -17,15 +17,15 @@ import java.util.List;
 class ReciboPdfServiceTest {
     @Test
     void generaPdfParaReciboEmitidoYAnulado() {
-        PagoService pagos = Mockito.mock(PagoService.class);
-        ReciboPdfService recibos = new ReciboPdfService(pagos, datosArrendador());
+        JlccPagoService pagos = Mockito.mock(JlccPagoService.class);
+        JlccReciboPdfService recibos = new JlccReciboPdfService(pagos, datosArrendador());
         Pago emitido = pago(EstadoPago.EMITIDO);
         Pago anulado = pago(EstadoPago.ANULADO);
-        when(pagos.obtener(1L)).thenReturn(emitido);
-        when(pagos.obtener(2L)).thenReturn(anulado);
+        when(pagos.jlccObtener(1L)).thenReturn(emitido);
+        when(pagos.jlccObtener(2L)).thenReturn(anulado);
 
-        assertPdf(recibos.generar(1L));
-        assertPdf(recibos.generar(2L));
+        assertPdf(recibos.jlccGenerar(1L));
+        assertPdf(recibos.jlccGenerar(2L));
     }
 
     private void assertPdf(byte[] contenido) {

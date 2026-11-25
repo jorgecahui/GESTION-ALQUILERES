@@ -10,7 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.RolUsuario;
 import com.ejemplo.alquileres.model.Usuario;
 import com.ejemplo.alquileres.repository.UsuarioRepository;
@@ -27,15 +27,15 @@ import java.util.Optional;
 class AutenticacionServiceTest {
     private static final Instant AHORA = Instant.parse("2026-04-01T10:00:00Z");
     private UsuarioRepository usuarios;
-    private AuditoriaService auditoria;
-    private SesionActual sesion;
+    private JlccAuditoriaService auditoria;
+    private JlccSesionActual sesion;
     private BCryptPasswordEncoder encoder;
 
     @BeforeEach
     void preparar() {
         usuarios = mock(UsuarioRepository.class);
-        auditoria = mock(AuditoriaService.class);
-        sesion = new SesionActual();
+        auditoria = mock(JlccAuditoriaService.class);
+        sesion = new JlccSesionActual();
         encoder = new BCryptPasswordEncoder();
     }
 
@@ -44,9 +44,9 @@ class AutenticacionServiceTest {
         when(usuarios.count()).thenReturn(0L);
         when(usuarios.existsByUsernameIgnoreCase("admin")).thenReturn(false);
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
-        AutenticacionService servicio = servicio(AHORA);
+        JlccAutenticacionService servicio = servicio(AHORA);
 
-        Usuario creado = servicio.crearPrimerAdmin("Admin", "Ana Pérez", "Clave123", "Clave123");
+        Usuario creado = servicio.jlccCrearPrimerAdmin("Admin", "Ana Pérez", "Clave123", "Clave123");
 
         assertEquals("admin", creado.getUsername());
         assertEquals(RolUsuario.ADMIN, creado.getRol());
@@ -60,13 +60,13 @@ class AutenticacionServiceTest {
         Usuario usuario = usuario("admin", "Clave123");
         when(usuarios.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(usuario));
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
-        AutenticacionService servicio = servicio(AHORA);
+        JlccAutenticacionService servicio = servicio(AHORA);
 
-        Usuario ingresado = servicio.login("ADMIN", "Clave123");
+        Usuario ingresado = servicio.jlccLogin("ADMIN", "Clave123");
 
         assertEquals("admin", ingresado.getUsername());
-        assertTrue(sesion.haySesion());
-        assertEquals("admin", sesion.username());
+        assertTrue(sesion.jlccHaySesion());
+        assertEquals("admin", sesion.jlccUsername());
         assertEquals(java.time.LocalDateTime.of(2026, 4, 1, 10, 0), ingresado.getUltimoAcceso());
         assertEquals(0, ingresado.getIntentosFallidos());
     }
@@ -76,13 +76,13 @@ class AutenticacionServiceTest {
         Usuario usuario = usuario("admin", "Clave123");
         when(usuarios.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(usuario));
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
-        AutenticacionService servicio = servicio(AHORA);
+        JlccAutenticacionService servicio = servicio(AHORA);
 
-        NegocioException error =
-                assertThrows(NegocioException.class, () -> servicio.login("admin", "otra"));
+        JlccNegocioException error =
+                assertThrows(JlccNegocioException.class, () -> servicio.jlccLogin("admin", "otra"));
         assertTrue(error.getMessage().contains("Usuario o contraseña incorrectos"));
         assertEquals(1, usuario.getIntentosFallidos());
-        assertFalse(sesion.haySesion());
+        assertFalse(sesion.jlccHaySesion());
     }
 
     @Test
@@ -90,42 +90,42 @@ class AutenticacionServiceTest {
         Usuario usuario = usuario("admin", "Clave123");
         when(usuarios.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(usuario));
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
-        AutenticacionService servicio = servicio(AHORA);
+        JlccAutenticacionService servicio = servicio(AHORA);
 
-        for (int intento = 0; intento < AutenticacionService.INTENTOS_MAXIMOS; intento++) {
-            assertThrows(NegocioException.class, () -> servicio.login("admin", "mala"));
+        for (int intento = 0; intento < JlccAutenticacionService.JLCC_INTENTOS_MAXIMOS; intento++) {
+            assertThrows(JlccNegocioException.class, () -> servicio.jlccLogin("admin", "mala"));
         }
-        assertEquals(AutenticacionService.INTENTOS_MAXIMOS, usuario.getIntentosFallidos());
+        assertEquals(JlccAutenticacionService.JLCC_INTENTOS_MAXIMOS, usuario.getIntentosFallidos());
         assertEquals(java.time.LocalDateTime.of(2026, 4, 1, 10, 5), usuario.getBloqueadoHasta());
 
-        AutenticacionService posterior = servicio(AHORA.plusSeconds(6 * 60));
-        assertDoesNotThrow(() -> posterior.login("admin", "Clave123"));
-        assertTrue(sesion.haySesion());
+        JlccAutenticacionService posterior = servicio(AHORA.plusSeconds(6 * 60));
+        assertDoesNotThrow(() -> posterior.jlccLogin("admin", "Clave123"));
+        assertTrue(sesion.jlccHaySesion());
         assertEquals(0, usuario.getIntentosFallidos());
     }
 
     @Test
     void usuarioInexistenteTambienUsaMensajeGenerico() {
         when(usuarios.findByUsernameIgnoreCase("nadie")).thenReturn(Optional.empty());
-        AutenticacionService servicio = servicio(AHORA);
+        JlccAutenticacionService servicio = servicio(AHORA);
 
-        NegocioException error =
-                assertThrows(NegocioException.class, () -> servicio.login("nadie", "Clave123"));
+        JlccNegocioException error =
+                assertThrows(JlccNegocioException.class, () -> servicio.jlccLogin("nadie", "Clave123"));
         assertEquals("Usuario o contraseña incorrectos.", error.getMessage());
     }
 
     @Test
     void politicaDePasswordExigeLongitudLetrasYNumeros() {
-        assertDoesNotThrow(() -> AutenticacionService.validarPassword("Clave123"));
-        assertThrows(NegocioException.class, () -> AutenticacionService.validarPassword("Abc123"));
+        assertDoesNotThrow(() -> JlccAutenticacionService.jlccValidarPassword("Clave123"));
+        assertThrows(JlccNegocioException.class, () -> JlccAutenticacionService.jlccValidarPassword("Abc123"));
         assertThrows(
-                NegocioException.class, () -> AutenticacionService.validarPassword("abcdefgh"));
+                JlccNegocioException.class, () -> JlccAutenticacionService.jlccValidarPassword("abcdefgh"));
         assertThrows(
-                NegocioException.class, () -> AutenticacionService.validarPassword("12345678"));
+                JlccNegocioException.class, () -> JlccAutenticacionService.jlccValidarPassword("12345678"));
     }
 
-    private AutenticacionService servicio(Instant instante) {
-        return new AutenticacionService(
+    private JlccAutenticacionService servicio(Instant instante) {
+        return new JlccAutenticacionService(
                 usuarios, encoder, auditoria, sesion, Clock.fixed(instante, ZoneOffset.UTC));
     }
 

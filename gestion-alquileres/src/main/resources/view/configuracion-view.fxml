@@ -5,7 +5,7 @@
 <VBox
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.ConfiguracionController"
+    fx:controller="com.ejemplo.alquileres.controller.JlccConfiguracionController"
     spacing="16"
     styleClass="pagina">
     <HBox spacing="12">
@@ -16,7 +16,7 @@
                 styleClass="pagina-subtitulo"/>
         </VBox>
         <Label fx:id="estado" styleClass="pagina-subtitulo"/>
-        <Button text="Guardar cambios" onAction="#onGuardar" styleClass="boton-primario,requiere-admin"/>
+        <Button text="Guardar cambios" onAction="#jlccOnGuardar" styleClass="boton-primario,requiere-admin"/>
     </HBox>
     <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
         <Tab text="Arrendador">
@@ -59,8 +59,8 @@
                         <Label text="Logo" styleClass="campo-label" GridPane.rowIndex="6"/>
                         <HBox spacing="8" GridPane.rowIndex="6" GridPane.columnIndex="1">
                             <TextField fx:id="logoArchivo" editable="false" promptText="Sin logo" HBox.hgrow="ALWAYS"/>
-                            <Button text="Elegir…" onAction="#onElegirLogo" styleClass="requiere-admin"/>
-                            <Button text="Quitar" onAction="#onQuitarLogo" styleClass="requiere-admin"/>
+                            <Button text="Elegir…" onAction="#jlccOnElegirLogo" styleClass="requiere-admin"/>
+                            <Button text="Quitar" onAction="#jlccOnQuitarLogo" styleClass="requiere-admin"/>
                         </HBox>
                     </GridPane>
                     <ImageView
@@ -220,7 +220,7 @@
                     </VBox>
                     <Button
                         text="Restaurar textos por defecto"
-                        onAction="#onRestaurarPlantillas"
+                        onAction="#jlccOnRestaurarPlantillas"
                         styleClass="requiere-admin"/>
                 </VBox>
             </ScrollPane>
@@ -260,9 +260,9 @@
                         </VBox>
                         <Button
                             text="Crear respaldo ahora"
-                            onAction="#onCrearRespaldo"
+                            onAction="#jlccOnCrearRespaldo"
                             styleClass="boton-primario,requiere-admin"/>
-                        <Button text="Restaurar respaldo" onAction="#onRestaurarRespaldo" styleClass="requiere-admin"/>
+                        <Button text="Restaurar respaldo" onAction="#jlccOnRestaurarRespaldo" styleClass="requiere-admin"/>
                     </HBox>
                     <Label fx:id="rutaDatos" styleClass="campo-ayuda" wrapText="true"/>
                     <Label
@@ -294,16 +294,16 @@
                         </VBox>
                         <Button
                             text="Nuevo usuario"
-                            onAction="#onNuevoUsuario"
+                            onAction="#jlccOnNuevoUsuario"
                             styleClass="boton-primario,requiere-admin"/>
-                        <Button text="Editar" onAction="#onEditarUsuario" styleClass="requiere-admin"/>
+                        <Button text="Editar" onAction="#jlccOnEditarUsuario" styleClass="requiere-admin"/>
                         <Button
                             text="Activar / desactivar"
-                            onAction="#onDesactivarUsuario"
+                            onAction="#jlccOnDesactivarUsuario"
                             styleClass="requiere-admin"/>
                         <Button
                             text="Restablecer contraseña"
-                            onAction="#onRestablecerPassword"
+                            onAction="#jlccOnRestablecerPassword"
                             styleClass="requiere-admin"/>
                     </HBox>
                     <TableView fx:id="tablaUsuarios" VBox.vgrow="ALWAYS" styleClass="tabla" prefHeight="420">
@@ -328,15 +328,15 @@
                                 text="Operaciones sensibles registradas por usuario y fecha. No contiene contraseñas."
                                 styleClass="pagina-subtitulo"/>
                         </VBox>
-                        <Button text="Exportar Excel" onAction="#onExportarAuditoria"/>
+                        <Button text="Exportar Excel" onAction="#jlccOnExportarAuditoria"/>
                     </HBox>
                     <HBox spacing="8" alignment="CENTER_LEFT">
                         <DatePicker fx:id="audDesde" promptText="Desde"/>
                         <DatePicker fx:id="audHasta" promptText="Hasta"/>
                         <TextField fx:id="audUsuario" promptText="Usuario" prefWidth="150"/>
                         <ComboBox fx:id="audAccion" promptText="Acción" prefWidth="220"/>
-                        <Button text="Buscar" onAction="#onBuscarAuditoria" styleClass="boton-primario"/>
-                        <Button text="Limpiar" onAction="#onLimpiarAuditoria"/>
+                        <Button text="Buscar" onAction="#jlccOnBuscarAuditoria" styleClass="boton-primario"/>
+                        <Button text="Limpiar" onAction="#jlccOnLimpiarAuditoria"/>
                     </HBox>
                     <TableView fx:id="tablaAuditoria" VBox.vgrow="ALWAYS" styleClass="tabla" prefHeight="430">
                         <columns>

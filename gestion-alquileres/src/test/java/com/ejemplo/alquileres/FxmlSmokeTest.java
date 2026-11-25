@@ -9,44 +9,44 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.ejemplo.alquileres.config.DatosArrendador;
-import com.ejemplo.alquileres.controller.ContratoController;
-import com.ejemplo.alquileres.controller.ContratoFormController;
-import com.ejemplo.alquileres.controller.FichaInmuebleController;
-import com.ejemplo.alquileres.controller.InmuebleController;
-import com.ejemplo.alquileres.controller.MainController;
-import com.ejemplo.alquileres.controller.MantenimientoController;
-import com.ejemplo.alquileres.controller.MaquetaController;
-import com.ejemplo.alquileres.controller.PagosController;
-import com.ejemplo.alquileres.controller.PersonaController;
-import com.ejemplo.alquileres.controller.PropietarioController;
-import com.ejemplo.alquileres.controller.TipoInmuebleController;
+import com.ejemplo.alquileres.controller.JlccContratoController;
+import com.ejemplo.alquileres.controller.JlccContratoFormController;
+import com.ejemplo.alquileres.controller.JlccFichaInmuebleController;
+import com.ejemplo.alquileres.controller.JlccInmuebleController;
+import com.ejemplo.alquileres.controller.JlccMainController;
+import com.ejemplo.alquileres.controller.JlccMantenimientoController;
+import com.ejemplo.alquileres.controller.JlccMaquetaController;
+import com.ejemplo.alquileres.controller.JlccPagosController;
+import com.ejemplo.alquileres.controller.JlccPersonaController;
+import com.ejemplo.alquileres.controller.JlccPropietarioController;
+import com.ejemplo.alquileres.controller.JlccTipoInmuebleController;
 import com.ejemplo.alquileres.model.RolUsuario;
 import com.ejemplo.alquileres.model.Usuario;
-import com.ejemplo.alquileres.service.ConfiguracionService;
-import com.ejemplo.alquileres.service.ContratoPdfService;
-import com.ejemplo.alquileres.service.ContratoService;
-import com.ejemplo.alquileres.service.CronogramaGenerador;
-import com.ejemplo.alquileres.service.EstadoCuentaPdfService;
-import com.ejemplo.alquileres.service.InmuebleService;
-import com.ejemplo.alquileres.service.MantenimientoService;
-import com.ejemplo.alquileres.service.MaquetaService;
-import com.ejemplo.alquileres.service.PagoService;
-import com.ejemplo.alquileres.service.Permisos;
-import com.ejemplo.alquileres.service.PersonaService;
-import com.ejemplo.alquileres.service.PropietarioService;
-import com.ejemplo.alquileres.service.ReciboPdfService;
-import com.ejemplo.alquileres.service.RecordatorioService;
-import com.ejemplo.alquileres.service.RentabilidadService;
-import com.ejemplo.alquileres.service.ReporteContratosExcelService;
-import com.ejemplo.alquileres.service.ReporteInmueblesExcelService;
-import com.ejemplo.alquileres.service.ReporteMantenimientoExcelService;
-import com.ejemplo.alquileres.service.ReportePagosExcelService;
-import com.ejemplo.alquileres.service.SesionActual;
-import com.ejemplo.alquileres.service.TipoInmuebleService;
-import com.ejemplo.alquileres.ui.Exportador;
-import com.ejemplo.alquileres.ui.Notificador;
-import com.ejemplo.alquileres.ui.RestriccionesUi;
-import com.ejemplo.alquileres.ui.Tareas;
+import com.ejemplo.alquileres.service.JlccConfiguracionService;
+import com.ejemplo.alquileres.service.JlccContratoPdfService;
+import com.ejemplo.alquileres.service.JlccContratoService;
+import com.ejemplo.alquileres.service.JlccCronogramaGenerador;
+import com.ejemplo.alquileres.service.JlccEstadoCuentaPdfService;
+import com.ejemplo.alquileres.service.JlccInmuebleService;
+import com.ejemplo.alquileres.service.JlccMantenimientoService;
+import com.ejemplo.alquileres.service.JlccMaquetaService;
+import com.ejemplo.alquileres.service.JlccPagoService;
+import com.ejemplo.alquileres.service.JlccPermisos;
+import com.ejemplo.alquileres.service.JlccPersonaService;
+import com.ejemplo.alquileres.service.JlccPropietarioService;
+import com.ejemplo.alquileres.service.JlccReciboPdfService;
+import com.ejemplo.alquileres.service.JlccRecordatorioService;
+import com.ejemplo.alquileres.service.JlccRentabilidadService;
+import com.ejemplo.alquileres.service.JlccReporteContratosExcelService;
+import com.ejemplo.alquileres.service.JlccReporteInmueblesExcelService;
+import com.ejemplo.alquileres.service.JlccReporteMantenimientoExcelService;
+import com.ejemplo.alquileres.service.JlccReportePagosExcelService;
+import com.ejemplo.alquileres.service.JlccSesionActual;
+import com.ejemplo.alquileres.service.JlccTipoInmuebleService;
+import com.ejemplo.alquileres.ui.JlccExportador;
+import com.ejemplo.alquileres.ui.JlccNotificador;
+import com.ejemplo.alquileres.ui.JlccRestriccionesUi;
+import com.ejemplo.alquileres.ui.JlccTareas;
 
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -98,16 +98,16 @@ class FxmlSmokeTest {
 
     @Test
     void cargaFormularioDeContrato() throws Exception {
-        ContratoFormController controlador =
-                new ContratoFormController(
-                        mock(ContratoService.class),
-                        mock(InmuebleService.class),
-                        mock(PersonaService.class),
-                        new CronogramaGenerador(),
-                        mock(ConfiguracionService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class),
-                        mock(MainController.class));
+        JlccContratoFormController controlador =
+                new JlccContratoFormController(
+                        mock(JlccContratoService.class),
+                        mock(JlccInmuebleService.class),
+                        mock(JlccPersonaService.class),
+                        new JlccCronogramaGenerador(),
+                        mock(JlccConfiguracionService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class),
+                        mock(JlccMainController.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/contrato-form-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -116,17 +116,17 @@ class FxmlSmokeTest {
 
     @Test
     void cargaListaDeContratos() throws Exception {
-        ContratoController controlador =
-                new ContratoController(
-                        mock(ContratoService.class),
-                        mock(RecordatorioService.class),
-                        mock(EstadoCuentaPdfService.class),
-                        mock(ContratoPdfService.class),
-                        mock(ReporteContratosExcelService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class),
-                        mock(Exportador.class),
-                        mock(MainController.class));
+        JlccContratoController controlador =
+                new JlccContratoController(
+                        mock(JlccContratoService.class),
+                        mock(JlccRecordatorioService.class),
+                        mock(JlccEstadoCuentaPdfService.class),
+                        mock(JlccContratoPdfService.class),
+                        mock(JlccReporteContratosExcelService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class),
+                        mock(JlccExportador.class),
+                        mock(JlccMainController.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/contratos-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -135,17 +135,17 @@ class FxmlSmokeTest {
 
     @Test
     void cargaFichaDeInmueble() throws Exception {
-        InmuebleController controlador =
-                new InmuebleController(
-                        mock(InmuebleService.class),
-                        mock(TipoInmuebleService.class),
-                        mock(PropietarioService.class),
-                        mock(ReporteInmueblesExcelService.class),
-                        mock(FichaInmuebleController.class),
-                        mock(ContratoService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class),
-                        mock(Exportador.class));
+        JlccInmuebleController controlador =
+                new JlccInmuebleController(
+                        mock(JlccInmuebleService.class),
+                        mock(JlccTipoInmuebleService.class),
+                        mock(JlccPropietarioService.class),
+                        mock(JlccReporteInmueblesExcelService.class),
+                        mock(JlccFichaInmuebleController.class),
+                        mock(JlccContratoService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class),
+                        mock(JlccExportador.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/inmueble-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -154,15 +154,15 @@ class FxmlSmokeTest {
 
     @Test
     void cargaListaDePagos() throws Exception {
-        PagosController controlador =
-                new PagosController(
-                        mock(PagoService.class),
-                        mock(ReciboPdfService.class),
-                        mock(ReportePagosExcelService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class),
-                        mock(Exportador.class),
-                        mock(MainController.class));
+        JlccPagosController controlador =
+                new JlccPagosController(
+                        mock(JlccPagoService.class),
+                        mock(JlccReciboPdfService.class),
+                        mock(JlccReportePagosExcelService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class),
+                        mock(JlccExportador.class),
+                        mock(JlccMainController.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/pagos-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -171,16 +171,16 @@ class FxmlSmokeTest {
 
     @Test
     void cargaFormularioDeMantenimiento() throws Exception {
-        MantenimientoController controlador =
-                new MantenimientoController(
-                        mock(MantenimientoService.class),
-                        mock(InmuebleService.class),
-                        mock(ReporteMantenimientoExcelService.class),
-                        mock(RentabilidadService.class),
+        JlccMantenimientoController controlador =
+                new JlccMantenimientoController(
+                        mock(JlccMantenimientoService.class),
+                        mock(JlccInmuebleService.class),
+                        mock(JlccReporteMantenimientoExcelService.class),
+                        mock(JlccRentabilidadService.class),
                         Clock.systemUTC(),
-                        mock(Tareas.class),
-                        mock(Notificador.class),
-                        mock(Exportador.class));
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class),
+                        mock(JlccExportador.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/mantenimiento-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -189,12 +189,12 @@ class FxmlSmokeTest {
 
     @Test
     void cargaMaqueta3d() throws Exception {
-        MaquetaController controlador =
-                new MaquetaController(
-                        mock(MaquetaService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class),
-                        mock(MainController.class));
+        JlccMaquetaController controlador =
+                new JlccMaquetaController(
+                        mock(JlccMaquetaService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class),
+                        mock(JlccMainController.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/maqueta-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -217,11 +217,11 @@ class FxmlSmokeTest {
                 Platform.isSupported(ConditionalFeature.SCENE3D), "La prueba requiere JavaFX 3D");
         try (AnnotationConfigApplicationContext contexto =
                 new AnnotationConfigApplicationContext()) {
-            contexto.registerBean(MaquetaService.class, () -> mock(MaquetaService.class));
-            contexto.registerBean(Tareas.class, () -> mock(Tareas.class));
-            contexto.registerBean(Notificador.class, () -> mock(Notificador.class));
-            contexto.registerBean(MainController.class, () -> mock(MainController.class));
-            contexto.register(MaquetaController.class);
+            contexto.registerBean(JlccMaquetaService.class, () -> mock(JlccMaquetaService.class));
+            contexto.registerBean(JlccTareas.class, () -> mock(JlccTareas.class));
+            contexto.registerBean(JlccNotificador.class, () -> mock(JlccNotificador.class));
+            contexto.registerBean(JlccMainController.class, () -> mock(JlccMainController.class));
+            contexto.register(JlccMaquetaController.class);
             contexto.refresh();
 
             CargaMaqueta primera = enFx(() -> cargarMaqueta(contexto));
@@ -248,7 +248,7 @@ class FxmlSmokeTest {
                         .findFirst()
                         .orElse(null);
         assertNotNull(subEscena);
-        return new CargaMaqueta((MaquetaController) loader.getController(), contenedor, subEscena);
+        return new CargaMaqueta((JlccMaquetaController) loader.getController(), contenedor, subEscena);
     }
 
     private StackPane buscarContenedor(Parent raiz) {
@@ -272,15 +272,15 @@ class FxmlSmokeTest {
     }
 
     private record CargaMaqueta(
-            MaquetaController controlador, StackPane contenedor, SubScene subEscena) {}
+            JlccMaquetaController controlador, StackPane contenedor, SubScene subEscena) {}
 
     @Test
     void cargaTiposDeInmueble() throws Exception {
-        TipoInmuebleController controlador =
-                new TipoInmuebleController(
-                        mock(TipoInmuebleService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class));
+        JlccTipoInmuebleController controlador =
+                new JlccTipoInmuebleController(
+                        mock(JlccTipoInmuebleService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/tipo-inmueble-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -289,12 +289,12 @@ class FxmlSmokeTest {
 
     @Test
     void cargaPersonas() throws Exception {
-        PersonaController controlador =
-                new PersonaController(
-                        mock(PersonaService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class),
-                        mock(Exportador.class),
+        JlccPersonaController controlador =
+                new JlccPersonaController(
+                        mock(JlccPersonaService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class),
+                        mock(JlccExportador.class),
                         mock(DatosArrendador.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/persona-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
@@ -304,11 +304,11 @@ class FxmlSmokeTest {
 
     @Test
     void cargaPropietarios() throws Exception {
-        PropietarioController controlador =
-                new PropietarioController(
-                        mock(PropietarioService.class),
-                        mock(Tareas.class),
-                        mock(Notificador.class));
+        JlccPropietarioController controlador =
+                new JlccPropietarioController(
+                        mock(JlccPropietarioService.class),
+                        mock(JlccTareas.class),
+                        mock(JlccNotificador.class));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/propietario-view.fxml"));
         loader.setControllerFactory(clase -> controlador);
         Parent raiz = loader.load();
@@ -428,7 +428,7 @@ class FxmlSmokeTest {
 
     @Test
     void restriccionesDeOperador() throws Exception {
-        Permisos operador = permisos(RolUsuario.OPERADOR);
+        JlccPermisos operador = permisos(RolUsuario.OPERADOR);
         for (String fxml : vistasPrincipales()) {
             Parent raiz = cargarConRestricciones(fxml, operador);
             for (Node nodo : nodos(raiz)) {
@@ -477,17 +477,17 @@ class FxmlSmokeTest {
                 "/view/maqueta-view.fxml");
     }
 
-    private Parent cargarConRestricciones(String fxml, Permisos permisos) throws IOException {
+    private Parent cargarConRestricciones(String fxml, JlccPermisos permisos) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
         loader.setControllerFactory(clase -> mock(clase));
         Parent raiz = loader.load();
-        RestriccionesUi.aplicar(raiz, permisos);
+        JlccRestriccionesUi.jlccAplicar(raiz, permisos);
         return raiz;
     }
 
-    private Permisos permisos(RolUsuario rol) {
-        SesionActual sesion = new SesionActual();
-        sesion.iniciar(
+    private JlccPermisos permisos(RolUsuario rol) {
+        JlccSesionActual sesion = new JlccSesionActual();
+        sesion.jlccIniciar(
                 Usuario.builder()
                         .id(1L)
                         .username("prueba")
@@ -495,7 +495,7 @@ class FxmlSmokeTest {
                         .rol(rol)
                         .activo(true)
                         .build());
-        return new Permisos(sesion);
+        return new JlccPermisos(sesion);
     }
 
     private List<Node> nodos(Parent raiz) {

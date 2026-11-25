@@ -21,7 +21,7 @@ import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.InmuebleRepository;
 import com.ejemplo.alquileres.repository.PagoRepository;
 import com.ejemplo.alquileres.repository.PersonaRepository;
-import com.ejemplo.alquileres.seeder.HistoriaDashboardSeeder;
+import com.ejemplo.alquileres.seeder.JlccHistoriaDashboardSeeder;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,7 +41,7 @@ class HistoriaDashboardSeederTest {
     private final PagoRepository pagos = Mockito.mock(PagoRepository.class);
     private final InmuebleRepository inmuebles = Mockito.mock(InmuebleRepository.class);
     private final PersonaRepository personas = Mockito.mock(PersonaRepository.class);
-    private final ConfiguracionService configuracion = Mockito.mock(ConfiguracionService.class);
+    private final JlccConfiguracionService configuracion = Mockito.mock(JlccConfiguracionService.class);
 
     @Test
     void reparaElDetalleFaltanteDeUnPagoDemo() {
@@ -51,7 +51,7 @@ class HistoriaDashboardSeederTest {
         when(pagos.findAll()).thenReturn(List.of(pago));
         when(pagos.save(any(Pago.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
 
-        seeder().cargar();
+        seeder().jlccCargar();
 
         assertEquals(1, pago.getDetalles().size());
         assertEquals(contrato.getCuotas().get(0), pago.getDetalles().get(0).getCuota());
@@ -68,7 +68,7 @@ class HistoriaDashboardSeederTest {
         when(contratos.save(any(Contrato.class)))
                 .thenAnswer(invocacion -> invocacion.getArgument(0));
 
-        seeder().cargar();
+        seeder().jlccCargar();
 
         assertEquals(12, contrato.getCuotas().size());
         assertEquals("Renta enero 2026", contrato.getCuotas().get(0).getConcepto());
@@ -90,7 +90,7 @@ class HistoriaDashboardSeederTest {
         when(contratos.count()).thenReturn(1L);
         when(pagos.findAll()).thenReturn(List.of(pago));
 
-        seeder().cargar();
+        seeder().jlccCargar();
 
         assertTrue(pago.getDetalles().isEmpty());
         verify(pagos, never()).save(any(Pago.class));
@@ -99,9 +99,9 @@ class HistoriaDashboardSeederTest {
     @Test
     void generaDiezContratosConRepartoDeSemaforos() {
         when(contratos.count()).thenReturn(0L);
-        when(configuracion.umbralLeveDias()).thenReturn(15);
-        when(configuracion.cuotasRojo()).thenReturn(2);
-        when(configuracion.moraDiasGracia()).thenReturn(3);
+        when(configuracion.jlccUmbralLeveDias()).thenReturn(15);
+        when(configuracion.jlccCuotasRojo()).thenReturn(2);
+        when(configuracion.jlccMoraDiasGracia()).thenReturn(3);
 
         List<Inmueble> alquilados = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
@@ -139,21 +139,21 @@ class HistoriaDashboardSeederTest {
                         });
         when(pagos.save(any(Pago.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
 
-        seeder().cargar();
+        seeder().jlccCargar();
 
         assertEquals(10, guardados.size());
         assertTrue(guardados.stream().allMatch(c -> c.getEstado() == EstadoContrato.VIGENTE));
-        MorosidadService morosidad =
-                new MorosidadService(DatosFase6.servicioConfiguracion(), DatosFase6.CLOCK);
+        JlccMorosidadService morosidad =
+                new JlccMorosidadService(DatosFase6.servicioConfiguracion(), DatosFase6.CLOCK);
         Map<SemaforoMorosidad, Long> reparto =
                 guardados.stream()
-                        .collect(Collectors.groupingBy(morosidad::semaforo, Collectors.counting()));
+                        .collect(Collectors.groupingBy(morosidad::jlccSemaforo, Collectors.counting()));
         assertEquals(6L, reparto.getOrDefault(SemaforoMorosidad.AL_DIA, 0L));
         assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.ATRASO_LEVE, 0L));
         assertEquals(2L, reparto.getOrDefault(SemaforoMorosidad.MOROSO, 0L));
         for (Contrato contrato : guardados) {
-            long vencidas = morosidad.vencidas(contrato).size();
-            switch (morosidad.semaforo(contrato)) {
+            long vencidas = morosidad.jlccVencidas(contrato).size();
+            switch (morosidad.jlccSemaforo(contrato)) {
                 case AL_DIA -> assertEquals(0, vencidas, contrato.getCodigo());
                 case ATRASO_LEVE -> assertEquals(1, vencidas, contrato.getCodigo());
                 case MOROSO -> assertEquals(2, vencidas, contrato.getCodigo());
@@ -181,13 +181,13 @@ class HistoriaDashboardSeederTest {
                 guardados.stream()
                         .anyMatch(
                                 contrato ->
-                                        morosidad.semaforo(contrato) == SemaforoMorosidad.MOROSO
+                                        morosidad.jlccSemaforo(contrato) == SemaforoMorosidad.MOROSO
                                                 && diasParaVencer(contrato, hoy) > 90));
         assertTrue(
                 guardados.stream()
                         .anyMatch(
                                 contrato ->
-                                        morosidad.semaforo(contrato) == SemaforoMorosidad.AL_DIA
+                                        morosidad.jlccSemaforo(contrato) == SemaforoMorosidad.AL_DIA
                                                 && diasParaVencer(contrato, hoy) >= 0
                                                 && diasParaVencer(contrato, hoy) <= 30));
 
@@ -245,8 +245,8 @@ class HistoriaDashboardSeederTest {
         return "MAS-90";
     }
 
-    private HistoriaDashboardSeeder seeder() {
-        return new HistoriaDashboardSeeder(
+    private JlccHistoriaDashboardSeeder seeder() {
+        return new JlccHistoriaDashboardSeeder(
                 contratos, pagos, inmuebles, personas, configuracion, DatosFase6.CLOCK);
     }
 

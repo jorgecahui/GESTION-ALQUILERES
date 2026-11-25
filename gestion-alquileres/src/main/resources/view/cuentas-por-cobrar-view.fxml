@@ -4,7 +4,7 @@
 <VBox
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.CuentasPorCobrarController"
+    fx:controller="com.ejemplo.alquileres.controller.JlccCuentasPorCobrarController"
     spacing="16"
     styleClass="pagina">
     <HBox>
@@ -12,8 +12,8 @@
             <Label text="Cuentas por cobrar" styleClass="pagina-titulo"/>
             <Label text="Cuotas pendientes, mora estimada y prioridad de cobranza." styleClass="pagina-subtitulo"/>
         </VBox>
-        <Button text="Exportar Excel" onAction="#onExportar"/>
-        <Button text="Recordar a todos los vencidos" onAction="#onRecordarTodos" styleClass="requiere-gestion"/>
+        <Button text="Exportar Excel" onAction="#jlccOnExportar"/>
+        <Button text="Recordar a todos los vencidos" onAction="#jlccOnRecordarTodos" styleClass="requiere-gestion"/>
     </HBox>
     <HBox spacing="12">
         <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
@@ -37,9 +37,9 @@
         <HBox spacing="8">
             <TextField fx:id="buscar" promptText="Buscar arrendatario, inmueble o concepto" HBox.hgrow="ALWAYS"/>
             <ComboBox fx:id="filtro" prefWidth="170"/>
-            <Button text="Estado de cuenta" onAction="#onEstadoCuenta"/>
-            <Button text="Recordar" onAction="#onRecordar" styleClass="requiere-gestion"/>
-            <Button text="Cobrar" onAction="#onCobrar" styleClass="boton-primario,requiere-gestion"/>
+            <Button text="Estado de cuenta" onAction="#jlccOnEstadoCuenta"/>
+            <Button text="Recordar" onAction="#jlccOnRecordar" styleClass="requiere-gestion"/>
+            <Button text="Cobrar" onAction="#jlccOnCobrar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
         <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
             <columns>

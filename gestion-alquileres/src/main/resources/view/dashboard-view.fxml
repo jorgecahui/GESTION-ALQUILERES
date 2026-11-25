@@ -6,7 +6,7 @@
 <ScrollPane
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.DashboardController"
+    fx:controller="com.ejemplo.alquileres.controller.JlccDashboardController"
     fitToWidth="true"
     styleClass="pagina-scroll">
     <VBox styleClass="pagina" spacing="16">
@@ -18,12 +18,12 @@
             <DatePicker fx:id="desde" visible="false" managed="false"/>
             <DatePicker fx:id="hasta" visible="false" managed="false"/>
             <ComboBox fx:id="periodo" prefWidth="170" styleClass="selector-periodo"/>
-            <Button text="Exportar Excel" onAction="#onExportar" styleClass="button-outlined">
+            <Button text="Exportar Excel" onAction="#jlccOnExportar" styleClass="button-outlined">
                 <graphic>
                     <FontIcon iconLiteral="fth-download"/>
                 </graphic>
             </Button>
-            <Button text="Actualizar" onAction="#onActualizar" styleClass="button-outlined">
+            <Button text="Actualizar" onAction="#jlccOnActualizar" styleClass="button-outlined">
                 <graphic>
                     <FontIcon iconLiteral="fth-refresh-cw"/>
                 </graphic>
@@ -112,7 +112,7 @@
                         <Label text="Últimos pagos" styleClass="grafico-titulo"/>
                         <Label text="Imprime el recibo en PDF con un clic" styleClass="grafico-subtitulo"/>
                     </VBox>
-                    <Hyperlink text="Ver todos" onAction="#onVerPagos"/>
+                    <Hyperlink text="Ver todos" onAction="#jlccOnVerPagos"/>
                 </HBox>
                 <VBox fx:id="ultimos" styleClass="lista-ventas"/>
             </VBox>

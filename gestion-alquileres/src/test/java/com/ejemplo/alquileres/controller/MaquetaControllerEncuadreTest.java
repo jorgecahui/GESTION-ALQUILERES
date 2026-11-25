@@ -25,31 +25,31 @@ class MaquetaControllerEncuadreTest {
 
     @Test
     void elEncuadreDelPisoSoloTomaLosPuntosDeEsePiso() {
-        MaquetaController.Geometria geometria = geometriaDeTresPisos();
+        JlccMaquetaController.Geometria geometria = geometriaDeTresPisos();
 
-        List<Point3D> piso1 = MaquetaController.puntosPiso(geometria, 1);
-        List<Point3D> piso2 = MaquetaController.puntosPiso(geometria, 2);
+        List<Point3D> piso1 = JlccMaquetaController.jlccPuntosPiso(geometria, 1);
+        List<Point3D> piso2 = JlccMaquetaController.jlccPuntosPiso(geometria, 2);
 
         assertEquals(8 + 5 * 8, piso1.size(), "losa + 5 bloques");
         assertEquals(8 + 5 * 8, piso2.size(), "losa + 5 bloques");
         assertTrue(
                 minY(piso1) > maxY(piso2),
                 "los puntos del piso 1 deben quedar por encima de los del piso 2");
-        assertTrue(MaquetaController.puntosPiso(geometria, 99).isEmpty());
-        assertTrue(MaquetaController.puntosPiso(null, 1).isEmpty());
+        assertTrue(JlccMaquetaController.jlccPuntosPiso(geometria, 99).isEmpty());
+        assertTrue(JlccMaquetaController.jlccPuntosPiso(null, 1).isEmpty());
     }
 
     @Test
     void elEncuadreCentraElPisoYLoDejaDentroDeLaVista() {
-        MaquetaController.Geometria geometria = geometriaDeTresPisos();
-        List<Point3D> puntos = MaquetaController.puntosPiso(geometria, 2);
+        JlccMaquetaController.Geometria geometria = geometriaDeTresPisos();
+        List<Point3D> puntos = JlccMaquetaController.jlccPuntosPiso(geometria, 2);
 
         double centroX = (minX(puntos) + maxX(puntos)) / 2;
         double centroY = (minY(puntos) + maxY(puntos)) / 2;
         double centroZ = (min(puntos, Point3D::getZ) + max(puntos, Point3D::getZ)) / 2;
 
-        MaquetaController.Encuadre encuadre =
-                MaquetaController.calcularEncuadre(
+        JlccMaquetaController.Encuadre encuadre =
+                JlccMaquetaController.jlccCalcularEncuadre(
                         puntos, ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO);
 
         assertNotNull(encuadre);
@@ -72,13 +72,13 @@ class MaquetaControllerEncuadreTest {
 
     @Test
     void unaVistaMasPequenaNecesitaMasDistancia() {
-        MaquetaController.Geometria geometria = geometriaDeTresPisos();
-        List<Point3D> puntos = MaquetaController.puntosPiso(geometria, 2);
+        JlccMaquetaController.Geometria geometria = geometriaDeTresPisos();
+        List<Point3D> puntos = JlccMaquetaController.jlccPuntosPiso(geometria, 2);
 
-        MaquetaController.Encuadre grande =
-                MaquetaController.calcularEncuadre(puntos, 1600, 1000, FOV, NEAR, RELLENO);
-        MaquetaController.Encuadre pequeno =
-                MaquetaController.calcularEncuadre(puntos, 600, 400, FOV, NEAR, RELLENO);
+        JlccMaquetaController.Encuadre grande =
+                JlccMaquetaController.jlccCalcularEncuadre(puntos, 1600, 1000, FOV, NEAR, RELLENO);
+        JlccMaquetaController.Encuadre pequeno =
+                JlccMaquetaController.jlccCalcularEncuadre(puntos, 600, 400, FOV, NEAR, RELLENO);
 
         assertNotNull(grande);
         assertNotNull(pequeno);
@@ -88,17 +88,17 @@ class MaquetaControllerEncuadreTest {
     @Test
     void sinPuntosNoHayEncuadre() {
         assertNull(
-                MaquetaController.calcularEncuadre(
+                JlccMaquetaController.jlccCalcularEncuadre(
                         List.of(), ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO));
         assertNull(
-                MaquetaController.calcularEncuadre(
+                JlccMaquetaController.jlccCalcularEncuadre(
                         List.of(new Point3D(0, 0, 0)), 0, ALTO_VISTA, FOV, NEAR, RELLENO));
         assertNull(
-                MaquetaController.calcularEncuadre(
+                JlccMaquetaController.jlccCalcularEncuadre(
                         null, ANCHO_VISTA, ALTO_VISTA, FOV, NEAR, RELLENO));
     }
 
-    private MaquetaController.Geometria geometriaDeTresPisos() {
+    private JlccMaquetaController.Geometria geometriaDeTresPisos() {
         List<BloqueMaqueta> bloques = new ArrayList<>();
         for (int nivel = 1; nivel <= 3; nivel++) {
             for (int orden = 1; orden <= 5; orden++) {
@@ -108,7 +108,7 @@ class MaquetaControllerEncuadreTest {
                                 id, "Unidad " + id, nivel, orden, EstadoInmueble.DISPONIBLE, null));
             }
         }
-        return MaquetaController.calcularGeometria(bloques);
+        return JlccMaquetaController.jlccCalcularGeometria(bloques);
     }
 
     private static double minX(List<Point3D> puntos) {

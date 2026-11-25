@@ -15,9 +15,9 @@ class MaquetaControllerGeometriaTest {
 
     @Test
     void cincoUnidadesQuedanEnUnaFilaCentrada() {
-        MaquetaController.Geometria geometria = MaquetaController.calcularGeometria(unidades(1, 5));
+        JlccMaquetaController.Geometria geometria = JlccMaquetaController.jlccCalcularGeometria(unidades(1, 5));
 
-        MaquetaController.PisoGeometria piso = geometria.pisos().get(1);
+        JlccMaquetaController.PisoGeometria piso = geometria.pisos().get(1);
         assertEquals(1, piso.filas().size());
         assertEquals(5, piso.filas().get(0).bloques().size());
 
@@ -30,10 +30,10 @@ class MaquetaControllerGeometriaTest {
 
     @Test
     void doceUnidadesSeRepartenEnDosFilasIguales() {
-        MaquetaController.Geometria geometria =
-                MaquetaController.calcularGeometria(unidades(1, 12));
+        JlccMaquetaController.Geometria geometria =
+                JlccMaquetaController.jlccCalcularGeometria(unidades(1, 12));
 
-        MaquetaController.PisoGeometria piso = geometria.pisos().get(1);
+        JlccMaquetaController.PisoGeometria piso = geometria.pisos().get(1);
         assertEquals(2, piso.filas().size());
         assertEquals(6, piso.filas().get(0).bloques().size());
         assertEquals(6, piso.filas().get(1).bloques().size());
@@ -51,9 +51,9 @@ class MaquetaControllerGeometriaTest {
         bloques.addAll(unidadesConIds(2, 4, 200));
         bloques.addAll(unidadesConIds(3, 6, 300));
 
-        MaquetaController.Geometria geometria = MaquetaController.calcularGeometria(bloques);
+        JlccMaquetaController.Geometria geometria = JlccMaquetaController.jlccCalcularGeometria(bloques);
 
-        for (MaquetaController.PisoGeometria piso : geometria.pisos().values()) {
+        for (JlccMaquetaController.PisoGeometria piso : geometria.pisos().values()) {
             double centro =
                     piso.filas().stream()
                             .flatMap(fila -> fila.bloques().stream())
@@ -81,7 +81,7 @@ class MaquetaControllerGeometriaTest {
     }
 
     private List<Double> posicionesX(
-            MaquetaController.Geometria geometria, List<BloqueMaqueta> bloques) {
+            JlccMaquetaController.Geometria geometria, List<BloqueMaqueta> bloques) {
         return bloques.stream()
                 .map(bloque -> geometria.posiciones().get(bloque.id()).getX())
                 .toList();

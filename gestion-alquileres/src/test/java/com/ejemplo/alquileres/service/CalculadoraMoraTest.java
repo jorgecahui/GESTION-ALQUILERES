@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 class CalculadoraMoraTest {
-    private final CalculadoraMora calculadora = new CalculadoraMora();
+    private final JlccCalculadoraMora calculadora = new JlccCalculadoraMora();
 
     @Test
     void respetaGraciaYCalculaPorcentajeDesdeElVencimiento() {
@@ -18,10 +18,10 @@ class CalculadoraMoraTest {
         Contrato contrato = contrato(TipoMora.PORCENTAJE_DIARIO, "0.10");
         assertEquals(
                 new BigDecimal("0.00"),
-                calculadora.pendiente(cuota, contrato, LocalDate.of(2026, 1, 8)));
+                calculadora.jlccPendiente(cuota, contrato, LocalDate.of(2026, 1, 8)));
         assertEquals(
                 new BigDecimal("7.00"),
-                calculadora.pendiente(cuota, contrato, LocalDate.of(2026, 1, 12)));
+                calculadora.jlccPendiente(cuota, contrato, LocalDate.of(2026, 1, 12)));
     }
 
     @Test
@@ -29,11 +29,11 @@ class CalculadoraMoraTest {
         Cuota cuota = cuota("1000.00");
         assertEquals(
                 new BigDecimal("35.00"),
-                calculadora.pendiente(
+                calculadora.jlccPendiente(
                         cuota, contrato(TipoMora.MONTO_DIARIO, "5.00"), LocalDate.of(2026, 1, 12)));
         assertEquals(
                 new BigDecimal("0.00"),
-                calculadora.pendiente(
+                calculadora.jlccPendiente(
                         cuota, contrato(TipoMora.MONTO_DIARIO, "5.00"), LocalDate.of(2026, 1, 4)));
     }
 
@@ -46,7 +46,7 @@ class CalculadoraMoraTest {
         cuota.setMoraDesde(LocalDate.of(2026, 1, 12));
         assertEquals(
                 new BigDecimal("6.00"),
-                calculadora.pendiente(
+                calculadora.jlccPendiente(
                         cuota,
                         contrato(TipoMora.PORCENTAJE_DIARIO, "0.10"),
                         LocalDate.of(2026, 1, 22)));
@@ -60,7 +60,7 @@ class CalculadoraMoraTest {
         cuota.setMoraCobrada(new BigDecimal("1.01"));
         assertEquals(
                 new BigDecimal("0.00"),
-                calculadora.pendiente(
+                calculadora.jlccPendiente(
                         cuota, contrato(TipoMora.MONTO_DIARIO, "1"), LocalDate.of(2026, 2, 1)));
     }
 

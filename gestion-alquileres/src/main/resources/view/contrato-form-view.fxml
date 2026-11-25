@@ -4,7 +4,7 @@
 <ScrollPane
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.ContratoFormController"
+    fx:controller="com.ejemplo.alquileres.controller.JlccContratoFormController"
     fitToWidth="true"
     styleClass="pagina-scroll">
     <HBox spacing="20" styleClass="pagina">
@@ -154,10 +154,10 @@
             <Button
                 fx:id="btnRegistrar"
                 text="Registrar contrato"
-                onAction="#onRegistrar"
+                onAction="#jlccOnRegistrar"
                 styleClass="boton-primario,requiere-gestion"
                 maxWidth="Infinity"/>
-            <Button text="Cancelar" onAction="#onCancelar" maxWidth="Infinity"/>
+            <Button text="Cancelar" onAction="#jlccOnCancelar" maxWidth="Infinity"/>
         </VBox>
     </HBox>
 </ScrollPane>

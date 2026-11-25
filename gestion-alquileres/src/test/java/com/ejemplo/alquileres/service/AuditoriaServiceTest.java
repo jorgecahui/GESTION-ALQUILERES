@@ -8,7 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.AccionAuditoria;
 import com.ejemplo.alquileres.model.AuditoriaEvento;
 import com.ejemplo.alquileres.model.Usuario;
@@ -30,16 +30,16 @@ class AuditoriaServiceTest {
     void registraEventoSinDatosSensibles() {
         AuditoriaRepository repo = mock(AuditoriaRepository.class);
         when(repo.save(any(AuditoriaEvento.class))).thenAnswer(i -> i.getArgument(0));
-        SesionActual sesion = new SesionActual();
-        sesion.iniciar(
+        JlccSesionActual sesion = new JlccSesionActual();
+        sesion.jlccIniciar(
                 Usuario.builder()
                         .id(1L)
                         .username("admin")
                         .rol(com.ejemplo.alquileres.model.RolUsuario.ADMIN)
                         .build());
-        AuditoriaService servicio = new AuditoriaService(repo, sesion, new Permisos(sesion), CLOCK);
+        JlccAuditoriaService servicio = new JlccAuditoriaService(repo, sesion, new JlccPermisos(sesion), CLOCK);
 
-        servicio.registrar(
+        servicio.jlccRegistrar(
                 AccionAuditoria.CAMBIO_CONFIGURACION,
                 "Configuracion",
                 1L,
@@ -59,11 +59,11 @@ class AuditoriaServiceTest {
     void registraFallosDeLoginConElUsuarioIntentado() {
         AuditoriaRepository repo = mock(AuditoriaRepository.class);
         when(repo.save(any(AuditoriaEvento.class))).thenAnswer(i -> i.getArgument(0));
-        SesionActual sesion = new SesionActual();
-        AuditoriaService servicio = new AuditoriaService(repo, sesion, new Permisos(sesion), CLOCK);
+        JlccSesionActual sesion = new JlccSesionActual();
+        JlccAuditoriaService servicio = new JlccAuditoriaService(repo, sesion, new JlccPermisos(sesion), CLOCK);
 
         AuditoriaEvento evento =
-                servicio.registrarComo(
+                servicio.jlccRegistrarComo(
                         "intruso",
                         AccionAuditoria.LOGIN_FALLIDO,
                         "Usuario",
@@ -77,32 +77,32 @@ class AuditoriaServiceTest {
     @Test
     void soloAdminPuedeConsultarLaBitacora() {
         AuditoriaRepository repo = mock(AuditoriaRepository.class);
-        SesionActual sesionConsulta = new SesionActual();
-        sesionConsulta.iniciar(
+        JlccSesionActual sesionConsulta = new JlccSesionActual();
+        sesionConsulta.jlccIniciar(
                 Usuario.builder()
                         .id(2L)
                         .username("consulta")
                         .rol(com.ejemplo.alquileres.model.RolUsuario.CONSULTA)
                         .build());
-        AuditoriaService servicio =
-                new AuditoriaService(repo, sesionConsulta, new Permisos(sesionConsulta), CLOCK);
+        JlccAuditoriaService servicio =
+                new JlccAuditoriaService(repo, sesionConsulta, new JlccPermisos(sesionConsulta), CLOCK);
 
-        assertThrows(NegocioException.class, () -> servicio.listar(null, null, null, null));
+        assertThrows(JlccNegocioException.class, () -> servicio.jlccListar(null, null, null, null));
     }
 
     @Test
     void adminPuedeConsultarYLaAccionSeFiltraPorEnum() {
         AuditoriaRepository repo = mock(AuditoriaRepository.class);
         when(repo.buscar(null, null, "ana", AccionAuditoria.ANULACION_PAGO)).thenReturn(List.of());
-        SesionActual sesion = new SesionActual();
-        sesion.iniciar(
+        JlccSesionActual sesion = new JlccSesionActual();
+        sesion.jlccIniciar(
                 Usuario.builder()
                         .id(1L)
                         .username("admin")
                         .rol(com.ejemplo.alquileres.model.RolUsuario.ADMIN)
                         .build());
-        AuditoriaService servicio = new AuditoriaService(repo, sesion, new Permisos(sesion), CLOCK);
+        JlccAuditoriaService servicio = new JlccAuditoriaService(repo, sesion, new JlccPermisos(sesion), CLOCK);
 
-        assertEquals(List.of(), servicio.listar(null, null, "ana", AccionAuditoria.ANULACION_PAGO));
+        assertEquals(List.of(), servicio.jlccListar(null, null, "ana", AccionAuditoria.ANULACION_PAGO));
     }
 }

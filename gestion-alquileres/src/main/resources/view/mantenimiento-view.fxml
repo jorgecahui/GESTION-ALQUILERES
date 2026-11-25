@@ -5,7 +5,7 @@
 <StackPane
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.MantenimientoController">
+    fx:controller="com.ejemplo.alquileres.controller.JlccMantenimientoController">
     <fx:define>
         <ToggleGroup fx:id="grupoPrioridad"/>
     </fx:define>
@@ -16,8 +16,8 @@
                     <Label text="Mantenimiento" styleClass="pagina-titulo"/>
                     <Label text="Incidencias, reparaciones y gastos de los inmuebles." styleClass="pagina-subtitulo"/>
                 </VBox>
-                <Button text="Exportar Excel" onAction="#onExportar"/>
-                <Button text="Nuevo mantenimiento" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
+                <Button text="Exportar Excel" onAction="#jlccOnExportar"/>
+                <Button text="Nuevo mantenimiento" onAction="#jlccOnNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
             <HBox spacing="12" styleClass="tarjeta">
                 <VBox HBox.hgrow="ALWAYS">
@@ -42,10 +42,10 @@
                 <ComboBox fx:id="filtroEstado" promptText="Estado"/>
                 <ComboBox fx:id="filtroPrioridad" promptText="Prioridad"/>
                 <ComboBox fx:id="filtroCategoria" promptText="Categoría"/>
-                <Button text="Iniciar" onAction="#onIniciar" styleClass="requiere-gestion"/>
-                <Button text="Resolver" onAction="#onResolver" styleClass="requiere-gestion"/>
-                <Button text="Cancelar" onAction="#onCancelar" styleClass="requiere-gestion"/>
-                <Button text="Generar cargo" onAction="#onCargo" styleClass="requiere-gestion"/>
+                <Button text="Iniciar" onAction="#jlccOnIniciar" styleClass="requiere-gestion"/>
+                <Button text="Resolver" onAction="#jlccOnResolver" styleClass="requiere-gestion"/>
+                <Button text="Cancelar" onAction="#jlccOnCancelar" styleClass="requiere-gestion"/>
+                <Button text="Generar cargo" onAction="#jlccOnCargo" styleClass="requiere-gestion"/>
             </HBox>
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
                 <columns>
@@ -68,7 +68,7 @@
         managed="false"
         pickOnBounds="true"
         styleClass="overlay"
-        onMouseClicked="#onCerrar"/>
+        onMouseClicked="#jlccOnCerrar"/>
     <VBox
         fx:id="drawer"
         visible="false"
@@ -87,7 +87,7 @@
                     styleClass="drawer-subtitulo"
                     wrapText="true"/>
             </VBox>
-            <Button onAction="#onCerrar" styleClass="drawer-cerrar" focusTraversable="false">
+            <Button onAction="#jlccOnCerrar" styleClass="drawer-cerrar" focusTraversable="false">
                 <graphic>
                     <FontIcon iconLiteral="fth-x"/>
                 </graphic>
@@ -224,8 +224,8 @@
             </VBox>
         </ScrollPane>
         <HBox styleClass="drawer-footer">
-            <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
-            <Button text="Guardar mantenimiento" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>
+            <Button text="Cancelar" onAction="#jlccOnCerrar" styleClass="button-outlined"/>
+            <Button text="Guardar mantenimiento" onAction="#jlccOnGuardar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
     </VBox>
 </StackPane>

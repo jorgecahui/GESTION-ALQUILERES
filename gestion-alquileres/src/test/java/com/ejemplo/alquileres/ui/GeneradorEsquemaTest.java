@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.ejemplo.alquileres.ui.GeneradorEsquema.Esquema;
-import com.ejemplo.alquileres.ui.GeneradorEsquema.Recinto;
-import com.ejemplo.alquileres.ui.GeneradorEsquema.TipoAmbiente;
+import com.ejemplo.alquileres.ui.JlccGeneradorEsquema.Esquema;
+import com.ejemplo.alquileres.ui.JlccGeneradorEsquema.Recinto;
+import com.ejemplo.alquileres.ui.JlccGeneradorEsquema.JlccTipoAmbiente;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,49 +17,49 @@ class GeneradorEsquemaTest {
 
     @Test
     void dosDormitoriosUnBanoGeneraEsquemaCompleto() {
-        Esquema esquema = GeneradorEsquema.generar(new BigDecimal("65"), 2, 1, false);
+        Esquema esquema = JlccGeneradorEsquema.jlccGenerar(new BigDecimal("65"), 2, 1, false);
 
         assertFalse(esquema.simple());
-        assertEquals(1, contar(esquema, TipoAmbiente.DORMITORIO_PRINCIPAL));
-        assertEquals(1, contar(esquema, TipoAmbiente.DORMITORIO));
-        assertEquals(1, contar(esquema, TipoAmbiente.BANO));
-        assertEquals(1, contar(esquema, TipoAmbiente.SALA_COMEDOR));
-        assertEquals(1, contar(esquema, TipoAmbiente.COCINA));
-        assertEquals(1, contar(esquema, TipoAmbiente.PASILLO));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.DORMITORIO_PRINCIPAL));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.DORMITORIO));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.BANO));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.SALA_COMEDOR));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.COCINA));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.PASILLO));
         comprobarConsistencia(esquema, 65);
     }
 
     @Test
     void seisDormitoriosYCincoBanosSeDibujanCompletos() {
-        Esquema esquema = GeneradorEsquema.generar(new BigDecimal("180"), 6, 5, true);
+        Esquema esquema = JlccGeneradorEsquema.jlccGenerar(new BigDecimal("180"), 6, 5, true);
 
-        assertEquals(1, contar(esquema, TipoAmbiente.DORMITORIO_PRINCIPAL));
-        assertEquals(5, contar(esquema, TipoAmbiente.DORMITORIO));
-        assertEquals(5, contar(esquema, TipoAmbiente.BANO));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.DORMITORIO_PRINCIPAL));
+        assertEquals(5, contar(esquema, JlccTipoAmbiente.DORMITORIO));
+        assertEquals(5, contar(esquema, JlccTipoAmbiente.BANO));
         comprobarConsistencia(esquema, 180);
     }
 
     @Test
     void unLocalSinBanosEsUnUnicoRecintoSimple() {
-        Esquema esquema = GeneradorEsquema.generar(new BigDecimal("30"), 0, 0, false);
+        Esquema esquema = JlccGeneradorEsquema.jlccGenerar(new BigDecimal("30"), 0, 0, false);
 
         assertTrue(esquema.simple());
         assertEquals(1, esquema.recintos().size());
-        assertEquals(TipoAmbiente.AMBIENTE, esquema.recintos().get(0).tipo());
+        assertEquals(JlccTipoAmbiente.AMBIENTE, esquema.recintos().get(0).tipo());
         assertEquals(30, esquema.areaRecintos(), 0.01);
         comprobarConsistencia(esquema, 30);
     }
 
     @Test
     void unLocalConDosBanosLosUbicaEnLaEsquinaSuperiorDerecha() {
-        Esquema esquema = GeneradorEsquema.generar(new BigDecimal("72"), 0, 2, false);
+        Esquema esquema = JlccGeneradorEsquema.jlccGenerar(new BigDecimal("72"), 0, 2, false);
 
         assertTrue(esquema.simple());
-        assertEquals(2, contar(esquema, TipoAmbiente.BANO));
+        assertEquals(2, contar(esquema, JlccTipoAmbiente.BANO));
         double bordeDerecho = esquema.ancho() - 1e-6;
         double bordeSuperior = esquema.alto() - 1e-6;
         for (Recinto recinto : esquema.recintos()) {
-            if (recinto.tipo() != TipoAmbiente.BANO) continue;
+            if (recinto.tipo() != JlccTipoAmbiente.BANO) continue;
             assertTrue(recinto.x() + recinto.ancho() <= bordeDerecho + 1e-6);
             assertTrue(recinto.y() + recinto.alto() <= bordeSuperior + 1e-6);
             assertTrue(recinto.y() > esquema.alto() * 0.5);
@@ -69,7 +69,7 @@ class GeneradorEsquemaTest {
 
     @Test
     void unAreaNulaUsaElValorPorDefectoYSeMarcaEstimada() {
-        Esquema esquema = GeneradorEsquema.generar(null, 2, 1, false);
+        Esquema esquema = JlccGeneradorEsquema.jlccGenerar(null, 2, 1, false);
 
         assertTrue(esquema.areaEstimada());
         assertEquals(65, esquema.areaUsada(), 0.01);
@@ -88,7 +88,7 @@ class GeneradorEsquemaTest {
                         new double[] {500, 6, 5, 500});
         for (double[] caso : casos) {
             Esquema esquema =
-                    GeneradorEsquema.generar(
+                    JlccGeneradorEsquema.jlccGenerar(
                             BigDecimal.valueOf(caso[0]), (int) caso[1], (int) caso[2], false);
             comprobarConsistencia(esquema, caso[3]);
         }
@@ -97,17 +97,17 @@ class GeneradorEsquemaTest {
     @Test
     void elResultadoEsDeterminista() {
         assertEquals(
-                GeneradorEsquema.generar(new BigDecimal("88"), 3, 2, true),
-                GeneradorEsquema.generar(new BigDecimal("88"), 3, 2, true));
+                JlccGeneradorEsquema.jlccGenerar(new BigDecimal("88"), 3, 2, true),
+                JlccGeneradorEsquema.jlccGenerar(new BigDecimal("88"), 3, 2, true));
     }
 
     @Test
     void losValoresSeTopanAOchoDormitoriosYSeisBanos() {
-        Esquema esquema = GeneradorEsquema.generar(new BigDecimal("200"), 10, 9, false);
+        Esquema esquema = JlccGeneradorEsquema.jlccGenerar(new BigDecimal("200"), 10, 9, false);
 
-        assertEquals(1, contar(esquema, TipoAmbiente.DORMITORIO_PRINCIPAL));
-        assertEquals(7, contar(esquema, TipoAmbiente.DORMITORIO));
-        assertEquals(6, contar(esquema, TipoAmbiente.BANO));
+        assertEquals(1, contar(esquema, JlccTipoAmbiente.DORMITORIO_PRINCIPAL));
+        assertEquals(7, contar(esquema, JlccTipoAmbiente.DORMITORIO));
+        assertEquals(6, contar(esquema, JlccTipoAmbiente.BANO));
         assertTrue(esquema.avisos().stream().anyMatch(a -> a.contains("Dormitorios topados")));
         assertTrue(esquema.avisos().stream().anyMatch(a -> a.contains("Baños topados")));
         comprobarConsistencia(esquema, 200);
@@ -115,11 +115,11 @@ class GeneradorEsquemaTest {
 
     @Test
     void amobladoSeConservaEnElResultado() {
-        assertTrue(GeneradorEsquema.generar(new BigDecimal("65"), 2, 1, true).amoblado());
-        assertFalse(GeneradorEsquema.generar(new BigDecimal("65"), 2, 1, null).amoblado());
+        assertTrue(JlccGeneradorEsquema.jlccGenerar(new BigDecimal("65"), 2, 1, true).amoblado());
+        assertFalse(JlccGeneradorEsquema.jlccGenerar(new BigDecimal("65"), 2, 1, null).amoblado());
     }
 
-    private long contar(Esquema esquema, TipoAmbiente tipo) {
+    private long contar(Esquema esquema, JlccTipoAmbiente tipo) {
         return esquema.recintos().stream().filter(r -> r.tipo() == tipo).count();
     }
 

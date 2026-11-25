@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.RolUsuario;
 import com.ejemplo.alquileres.model.Usuario;
 import com.ejemplo.alquileres.repository.UsuarioRepository;
@@ -22,13 +22,13 @@ import java.util.Optional;
 
 class UsuarioServiceTest {
     private UsuarioRepository usuarios;
-    private UsuarioService servicio;
+    private JlccUsuarioService servicio;
 
     @BeforeEach
     void preparar() {
         usuarios = mock(UsuarioRepository.class);
         servicio =
-                new UsuarioService(
+                new JlccUsuarioService(
                         usuarios,
                         new BCryptPasswordEncoder(),
                         DatosFase6.permisosAdmin(),
@@ -41,7 +41,7 @@ class UsuarioServiceTest {
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
 
         Usuario creado =
-                servicio.crear(
+                servicio.jlccCrear(
                         "Operador1",
                         "Luis Gómez",
                         "Clave123",
@@ -59,9 +59,9 @@ class UsuarioServiceTest {
         when(usuarios.existsByUsernameIgnoreCase("admin")).thenReturn(true);
 
         assertThrows(
-                NegocioException.class,
+                JlccNegocioException.class,
                 () ->
-                        servicio.crear(
+                        servicio.jlccCrear(
                                 "admin", "Ana", "Clave123", "Clave123", RolUsuario.ADMIN, true));
     }
 
@@ -79,11 +79,11 @@ class UsuarioServiceTest {
         when(usuarios.countByRolAndActivoTrue(RolUsuario.ADMIN)).thenReturn(1L);
 
         assertThrows(
-                NegocioException.class,
-                () -> servicio.actualizar(1L, "Ana", RolUsuario.OPERADOR, true));
+                JlccNegocioException.class,
+                () -> servicio.jlccActualizar(1L, "Ana", RolUsuario.OPERADOR, true));
         assertThrows(
-                NegocioException.class,
-                () -> servicio.actualizar(1L, "Ana", RolUsuario.ADMIN, false));
+                JlccNegocioException.class,
+                () -> servicio.jlccActualizar(1L, "Ana", RolUsuario.ADMIN, false));
     }
 
     @Test
@@ -100,7 +100,7 @@ class UsuarioServiceTest {
         when(usuarios.countByRolAndActivoTrue(RolUsuario.ADMIN)).thenReturn(2L);
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
 
-        Usuario actualizado = servicio.actualizar(1L, "Ana", RolUsuario.OPERADOR, true);
+        Usuario actualizado = servicio.jlccActualizar(1L, "Ana", RolUsuario.OPERADOR, true);
 
         assertEquals(RolUsuario.OPERADOR, actualizado.getRol());
         verify(usuarios).save(admin);
@@ -120,10 +120,10 @@ class UsuarioServiceTest {
         when(usuarios.save(any(Usuario.class)))
                 .thenThrow(new ObjectOptimisticLockingFailureException(Usuario.class, 1L));
 
-        NegocioException error =
+        JlccNegocioException error =
                 assertThrows(
-                        NegocioException.class,
-                        () -> servicio.actualizar(1L, "Luis", RolUsuario.OPERADOR, true));
+                        JlccNegocioException.class,
+                        () -> servicio.jlccActualizar(1L, "Luis", RolUsuario.OPERADOR, true));
 
         assertTrue(error.getMessage().contains("modificado por otra operación"));
     }
@@ -143,7 +143,7 @@ class UsuarioServiceTest {
         when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        servicio.restablecerPassword(2L, "Nueva123", "Nueva123");
+        servicio.jlccRestablecerPassword(2L, "Nueva123", "Nueva123");
 
         assertEquals(true, encoder.matches("Nueva123", usuario.getPasswordHash()));
         assertEquals(0, usuario.getIntentosFallidos());

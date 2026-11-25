@@ -8,12 +8,12 @@ import java.math.*;
 import java.time.*;
 
 class CronogramaGeneradorTest {
-    private final CronogramaGenerador g = new CronogramaGenerador();
+    private final JlccCronogramaGenerador g = new JlccCronogramaGenerador();
 
     @Test
     void generaDoceCuotasYAjustaPrimerVencimiento() {
         var c =
-                g.generar(
+                g.jlccGenerar(
                         LocalDate.of(2026, 1, 31), 12, 28, new BigDecimal("1000"), BigDecimal.ZERO);
         assertEquals(12, c.size());
         assertEquals(LocalDate.of(2026, 1, 31), c.get(0).getFechaVencimiento());
@@ -24,7 +24,7 @@ class CronogramaGeneradorTest {
     @Test
     void aplicaIncrementoAnualRedondeado() {
         var c =
-                g.generar(
+                g.jlccGenerar(
                         LocalDate.of(2026, 1, 1),
                         24,
                         10,

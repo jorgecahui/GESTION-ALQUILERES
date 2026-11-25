@@ -4,7 +4,7 @@
 <VBox
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.PagosController"
+    fx:controller="com.ejemplo.alquileres.controller.JlccPagosController"
     spacing="16"
     styleClass="pagina">
     <HBox>
@@ -12,8 +12,8 @@
             <Label text="Pagos" styleClass="pagina-titulo"/>
             <Label text="Historial de recibos emitidos y anulados." styleClass="pagina-subtitulo"/>
         </VBox>
-        <Button text="Nuevo pago" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
-        <Button text="Actualizar" onAction="#onFiltrar"/>
+        <Button text="Nuevo pago" onAction="#jlccOnNuevo" styleClass="boton-primario,requiere-gestion"/>
+        <Button text="Actualizar" onAction="#jlccOnFiltrar"/>
     </HBox>
     <HBox spacing="12">
         <VBox styleClass="kpi" HBox.hgrow="ALWAYS">
@@ -37,11 +37,11 @@
         <HBox spacing="8">
             <DatePicker fx:id="desde" promptText="Desde"/>
             <DatePicker fx:id="hasta" promptText="Hasta"/>
-            <Button text="Filtrar" onAction="#onFiltrar"/>
+            <Button text="Filtrar" onAction="#jlccOnFiltrar"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Exportar Excel" onAction="#onExportar"/>
-            <Button text="Recibo PDF" onAction="#onPdf"/>
-            <Button text="Anular" onAction="#onAnular" styleClass="requiere-admin"/>
+            <Button text="Exportar Excel" onAction="#jlccOnExportar"/>
+            <Button text="Recibo PDF" onAction="#jlccOnPdf"/>
+            <Button text="Anular" onAction="#jlccOnAnular" styleClass="requiere-admin"/>
         </HBox>
         <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
             <columns>

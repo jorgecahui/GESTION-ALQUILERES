@@ -12,9 +12,9 @@ import com.ejemplo.alquileres.model.EstadoPago;
 import com.ejemplo.alquileres.model.Inmueble;
 import com.ejemplo.alquileres.model.Pago;
 import com.ejemplo.alquileres.model.SemaforoMorosidad;
-import com.ejemplo.alquileres.service.ContratoService.EstadoVisual;
-import com.ejemplo.alquileres.service.CuentasPorCobrarService.Cuenta;
-import com.ejemplo.alquileres.service.CuentasPorCobrarService.Filtro;
+import com.ejemplo.alquileres.service.JlccContratoService.JlccEstadoVisual;
+import com.ejemplo.alquileres.service.JlccCuentasPorCobrarService.Cuenta;
+import com.ejemplo.alquileres.service.JlccCuentasPorCobrarService.JlccFiltro;
 
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -43,10 +43,10 @@ class ReportesExcelTest {
                         "R001-00000002",
                         "500.00",
                         EstadoPago.ANULADO);
-        ReportePagosExcelService servicio = new ReportePagosExcelService(DatosFase6.CLOCK);
+        JlccReportePagosExcelService servicio = new JlccReportePagosExcelService(DatosFase6.CLOCK);
 
         byte[] bytes =
-                servicio.generar(
+                servicio.jlccGenerar(
                         List.of(emitido, anulado),
                         LocalDate.of(2026, 1, 1),
                         LocalDate.of(2026, 1, 31));
@@ -94,10 +94,10 @@ class ReportesExcelTest {
                         dinero("0.00"),
                         dinero("500.00"),
                         SemaforoMorosidad.AL_DIA);
-        ReporteCuentasPorCobrarExcelService servicio =
-                new ReporteCuentasPorCobrarExcelService(DatosFase6.CLOCK);
+        JlccReporteCuentasPorCobrarExcelService servicio =
+                new JlccReporteCuentasPorCobrarExcelService(DatosFase6.CLOCK);
 
-        byte[] bytes = servicio.generar(List.of(vencida, vigente), Filtro.TODAS, "Ana");
+        byte[] bytes = servicio.jlccGenerar(List.of(vencida, vigente), JlccFiltro.TODAS, "Ana");
 
         try (XSSFWorkbook libro = leer(bytes)) {
             Sheet resumen = hoja(libro, "Resumen");
@@ -114,22 +114,22 @@ class ReportesExcelTest {
 
     @Test
     void reporteDeContratosCuentaEstadosYPorVencer() throws Exception {
-        ContratoService contratos = Mockito.mock(ContratoService.class);
-        when(contratos.estadoVisual(any(Contrato.class)))
+        JlccContratoService contratos = Mockito.mock(JlccContratoService.class);
+        when(contratos.jlccEstadoVisual(any(Contrato.class)))
                 .thenAnswer(
                         invocacion -> {
                             Contrato contrato = invocacion.getArgument(0);
                             return "CTR-000001".equals(contrato.getCodigo())
-                                    ? EstadoVisual.VIGENTE
-                                    : EstadoVisual.POR_VENCER;
+                                    ? JlccEstadoVisual.VIGENTE
+                                    : JlccEstadoVisual.POR_VENCER;
                         });
         Contrato vigente = DatosFase6.contrato();
         Contrato porVencer = DatosFase6.contrato();
         porVencer.setCodigo("CTR-000002");
-        ReporteContratosExcelService servicio =
-                new ReporteContratosExcelService(contratos, DatosFase6.CLOCK);
+        JlccReporteContratosExcelService servicio =
+                new JlccReporteContratosExcelService(contratos, DatosFase6.CLOCK);
 
-        byte[] bytes = servicio.generar(List.of(vigente, porVencer), null, false);
+        byte[] bytes = servicio.jlccGenerar(List.of(vigente, porVencer), null, false);
 
         try (XSSFWorkbook libro = leer(bytes)) {
             Sheet resumen = hoja(libro, "Resumen");
@@ -150,9 +150,9 @@ class ReportesExcelTest {
         disponible.setCodigo("INM-0002");
         disponible.setNombre("Departamento 102");
         disponible.setEstado(EstadoInmueble.DISPONIBLE);
-        ReporteInmueblesExcelService servicio = new ReporteInmueblesExcelService(DatosFase6.CLOCK);
+        JlccReporteInmueblesExcelService servicio = new JlccReporteInmueblesExcelService(DatosFase6.CLOCK);
 
-        byte[] bytes = servicio.generar(List.of(alquilado, disponible));
+        byte[] bytes = servicio.jlccGenerar(List.of(alquilado, disponible));
 
         try (XSSFWorkbook libro = leer(bytes)) {
             Sheet resumen = hoja(libro, "Resumen");
@@ -170,11 +170,11 @@ class ReportesExcelTest {
 
     @Test
     void reporteDeMantenimientoIncluyeRentabilidad() throws Exception {
-        ReporteMantenimientoExcelService servicio =
-                new ReporteMantenimientoExcelService(DatosFase6.CLOCK);
+        JlccReporteMantenimientoExcelService servicio =
+                new JlccReporteMantenimientoExcelService(DatosFase6.CLOCK);
 
         byte[] bytes =
-                servicio.generar(
+                servicio.jlccGenerar(
                         List.of(DatosFase6.mantenimiento()),
                         DatosFase6.rentabilidad(),
                         LocalDate.of(2026, 1, 1),

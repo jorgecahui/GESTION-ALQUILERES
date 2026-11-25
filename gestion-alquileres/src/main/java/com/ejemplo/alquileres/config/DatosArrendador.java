@@ -1,7 +1,7 @@
 package com.ejemplo.alquileres.config;
 
 import com.ejemplo.alquileres.model.Configuracion;
-import com.ejemplo.alquileres.service.ConfiguracionService;
+import com.ejemplo.alquileres.service.JlccConfiguracionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -10,11 +10,11 @@ import java.nio.file.Path;
 
 @Component
 public class DatosArrendador {
-    private final ConfiguracionService configuracion;
+    private final JlccConfiguracionService configuracion;
     private final Configuracion fija;
 
     @Autowired
-    public DatosArrendador(ConfiguracionService configuracion) {
+    public DatosArrendador(JlccConfiguracionService configuracion) {
         this.configuracion = configuracion;
         this.fija = null;
     }
@@ -55,12 +55,12 @@ public class DatosArrendador {
     }
 
     public Path logo() {
-        if (configuracion != null) return configuracion.rutaLogo();
+        if (configuracion != null) return configuracion.jlccRutaLogo();
         return null;
     }
 
     public String leyendaRecibo() {
-        if (configuracion != null) return configuracion.leyendaRecibo();
+        if (configuracion != null) return configuracion.jlccLeyendaRecibo();
         String leyenda = fija == null ? null : fija.getReciboLeyenda();
         return leyenda == null || leyenda.isBlank()
                 ? "Documento interno sin validez tributaria"
@@ -68,7 +68,7 @@ public class DatosArrendador {
     }
 
     private Configuracion actual() {
-        Configuracion valor = configuracion == null ? fija : configuracion.actual();
+        Configuracion valor = configuracion == null ? fija : configuracion.jlccActual();
         return valor == null ? new Configuracion() : valor;
     }
 }

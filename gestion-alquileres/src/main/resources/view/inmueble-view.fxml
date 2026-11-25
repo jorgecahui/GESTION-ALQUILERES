@@ -5,7 +5,7 @@
 <StackPane
     xmlns="http://javafx.com/javafx/21"
     xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.ejemplo.alquileres.controller.InmuebleController">
+    fx:controller="com.ejemplo.alquileres.controller.JlccInmuebleController">
     <HBox spacing="18" styleClass="pagina">
         <VBox spacing="16" HBox.hgrow="ALWAYS">
             <HBox>
@@ -13,15 +13,15 @@
                     <Label text="Inmuebles" styleClass="pagina-titulo"/>
                     <Label text="Disponibilidad, propietario y renta referencial." styleClass="pagina-subtitulo"/>
                 </VBox>
-                <Button text="Nuevo inmueble" onAction="#onNuevo" styleClass="boton-primario,requiere-gestion"/>
+                <Button text="Nuevo inmueble" onAction="#jlccOnNuevo" styleClass="boton-primario,requiere-gestion"/>
             </HBox>
             <HBox spacing="10">
                 <TextField fx:id="buscar" promptText="Buscar código, nombre o dirección" HBox.hgrow="ALWAYS"/>
                 <ComboBox fx:id="filtroEstado" promptText="Estado"/>
                 <ComboBox fx:id="filtroTipo" prefWidth="180" promptText="Tipo"/>
-                <Button text="Editar" onAction="#onEditar" styleClass="requiere-gestion"/>
-                <Button text="Ver ficha" onAction="#onFicha"/>
-                <Button text="Exportar Excel" onAction="#onExportar"/>
+                <Button text="Editar" onAction="#jlccOnEditar" styleClass="requiere-gestion"/>
+                <Button text="Ver ficha" onAction="#jlccOnFicha"/>
+                <Button text="Exportar Excel" onAction="#jlccOnExportar"/>
             </HBox>
             <TableView fx:id="tabla" VBox.vgrow="ALWAYS" styleClass="tabla">
                 <columns>
@@ -41,7 +41,7 @@
         managed="false"
         pickOnBounds="true"
         styleClass="overlay"
-        onMouseClicked="#onCerrar"/>
+        onMouseClicked="#jlccOnCerrar"/>
     <VBox
         fx:id="ficha"
         visible="false"
@@ -97,7 +97,7 @@
                 </ScrollPane>
             </Tab>
         </TabPane>
-        <Button text="Cerrar" onAction="#onCerrarFicha"/>
+        <Button text="Cerrar" onAction="#jlccOnCerrarFicha"/>
     </VBox>
     <VBox
         fx:id="drawer"
@@ -114,7 +114,7 @@
                 <Label fx:id="titulo" styleClass="drawer-titulo"/>
                 <Label text="Datos principales del inmueble" styleClass="drawer-subtitulo"/>
             </VBox>
-            <Button onAction="#onCerrar" styleClass="drawer-cerrar" focusTraversable="false">
+            <Button onAction="#jlccOnCerrar" styleClass="drawer-cerrar" focusTraversable="false">
                 <graphic>
                     <FontIcon iconLiteral="fth-x"/>
                 </graphic>
@@ -284,8 +284,8 @@
             </VBox>
         </ScrollPane>
         <HBox styleClass="drawer-footer">
-            <Button text="Cancelar" onAction="#onCerrar" styleClass="button-outlined"/>
-            <Button text="Guardar inmueble" onAction="#onGuardar" styleClass="boton-primario,requiere-gestion"/>
+            <Button text="Cancelar" onAction="#jlccOnCerrar" styleClass="button-outlined"/>
+            <Button text="Guardar inmueble" onAction="#jlccOnGuardar" styleClass="boton-primario,requiere-gestion"/>
         </HBox>
     </VBox>
 </StackPane>

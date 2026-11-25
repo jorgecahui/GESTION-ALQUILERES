@@ -36,11 +36,11 @@ import java.util.Optional;
 class MaquetaServiceTest {
     private final InmuebleRepository inmuebles = mock(InmuebleRepository.class);
     private final ContratoRepository contratos = mock(ContratoRepository.class);
-    private final MorosidadService morosidad =
-            new MorosidadService(DatosFase6.servicioConfiguracion(), DatosFase6.CLOCK);
-    private final MaquetaService service =
-            new MaquetaService(
-                    inmuebles, contratos, morosidad, new CalculadoraMora(), DatosFase6.CLOCK);
+    private final JlccMorosidadService morosidad =
+            new JlccMorosidadService(DatosFase6.servicioConfiguracion(), DatosFase6.CLOCK);
+    private final JlccMaquetaService service =
+            new JlccMaquetaService(
+                    inmuebles, contratos, morosidad, new JlccCalculadoraMora(), DatosFase6.CLOCK);
 
     @Test
     void armaBloquesConSemaforosEInconsistencias() {
@@ -69,11 +69,11 @@ class MaquetaServiceTest {
         when(inmuebles.listarParaMaqueta()).thenReturn(List.of(i1, i2, i3, i4, i5, i6, i7, i8, i9));
         when(contratos.vigentesConDetalle()).thenReturn(List.of(c1, c2, c3));
 
-        MaquetaService.ResultadoMaqueta resultado = service.cargar();
+        JlccMaquetaService.ResultadoMaqueta resultado = service.jlccCargar();
 
         assertEquals(7, resultado.bloques().size());
         assertEquals(2, resultado.sinUbicacion());
-        assertEquals(7, service.listarBloques().size());
+        assertEquals(7, service.jlccListarBloques().size());
 
         BloqueMaqueta b1 = bloque(resultado, 1L);
         assertEquals("INM-0001", b1.codigo());
@@ -135,7 +135,7 @@ class MaquetaServiceTest {
                 inmuebleDetalle(1L, "INM-0001", "Depa 101", EstadoInmueble.DISPONIBLE, 1, 1);
         prepararDetalle(inmueble);
 
-        MaquetaService.DetalleMaqueta detalle = service.detalle(1L);
+        JlccMaquetaService.DetalleMaqueta detalle = service.jlccDetalle(1L);
 
         assertEquals("INM-0001", detalle.codigo());
         assertEquals("Depa 101", detalle.nombre());
@@ -161,7 +161,7 @@ class MaquetaServiceTest {
                 contrato(201L, inmueble, "Ana Pérez", "12345678", LocalDate.of(2026, 3, 5));
         prepararDetalle(inmueble, contrato);
 
-        MaquetaService.DetalleMaqueta detalle = service.detalle(2L);
+        JlccMaquetaService.DetalleMaqueta detalle = service.jlccDetalle(2L);
 
         assertNotNull(detalle.contrato());
         assertEquals(SemaforoMorosidad.AL_DIA, detalle.contrato().semaforo());
@@ -184,7 +184,7 @@ class MaquetaServiceTest {
                 contrato(202L, inmueble, "Luis Paredes", "22345678", LocalDate.of(2026, 2, 5));
         prepararDetalle(inmueble, contrato);
 
-        MaquetaService.DetalleMaqueta detalle = service.detalle(3L);
+        JlccMaquetaService.DetalleMaqueta detalle = service.jlccDetalle(3L);
 
         assertEquals(SemaforoMorosidad.ATRASO_LEVE, detalle.contrato().semaforo());
         assertEquals(1, detalle.contrato().cuotasVencidas());
@@ -199,7 +199,7 @@ class MaquetaServiceTest {
                 contrato(203L, inmueble, "Rosa Vega", "32345678", LocalDate.of(2025, 12, 20));
         prepararDetalle(inmueble, contrato);
 
-        MaquetaService.DetalleMaqueta detalle = service.detalle(4L);
+        JlccMaquetaService.DetalleMaqueta detalle = service.jlccDetalle(4L);
 
         assertEquals(SemaforoMorosidad.MOROSO, detalle.contrato().semaforo());
         assertEquals(1, detalle.contrato().cuotasVencidas());
@@ -212,18 +212,18 @@ class MaquetaServiceTest {
                 inmuebleDetalle(5L, "INM-0005", "Depa 204", EstadoInmueble.ALQUILADO, 2, 4);
         prepararDetalle(inmueble);
 
-        MaquetaService.DetalleMaqueta detalle = service.detalle(5L);
+        JlccMaquetaService.DetalleMaqueta detalle = service.jlccDetalle(5L);
 
         assertNull(detalle.contrato());
         assertTrue(detalle.inconsistencia());
         assertEquals(EstadoInmueble.ALQUILADO, detalle.estado());
         for (RecordComponent componente :
-                MaquetaService.DetalleMaqueta.class.getRecordComponents()) {
+                JlccMaquetaService.DetalleMaqueta.class.getRecordComponents()) {
             assertFalse(Inmueble.class.isAssignableFrom(componente.getType()));
             assertFalse(Contrato.class.isAssignableFrom(componente.getType()));
         }
         for (RecordComponent componente :
-                MaquetaService.ContratoDetalle.class.getRecordComponents()) {
+                JlccMaquetaService.ContratoDetalle.class.getRecordComponents()) {
             assertFalse(Inmueble.class.isAssignableFrom(componente.getType()));
             assertFalse(Contrato.class.isAssignableFrom(componente.getType()));
         }
@@ -278,13 +278,13 @@ class MaquetaServiceTest {
         BigDecimal mil = new BigDecimal("1000.00");
         BigDecimal dosMil = new BigDecimal("2000.00");
 
-        assertEquals(0, MaquetaService.tonoRenta(mil, mil, dosMil, 8));
-        assertEquals(4, MaquetaService.tonoRenta(new BigDecimal("1500.00"), mil, dosMil, 8));
-        assertEquals(7, MaquetaService.tonoRenta(dosMil, mil, dosMil, 8));
-        assertEquals(0, MaquetaService.tonoRenta(new BigDecimal("900.00"), mil, dosMil, 8));
-        assertEquals(7, MaquetaService.tonoRenta(new BigDecimal("2100.00"), mil, dosMil, 8));
-        assertEquals(3, MaquetaService.tonoRenta(mil, mil, mil, 8));
-        assertEquals(-1, MaquetaService.tonoRenta(null, mil, dosMil, 8));
+        assertEquals(0, JlccMaquetaService.jlccTonoRenta(mil, mil, dosMil, 8));
+        assertEquals(4, JlccMaquetaService.jlccTonoRenta(new BigDecimal("1500.00"), mil, dosMil, 8));
+        assertEquals(7, JlccMaquetaService.jlccTonoRenta(dosMil, mil, dosMil, 8));
+        assertEquals(0, JlccMaquetaService.jlccTonoRenta(new BigDecimal("900.00"), mil, dosMil, 8));
+        assertEquals(7, JlccMaquetaService.jlccTonoRenta(new BigDecimal("2100.00"), mil, dosMil, 8));
+        assertEquals(3, JlccMaquetaService.jlccTonoRenta(mil, mil, mil, 8));
+        assertEquals(-1, JlccMaquetaService.jlccTonoRenta(null, mil, dosMil, 8));
     }
 
     private BloqueMaqueta bloqueConVencimiento(Long dias) {
@@ -431,7 +431,7 @@ class MaquetaServiceTest {
                 .thenReturn(List.of(contratosVigentes));
     }
 
-    private BloqueMaqueta bloque(MaquetaService.ResultadoMaqueta resultado, Long id) {
+    private BloqueMaqueta bloque(JlccMaquetaService.ResultadoMaqueta resultado, Long id) {
         return resultado.bloques().stream()
                 .filter(b -> b.id().equals(id))
                 .findFirst()

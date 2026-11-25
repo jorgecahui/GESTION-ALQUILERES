@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.ejemplo.alquileres.config.AppProperties;
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.repository.ContratoRepository;
 import com.ejemplo.alquileres.repository.CuotaRepository;
@@ -28,8 +28,8 @@ class PagoServiceTest {
     private final ContratoRepository contratos = Mockito.mock(ContratoRepository.class);
     private final CuotaRepository cuotas = Mockito.mock(CuotaRepository.class);
     private final PagoRepository pagos = Mockito.mock(PagoRepository.class);
-    private final SecuenciaService secuencias = Mockito.mock(SecuenciaService.class);
-    private PagoService servicio;
+    private final JlccSecuenciaService secuencias = Mockito.mock(JlccSecuenciaService.class);
+    private JlccPagoService servicio;
     private Contrato contrato;
     private Cuota cuota;
 
@@ -39,12 +39,12 @@ class PagoServiceTest {
         propiedades.getRecibos().setSerie("R001");
         Clock clock = Clock.fixed(Instant.parse("2026-01-12T12:00:00Z"), ZoneOffset.UTC);
         servicio =
-                new PagoService(
+                new JlccPagoService(
                         pagos,
                         cuotas,
                         contratos,
                         secuencias,
-                        new CalculadoraMora(),
+                        new JlccCalculadoraMora(),
                         DatosFase6.servicioConfiguracion(propiedades),
                         DatosFase6.permisosAdmin(),
                         DatosFase6.auditoria(),
@@ -53,17 +53,17 @@ class PagoServiceTest {
         contrato = contrato(cuota);
         when(contratos.detalle(1L)).thenReturn(Optional.of(contrato));
         when(cuotas.findById(10L)).thenReturn(Optional.of(cuota));
-        when(secuencias.siguiente("RECIBO-R001")).thenReturn(1L);
-        when(secuencias.formatear("R001-", 1L, 8)).thenReturn("R001-00000001");
+        when(secuencias.jlccSiguiente("RECIBO-R001")).thenReturn(1L);
+        when(secuencias.jlccFormatear("R001-", 1L, 8)).thenReturn("R001-00000001");
         when(pagos.save(any(Pago.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
     }
 
     @Test
     void registraPagoCompletoYConservaLaNumeracion() {
         Pago pago =
-                servicio.registrar(
+                servicio.jlccRegistrar(
                         solicitud(
-                                new PagoService.Linea(
+                                new JlccPagoService.Linea(
                                         10L,
                                         dinero("1000"),
                                         BigDecimal.ZERO,
@@ -80,9 +80,9 @@ class PagoServiceTest {
     @Test
     void pagoParcialRegistraPuntoDeControlDeMora() {
         Pago pago =
-                servicio.registrar(
+                servicio.jlccRegistrar(
                         solicitud(
-                                new PagoService.Linea(
+                                new JlccPagoService.Linea(
                                         10L, dinero("400"), dinero("7"), BigDecimal.ZERO, null)));
 
         assertEquals(EstadoCuota.PARCIAL, cuota.getEstado());
@@ -94,14 +94,14 @@ class PagoServiceTest {
 
     @Test
     void exigePagarOCondonarLaMoraAntesDelCapital() {
-        PagoService.Linea sinMora =
-                new PagoService.Linea(10L, dinero("400"), BigDecimal.ZERO, BigDecimal.ZERO, null);
-        assertThrows(NegocioException.class, () -> servicio.registrar(solicitud(sinMora)));
+        JlccPagoService.Linea sinMora =
+                new JlccPagoService.Linea(10L, dinero("400"), BigDecimal.ZERO, BigDecimal.ZERO, null);
+        assertThrows(JlccNegocioException.class, () -> servicio.jlccRegistrar(solicitud(sinMora)));
 
-        PagoService.Linea condonada =
-                new PagoService.Linea(
+        JlccPagoService.Linea condonada =
+                new JlccPagoService.Linea(
                         10L, dinero("400"), BigDecimal.ZERO, dinero("7"), "Acuerdo de pago");
-        servicio.registrar(solicitud(condonada));
+        servicio.jlccRegistrar(solicitud(condonada));
         assertEquals(dinero("7"), cuota.getMoraCondonada());
         assertEquals(EstadoCuota.PARCIAL, cuota.getEstado());
     }
@@ -109,11 +109,11 @@ class PagoServiceTest {
     @Test
     void rechazaSobrepagoYDistribuyeDesdeLaCuotaMasAntigua() {
         assertThrows(
-                NegocioException.class,
+                JlccNegocioException.class,
                 () ->
-                        servicio.registrar(
+                        servicio.jlccRegistrar(
                                 solicitud(
-                                        new PagoService.Linea(
+                                        new JlccPagoService.Linea(
                                                 10L,
                                                 dinero("1000.01"),
                                                 dinero("7"),
@@ -124,8 +124,8 @@ class PagoServiceTest {
         when(cuotas.findByContratoIdOrderByFechaVencimientoAsc(1L))
                 .thenReturn(List.of(cuota, segunda));
 
-        List<PagoService.Imputacion> propuesta =
-                servicio.proponerImputacion(1L, dinero("1014"), LocalDate.of(2026, 1, 12));
+        List<JlccPagoService.Imputacion> propuesta =
+                servicio.jlccProponerImputacion(1L, dinero("1014"), LocalDate.of(2026, 1, 12));
         assertEquals(2, propuesta.size());
         assertEquals(10L, propuesta.get(0).cuotaId());
         assertEquals(dinero("1000"), propuesta.get(0).capital());
@@ -157,18 +157,18 @@ class PagoServiceTest {
         when(pagos.detalle(5L)).thenReturn(Optional.of(pago));
         when(pagos.activosDeCuota(10L)).thenReturn(List.of(pago));
 
-        servicio.anular(5L, "Registro equivocado");
+        servicio.jlccAnular(5L, "Registro equivocado");
         assertEquals(EstadoPago.ANULADO, pago.getEstado());
         assertEquals(BigDecimal.ZERO.setScale(2), cuota.getMontoPagado());
         assertEquals(EstadoCuota.PENDIENTE, cuota.getEstado());
     }
 
-    private PagoService.Solicitud solicitud(PagoService.Linea linea) {
+    private JlccPagoService.Solicitud solicitud(JlccPagoService.Linea linea) {
         return solicitud(linea, LocalDate.of(2026, 1, 12));
     }
 
-    private PagoService.Solicitud solicitud(PagoService.Linea linea, LocalDate fecha) {
-        return new PagoService.Solicitud(
+    private JlccPagoService.Solicitud solicitud(JlccPagoService.Linea linea, LocalDate fecha) {
+        return new JlccPagoService.Solicitud(
                 1L, fecha, MedioPago.EFECTIVO, null, null, List.of(linea), false);
     }
 

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.ejemplo.alquileres.config.AppProperties;
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.RolUsuario;
 import com.ejemplo.alquileres.model.Usuario;
 
@@ -32,7 +32,7 @@ class RespaldoServiceTest {
     @TempDir Path temp;
     private Path base;
     private SQLiteDataSource dataSource;
-    private RespaldoService servicio;
+    private JlccRespaldoService servicio;
 
     @BeforeEach
     void preparar() throws Exception {
@@ -42,8 +42,8 @@ class RespaldoServiceTest {
         crearEsquema(base, true);
         AppProperties propiedades = new AppProperties();
         propiedades.setDataDir(temp.toString());
-        SesionActual sesion = new SesionActual();
-        sesion.iniciar(
+        JlccSesionActual sesion = new JlccSesionActual();
+        sesion.jlccIniciar(
                 Usuario.builder()
                         .id(1L)
                         .username("admin")
@@ -51,42 +51,42 @@ class RespaldoServiceTest {
                         .activo(true)
                         .build());
         servicio =
-                new RespaldoService(
+                new JlccRespaldoService(
                         dataSource,
                         propiedades,
-                        new Permisos(sesion),
-                        mock(AuditoriaService.class),
+                        new JlccPermisos(sesion),
+                        mock(JlccAuditoriaService.class),
                         sesion,
-                        mock(ConfiguracionService.class),
+                        mock(JlccConfiguracionService.class),
                         CLOCK);
     }
 
     @Test
     void creaRespaldoConVacuumIntoYLoValida() throws Exception {
-        Path respaldo = servicio.crearRespaldo(temp);
+        Path respaldo = servicio.jlccCrearRespaldo(temp);
 
         assertTrue(Files.isRegularFile(respaldo));
         assertTrue(respaldo.getFileName().toString().startsWith("alquileres-"));
         assertEquals(
                 "SQLite format 3\u0000",
                 new String(Files.readAllBytes(respaldo), 0, 16, StandardCharsets.US_ASCII));
-        servicio.validar(respaldo);
+        servicio.jlccValidar(respaldo);
     }
 
     @Test
     void elRespaldoAutomaticoRotaADiezArchivos() {
-        for (int i = 0; i < 12; i++) servicio.respaldoAutomatico();
+        for (int i = 0; i < 12; i++) servicio.jlccRespaldoAutomatico();
 
-        assertEquals(10, servicio.listarAutomaticos().size());
+        assertEquals(10, servicio.jlccListarAutomaticos().size());
     }
 
     @Test
     void restauraUnRespaldoValidoYConservaLaCopiaDeSeguridad() throws Exception {
-        Path respaldo = servicio.crearRespaldo(temp);
+        Path respaldo = servicio.jlccCrearRespaldo(temp);
         ejecutar("insert into secuencia (id) values (2)");
         assertEquals(2, contar("secuencia"));
 
-        RespaldoService.Restauracion resultado = servicio.restaurar(respaldo);
+        JlccRespaldoService.Restauracion resultado = servicio.jlccRestaurar(respaldo);
 
         assertEquals(1, contar("secuencia"));
         assertTrue(Files.isRegularFile(resultado.respaldoSeguridad()));
@@ -98,8 +98,8 @@ class RespaldoServiceTest {
         Path malo = temp.resolve("malo.db");
         Files.writeString(malo, "esto no es sqlite");
 
-        assertThrows(NegocioException.class, () -> servicio.validar(malo));
-        assertThrows(NegocioException.class, () -> servicio.restaurar(malo));
+        assertThrows(JlccNegocioException.class, () -> servicio.jlccValidar(malo));
+        assertThrows(JlccNegocioException.class, () -> servicio.jlccRestaurar(malo));
     }
 
     @Test
@@ -107,8 +107,8 @@ class RespaldoServiceTest {
         Path incompleto = temp.resolve("incompleto.db");
         crearEsquema(incompleto, false);
 
-        NegocioException error =
-                assertThrows(NegocioException.class, () -> servicio.validar(incompleto));
+        JlccNegocioException error =
+                assertThrows(JlccNegocioException.class, () -> servicio.jlccValidar(incompleto));
         assertTrue(error.getMessage().contains("tablas esperadas"));
     }
 

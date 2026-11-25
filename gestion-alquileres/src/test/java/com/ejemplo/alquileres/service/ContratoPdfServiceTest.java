@@ -19,10 +19,10 @@ class ContratoPdfServiceTest {
         Contrato contrato = DatosFase6.contrato();
         contrato.setObservaciones("Se entrega con un juego de llaves.");
         when(contratos.detalle(1L)).thenReturn(Optional.of(contrato));
-        ContratoPdfService servicio =
-                new ContratoPdfService(contratos, DatosFase6.arrendador(), DatosFase6.CLOCK);
+        JlccContratoPdfService servicio =
+                new JlccContratoPdfService(contratos, DatosFase6.arrendador(), DatosFase6.CLOCK);
 
-        byte[] contenido = servicio.generar(1L);
+        byte[] contenido = servicio.jlccGenerar(1L);
 
         assertTrue(contenido.length > 100);
         assertArrayEquals("%PDF".getBytes(), java.util.Arrays.copyOf(contenido, 4));
@@ -35,10 +35,10 @@ class ContratoPdfServiceTest {
         contrato.getInmueble().setTipo(null);
         contrato.setGarante(null);
         when(contratos.detalle(2L)).thenReturn(Optional.of(contrato));
-        ContratoPdfService servicio =
-                new ContratoPdfService(contratos, DatosFase6.arrendador(), DatosFase6.CLOCK);
+        JlccContratoPdfService servicio =
+                new JlccContratoPdfService(contratos, DatosFase6.arrendador(), DatosFase6.CLOCK);
 
-        byte[] contenido = servicio.generar(2L);
+        byte[] contenido = servicio.jlccGenerar(2L);
 
         assertTrue(contenido.length > 100);
         assertArrayEquals("%PDF".getBytes(), java.util.Arrays.copyOf(contenido, 4));

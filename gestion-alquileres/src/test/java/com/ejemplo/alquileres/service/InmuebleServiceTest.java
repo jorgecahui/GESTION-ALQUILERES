@@ -3,7 +3,7 @@ package com.ejemplo.alquileres.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.*;
 import com.ejemplo.alquileres.repository.*;
 
@@ -14,9 +14,9 @@ import java.time.*;
 
 class InmuebleServiceTest {
     private final InmuebleRepository repo = mock(InmuebleRepository.class);
-    private final SecuenciaService secuencia = mock(SecuenciaService.class);
-    private final InmuebleService service =
-            new InmuebleService(
+    private final JlccSecuenciaService secuencia = mock(JlccSecuenciaService.class);
+    private final JlccInmuebleService service =
+            new JlccInmuebleService(
                     repo,
                     mock(TipoInmuebleRepository.class),
                     mock(PropietarioRepository.class),
@@ -26,29 +26,29 @@ class InmuebleServiceTest {
 
     @Test
     void generaCodigoYNoPermiteAlquiladoManual() {
-        when(secuencia.siguiente("INMUEBLE")).thenReturn(1L);
-        when(secuencia.formatear("INM-", 1L, 4)).thenReturn("INM-0001");
-        assertEquals("INM-0001", service.proximoCodigo());
+        when(secuencia.jlccSiguiente("INMUEBLE")).thenReturn(1L);
+        when(secuencia.jlccFormatear("INM-", 1L, 4)).thenReturn("INM-0001");
+        assertEquals("INM-0001", service.jlccProximoCodigo());
         Inmueble i =
                 Inmueble.builder()
                         .codigo("INM-0001")
                         .nombre("Depa")
                         .estado(EstadoInmueble.ALQUILADO)
                         .build();
-        assertThrows(NegocioException.class, () -> service.guardar(i));
+        assertThrows(JlccNegocioException.class, () -> service.jlccGuardar(i));
     }
 
     @Test
     void noEliminaTipoConInmuebles() {
         TipoInmuebleRepository tipos = mock(TipoInmuebleRepository.class);
         InmuebleRepository inmuebles = mock(InmuebleRepository.class);
-        TipoInmuebleService servicio =
-                new TipoInmuebleService(
+        JlccTipoInmuebleService servicio =
+                new JlccTipoInmuebleService(
                         tipos, inmuebles, DatosFase6.permisosAdmin(), DatosFase6.auditoria());
         when(inmuebles.existsByTipoId(4L)).thenReturn(true);
         TipoInmueble tipo = TipoInmueble.builder().id(4L).activo(true).build();
         when(tipos.findById(4L)).thenReturn(java.util.Optional.of(tipo));
-        servicio.eliminar(4L);
+        servicio.jlccEliminar(4L);
         assertFalse(tipo.isActivo());
         verify(tipos, never()).deleteById(4L);
     }
@@ -73,7 +73,7 @@ class InmuebleServiceTest {
                         .nombre("Nuevo")
                         .estado(EstadoInmueble.ALQUILADO)
                         .build();
-        Inmueble guardado = service.guardar(editado);
+        Inmueble guardado = service.jlccGuardar(editado);
         assertEquals("Nuevo", guardado.getNombre());
         assertEquals(EstadoInmueble.ALQUILADO, guardado.getEstado());
     }
@@ -96,7 +96,7 @@ class InmuebleServiceTest {
                         .nombre("Viejo")
                         .estado(EstadoInmueble.DISPONIBLE)
                         .build();
-        assertThrows(NegocioException.class, () -> service.guardar(editado));
+        assertThrows(JlccNegocioException.class, () -> service.jlccGuardar(editado));
     }
 
     @Test
@@ -130,7 +130,7 @@ class InmuebleServiceTest {
                         .serviciosIncluidos("Agua, luz, internet")
                         .descripcion("Vista al parque")
                         .build();
-        Inmueble creado = service.guardar(nuevo);
+        Inmueble creado = service.jlccGuardar(nuevo);
         assertEquals(1L, creado.getId());
         assertNotNull(creado.getFechaRegistro());
         LocalDate fechaRegistro = creado.getFechaRegistro();
@@ -145,7 +145,7 @@ class InmuebleServiceTest {
                         .estado(EstadoInmueble.DISPONIBLE)
                         .amoblado(true)
                         .build();
-        Inmueble actualizado = service.guardar(edicion);
+        Inmueble actualizado = service.jlccGuardar(edicion);
 
         assertEquals("Depto actualizado", actualizado.getNombre());
         assertEquals("Av. Principal 123", actualizado.getDireccion());
@@ -180,7 +180,7 @@ class InmuebleServiceTest {
                         .orden(2)
                         .estado(EstadoInmueble.DISPONIBLE)
                         .build();
-        NegocioException error = assertThrows(NegocioException.class, () -> service.guardar(nuevo));
+        JlccNegocioException error = assertThrows(JlccNegocioException.class, () -> service.jlccGuardar(nuevo));
         assertTrue(error.getMessage().contains("nivel 1"));
         assertTrue(error.getMessage().contains("orden 2"));
         verify(repo, never()).save(any());
@@ -195,7 +195,7 @@ class InmuebleServiceTest {
                         .nombre("Sin posición")
                         .estado(EstadoInmueble.DISPONIBLE)
                         .build();
-        Inmueble guardado = service.guardar(nuevo);
+        Inmueble guardado = service.jlccGuardar(nuevo);
         assertNull(guardado.getNivel());
         assertNull(guardado.getOrden());
         verify(repo, never()).existsByNivelAndOrdenAndEstadoNot(any(), any(), any());
@@ -211,7 +211,7 @@ class InmuebleServiceTest {
                         .orden(1)
                         .estado(EstadoInmueble.DISPONIBLE)
                         .build();
-        assertThrows(NegocioException.class, () -> service.guardar(nivelInvalido));
+        assertThrows(JlccNegocioException.class, () -> service.jlccGuardar(nivelInvalido));
         Inmueble ordenInvalido =
                 Inmueble.builder()
                         .codigo("INM-0005")
@@ -220,6 +220,6 @@ class InmuebleServiceTest {
                         .orden(0)
                         .estado(EstadoInmueble.DISPONIBLE)
                         .build();
-        assertThrows(NegocioException.class, () -> service.guardar(ordenInvalido));
+        assertThrows(JlccNegocioException.class, () -> service.jlccGuardar(ordenInvalido));
     }
 }

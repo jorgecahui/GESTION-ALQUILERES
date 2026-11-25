@@ -8,7 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import com.ejemplo.alquileres.exception.NegocioException;
+import com.ejemplo.alquileres.exception.JlccNegocioException;
 import com.ejemplo.alquileres.model.CanalRecordatorio;
 import com.ejemplo.alquileres.model.Contrato;
 import com.ejemplo.alquileres.model.Cuota;
@@ -31,7 +31,7 @@ class RecordatorioServiceTest {
     private final RecordatorioRepository recordatorios = Mockito.mock(RecordatorioRepository.class);
     private final CuotaRepository cuotas = Mockito.mock(CuotaRepository.class);
     private final ContratoRepository contratos = Mockito.mock(ContratoRepository.class);
-    private RecordatorioService servicio;
+    private JlccRecordatorioService servicio;
     private Contrato contrato;
     private Cuota vencida;
     private Cuota porVencer;
@@ -40,13 +40,13 @@ class RecordatorioServiceTest {
     @BeforeEach
     void preparar() {
         servicio =
-                new RecordatorioService(
+                new JlccRecordatorioService(
                         recordatorios,
                         cuotas,
                         contratos,
                         DatosFase6.arrendador(),
                         DatosFase6.servicioConfiguracion(),
-                        new CalculadoraMora(),
+                        new JlccCalculadoraMora(),
                         DatosFase6.permisosAdmin(),
                         DatosFase6.CLOCK);
         contrato = DatosFase6.contrato();
@@ -67,7 +67,7 @@ class RecordatorioServiceTest {
         when(recordatorios.recientes(eq(21L), any())).thenReturn(List.of());
         when(recordatorios.recientes(eq(22L), any())).thenReturn(List.of());
 
-        List<RecordatorioService.Propuesta> sugerencias = servicio.sugerencias(DatosFase6.HOY);
+        List<JlccRecordatorioService.Propuesta> sugerencias = servicio.jlccSugerencias(DatosFase6.HOY);
 
         assertEquals(1, sugerencias.size());
         assertEquals(21L, sugerencias.get(0).cuotaId());
@@ -76,7 +76,7 @@ class RecordatorioServiceTest {
 
     @Test
     void generaMensajeVencidoConMoraYTelefonoNormalizado() {
-        RecordatorioService.Propuesta propuesta = servicio.propuesta(vencida, DatosFase6.HOY);
+        JlccRecordatorioService.Propuesta propuesta = servicio.jlccPropuesta(vencida, DatosFase6.HOY);
 
         assertEquals("51987654321", propuesta.telefono());
         assertEquals(TipoRecordatorio.VENCIDO, propuesta.tipo());
@@ -88,8 +88,8 @@ class RecordatorioServiceTest {
 
     @Test
     void generaPropuestaDeFinDeContrato() {
-        RecordatorioService.Propuesta propuesta =
-                servicio.propuestaFinContrato(contrato, DatosFase6.HOY);
+        JlccRecordatorioService.Propuesta propuesta =
+                servicio.jlccPropuestaFinContrato(contrato, DatosFase6.HOY);
 
         assertEquals(TipoRecordatorio.FIN_CONTRATO, propuesta.tipo());
         assertTrue(propuesta.mensaje().contains("CTR-000001"));
@@ -99,7 +99,7 @@ class RecordatorioServiceTest {
 
     @Test
     void codificaLaUrlDeWhatsAppConTildesSaltosYMoneda() {
-        String url = servicio.urlWhatsApp("987654321", "Hola señor Pérez,\nMonto: S/ 1,250.00");
+        String url = servicio.jlccUrlWhatsApp("987654321", "Hola señor Pérez,\nMonto: S/ 1,250.00");
 
         assertTrue(url.startsWith("https://wa.me/51987654321?text="));
         assertTrue(url.contains("%20"));
@@ -114,12 +114,12 @@ class RecordatorioServiceTest {
         when(cuotas.findById(20L)).thenReturn(Optional.of(vencida));
         when(recordatorios.save(any(Recordatorio.class)))
                 .thenAnswer(invocacion -> invocacion.getArgument(0));
-        RecordatorioService.Propuesta propuesta =
-                new RecordatorioService.Propuesta(
+        JlccRecordatorioService.Propuesta propuesta =
+                new JlccRecordatorioService.Propuesta(
                         20L, 1L, "987654321", TipoRecordatorio.VENCIDO, "Mensaje original");
 
         Recordatorio guardado =
-                servicio.registrar(propuesta, "  Mensaje editado  ", CanalRecordatorio.WHATSAPP);
+                servicio.jlccRegistrar(propuesta, "  Mensaje editado  ", CanalRecordatorio.WHATSAPP);
 
         assertEquals("51987654321", guardado.getTelefono());
         assertEquals("Mensaje editado", guardado.getMensaje());
@@ -130,21 +130,21 @@ class RecordatorioServiceTest {
 
     @Test
     void rechazaTelefonoInvalidoAlRegistrar() {
-        RecordatorioService.Propuesta propuesta =
-                new RecordatorioService.Propuesta(
+        JlccRecordatorioService.Propuesta propuesta =
+                new JlccRecordatorioService.Propuesta(
                         20L, 1L, "123", TipoRecordatorio.VENCIDO, "Mensaje");
 
         assertThrows(
-                NegocioException.class,
-                () -> servicio.registrar(propuesta, "Mensaje", CanalRecordatorio.COPIADO));
+                JlccNegocioException.class,
+                () -> servicio.jlccRegistrar(propuesta, "Mensaje", CanalRecordatorio.COPIADO));
     }
 
     @Test
     void describeElUltimoRecordatorioEnLenguajeNatural() {
-        assertEquals("—", servicio.ultimoTexto(null));
-        assertEquals("hoy", servicio.ultimoTexto(LocalDateTime.of(2026, 2, 10, 8, 0)));
-        assertEquals("ayer", servicio.ultimoTexto(LocalDateTime.of(2026, 2, 9, 8, 0)));
-        assertEquals("hace 2 días", servicio.ultimoTexto(LocalDateTime.of(2026, 2, 8, 8, 0)));
+        assertEquals("—", servicio.jlccUltimoTexto(null));
+        assertEquals("hoy", servicio.jlccUltimoTexto(LocalDateTime.of(2026, 2, 10, 8, 0)));
+        assertEquals("ayer", servicio.jlccUltimoTexto(LocalDateTime.of(2026, 2, 9, 8, 0)));
+        assertEquals("hace 2 días", servicio.jlccUltimoTexto(LocalDateTime.of(2026, 2, 8, 8, 0)));
     }
 
     @Test
@@ -153,6 +153,6 @@ class RecordatorioServiceTest {
                 .thenReturn(
                         List.<Object[]>of(new Object[] {20L, LocalDateTime.of(2026, 2, 8, 9, 0)}));
 
-        assertEquals(LocalDateTime.of(2026, 2, 8, 9, 0), servicio.ultimosPorCuota().get(20L));
+        assertEquals(LocalDateTime.of(2026, 2, 8, 9, 0), servicio.jlccUltimosPorCuota().get(20L));
     }
 }
